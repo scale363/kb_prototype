@@ -421,7 +421,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
           <div className="flex-1">
-            <div className="text-sm font-semibold text-[#6c7180]">Transform your text</div>
+            <div className="text-sm font-semibold text-[#6c7180]">Sound professional at work</div>
           </div>
           {onSwitchKeyboard && (
             <button
