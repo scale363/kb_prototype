@@ -510,16 +510,13 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     return (
       <div className="px-1">
-        <div className="flex flex-col gap-2 p-3 pb-2.5 bg-accent/30 border-2 border-accent rounded-lg relative">
-          <div className="text-xs font-medium text-muted-foreground pr-16">
-            Input
-          </div>
+        <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
           {hasContent ? (
-            <div className="text-sm text-foreground font-medium leading-relaxed pr-2">
+            <div className="text-sm text-foreground font-medium leading-relaxed pr-8">
               {displayText}
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground/60 pr-16">
+            <div className="text-sm text-muted-foreground/60 pr-8">
               Enter or paste text to process
             </div>
           )}
