@@ -405,14 +405,28 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
   };
 
-  // Render header with title and close button for non-main levels
+  // Render header with title and close button
   const renderHeader = () => {
     let title = "";
     let onClose = handleBackToMain;
 
-    // Don't show header on main menu level
     if (menuLevel === "main") {
-      return null;
+      // On main menu, show only X button that switches keyboard
+      return (
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+          <div className="flex-1"></div>
+          {onSwitchKeyboard && (
+            <button
+              type="button"
+              onClick={onSwitchKeyboard}
+              className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+              aria-label="Switch keyboard"
+            >
+              <X className="h-5 w-5 text-muted-foreground" />
+            </button>
+          )}
+        </div>
+      );
     } else if (menuLevel === "tone-select") {
       title = "Rephrase";
     } else if (menuLevel === "result" && selectedTone) {
@@ -464,22 +478,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             </div>
           )}
           <div className="absolute top-2 right-2 flex gap-1">
-            {hasContent && (
-              <button
-                type="button"
-                onClick={() => {
-                  onPreviewTextChange("");
-                  if (!selectedText) {
-                    onTextChange("");
-                  }
-                }}
-                className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
-                data-testid="button-clear-preview"
-                aria-label="Clear text"
-              >
-                <X className="h-4 w-4 text-muted-foreground" />
-              </button>
-            )}
             <button
               type="button"
               onClick={handlePasteFromClipboard}
