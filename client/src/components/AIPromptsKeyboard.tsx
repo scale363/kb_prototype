@@ -417,10 +417,12 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     let onClose = handleBackToMain;
 
     if (menuLevel === "main") {
-      // On main menu, show only X button that switches keyboard
+      // On main menu, show title and X button that switches keyboard
       return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
-          <div className="flex-1"></div>
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px] bg-muted rounded-t-lg">
+          <div className="flex-1">
+            <div className="text-sm font-semibold text-foreground">Text Processing</div>
+          </div>
           {onSwitchKeyboard && (
             <button
               type="button"
@@ -442,7 +444,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
 
     return (
-      <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+      <div className="px-1 py-2 flex items-center justify-between min-h-[44px] bg-muted rounded-t-lg">
         <div className="flex-1">
           {title && <div className="text-sm font-semibold text-foreground">{title}</div>}
         </div>
@@ -469,18 +471,16 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     return (
       <div className="px-1">
         <div className="flex flex-col gap-2 p-3 pb-2.5 bg-accent/30 border-2 border-accent rounded-lg relative">
+          <div className="text-xs font-medium text-muted-foreground pr-16">
+            Input
+          </div>
           {hasContent ? (
-            <>
-              <div className="text-xs font-medium text-muted-foreground pr-16">
-                {selectedText ? "Выделенный текст:" : previewText ? "Предпросмотр:" : "Текст для обработки:"}
-              </div>
-              <div className="text-sm text-foreground font-medium leading-relaxed pr-2">
-                {displayText}
-              </div>
-            </>
+            <div className="text-sm text-foreground font-medium leading-relaxed pr-2">
+              {displayText}
+            </div>
           ) : (
-            <div className="text-xs font-medium text-muted-foreground pr-16">
-              Введите или вставьте текст для работы
+            <div className="text-sm text-muted-foreground/60 pr-16">
+              Enter or paste text to process
             </div>
           )}
           <div className="absolute top-2 right-2 flex gap-1">
