@@ -77,8 +77,8 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "work-safe",
     label: "Work-Safe",
-    emoji: "\u{1F3E2}",
-    tooltip: "Rewrites your message to sound natural, polite, and culturally appropriate at work.",
+    emoji: "\u{1F6E1}",
+    tooltip: "Checks grammar and rewrites your message to sound natural, polite, and culturally appropriate at work.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
   },
