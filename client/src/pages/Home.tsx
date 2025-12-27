@@ -38,12 +38,11 @@ export default function Home() {
       className="flex flex-col h-screen bg-background overflow-hidden"
       style={{ touchAction: "manipulation" }}
     >
-      <header className="flex items-center justify-center p-3 border-b border-border bg-card">
+      <header className="flex items-center justify-center p-3 border-b border-border bg-[#f4f6f6]">
         <h1 className="text-lg font-semibold text-foreground" data-testid="text-app-title">
           AI Keyboard
         </h1>
       </header>
-
       <TextInputArea
         value={text}
         onChange={setText}
@@ -51,7 +50,6 @@ export default function Home() {
         onCursorChange={setCursorPosition}
         onSelectionChange={setSelectedText}
       />
-
       <div className="fixed bottom-0 left-0 right-0 z-50">
         <KeyboardContainer
           text={text}
