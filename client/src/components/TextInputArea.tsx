@@ -7,13 +7,15 @@ interface TextInputAreaProps {
   onChange: (value: string) => void;
   cursorPosition: number;
   onCursorChange: (position: number) => void;
+  onSelectionChange?: (selectedText: string) => void;
 }
 
-export function TextInputArea({ 
-  value, 
-  onChange, 
+export function TextInputArea({
+  value,
+  onChange,
   cursorPosition,
-  onCursorChange 
+  onCursorChange,
+  onSelectionChange
 }: TextInputAreaProps) {
   const textareaRef = useRef<HTMLDivElement>(null);
 
@@ -63,23 +65,43 @@ export function TextInputArea({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    e.preventDefault();
+    // Allow text selection shortcuts (Ctrl+A, Shift+arrows, etc.)
+    // Prevent only actual text input
+    if (!e.ctrlKey && !e.metaKey && !e.shiftKey) {
+      e.preventDefault();
+    }
   };
 
   const handleFocus = (e: React.FocusEvent<HTMLDivElement>) => {
     // Prevent focus recursion by avoiding manual focus triggering if already focused
   };
 
-  const handleClick = () => {
+  const handleSelectionChange = () => {
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
+      const selectedText = selection.toString();
+
+      if (selectedText && onSelectionChange) {
+        onSelectionChange(selectedText);
+      } else if (onSelectionChange) {
+        onSelectionChange("");
+      }
+
       onCursorChange(range.startOffset);
     }
   };
 
+  const handleClick = () => {
+    handleSelectionChange();
+  };
+
+  const handleMouseUp = () => {
+    handleSelectionChange();
+  };
+
   return (
-    <div className="flex-1 flex flex-col relative bg-background pb-80">
+    <div className="flex-1 flex flex-col relative bg-background">
       <div className="absolute top-3 right-3 flex gap-2 z-10">
         <Button
           size="icon"
@@ -107,7 +129,7 @@ export function TextInputArea({
         ref={textareaRef}
         contentEditable
         suppressContentEditableWarning
-        className="flex-1 min-h-[120px] px-4 py-3 pt-14 text-base leading-relaxed outline-none border-b border-border overflow-y-auto touch-manipulation select-text"
+        className="max-h-[33vh] min-h-[120px] px-4 py-3 pt-14 m-3 text-base leading-relaxed outline-none border-2 border-border rounded-xl overflow-y-auto touch-manipulation select-text"
         style={{
           WebkitUserSelect: "text",
           userSelect: "text",
@@ -117,6 +139,8 @@ export function TextInputArea({
         onKeyDown={handleKeyDown}
         onFocus={handleFocus}
         onClick={handleClick}
+        onMouseUp={handleMouseUp}
+        onTouchEnd={handleMouseUp}
         data-testid="input-text-area"
         data-placeholder="Введите текст..."
         inputMode="none"

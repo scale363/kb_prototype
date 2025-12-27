@@ -1,8 +1,21 @@
 import { RefreshCw, Languages, FileText, Clipboard, Globe } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+// Функция для усечения длинного текста
+function truncateText(text: string, maxLength: number = 50): string {
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  const sideLength = Math.floor((maxLength - 3) / 2);
+  const start = text.slice(0, sideLength);
+  const end = text.slice(-sideLength);
+  return `${start}...${end}`;
+}
+
 interface AIPromptsKeyboardProps {
   text: string;
+  selectedText: string;
   onTextChange: (text: string) => void;
   onSwitchKeyboard?: () => void;
 }
@@ -51,8 +64,37 @@ const PROMPT_BUTTONS: PromptButton[] = [
   },
 ];
 
-export function AIPromptsKeyboard({ text, onTextChange, onSwitchKeyboard }: AIPromptsKeyboardProps) {
+export function AIPromptsKeyboard({ text, selectedText, onTextChange, onSwitchKeyboard }: AIPromptsKeyboardProps) {
   const { toast } = useToast();
+
+  // Определяем текст для предпросмотра
+  const previewText = selectedText || text;
+  const displayText = truncateText(previewText);
+
+  const handlePasteFromClipboard = async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      if (clipboardText) {
+        onTextChange(clipboardText);
+        toast({
+          title: "Вставлено из буфера",
+          description: `${clipboardText.length} символов`,
+        });
+      } else {
+        toast({
+          title: "Буфер обмена пуст",
+          description: "Нет текста в буфере обмена",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Нет доступа к буферу",
+        description: "Разрешите доступ к буферу обмена",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handlePromptClick = async (promptId: string) => {
     switch (promptId) {
@@ -122,6 +164,35 @@ export function AIPromptsKeyboard({ text, onTextChange, onSwitchKeyboard }: AIPr
 
   return (
     <div className="flex flex-col gap-3 w-full">
+      {/* Поле предпросмотра или кнопка вставки */}
+      {text.trim() ? (
+        <div className="px-1">
+          <div className="flex flex-col gap-1 p-3 bg-accent/30 border-2 border-accent rounded-lg">
+            <div className="text-xs font-medium text-muted-foreground">
+              {selectedText ? "Выделенный текст:" : "Текст для обработки:"}
+            </div>
+            <div className="text-sm text-foreground font-medium truncate">
+              {displayText || "Пусто"}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="px-1">
+          <button
+            type="button"
+            onClick={handlePasteFromClipboard}
+            className="w-full flex items-center justify-center gap-2 p-3 bg-primary/10 border-2 border-primary/30 rounded-lg active:scale-[0.98] transition-transform duration-75 touch-manipulation"
+            data-testid="button-paste-empty"
+            aria-label="Paste from clipboard"
+          >
+            <Clipboard className="h-5 w-5 text-primary" />
+            <span className="text-sm font-medium text-primary">
+              Вставить из буфера обмена
+            </span>
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-3 p-1">
         {PROMPT_BUTTONS.map((button) => (
           <button
