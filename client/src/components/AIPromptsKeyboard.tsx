@@ -1,4 +1,4 @@
-import { RefreshCw, Languages, FileText, Clipboard, Globe, ArrowLeft, Copy, Check, RotateCcw, ChevronRight, X, HelpCircle, Plus } from "lucide-react";
+import { RefreshCw, Languages, FileText, Clipboard, Globe, ArrowLeft, Copy, Check, RotateCcw, ChevronRight, X, HelpCircle, Plus, MessageSquare } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -116,6 +116,41 @@ const TONE_OPTIONS: ToneOption[] = [
   },
 ];
 
+const QUICK_REPLY_ACTIONS: QuickReplyAction[] = [
+  {
+    id: "reply-to-client",
+    label: "Reply to client",
+    emoji: "\u{1F4AC}",
+    tooltip: "Generate a professional response to a client message",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
+  },
+  {
+    id: "follow-up",
+    label: "Follow-up",
+    emoji: "\u{1F504}",
+    tooltip: "Create a polite follow-up message to check on status or get a response",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
+  },
+  {
+    id: "decline-politely",
+    label: "Decline politely",
+    emoji: "\u{1F645}",
+    tooltip: "Politely decline a request or offer while maintaining good relations",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
+  },
+  {
+    id: "apologize",
+    label: "Apologize",
+    emoji: "\u{1F64F}",
+    tooltip: "Express sincere apology in a professional and empathetic way",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
+  },
+];
+
 const LANGUAGES = [
   { code: "en", label: "English" },
   { code: "ru", label: "Russian" },
@@ -124,7 +159,7 @@ const LANGUAGES = [
   { code: "zh", label: "Chinese" },
 ];
 
-type MenuLevel = "main" | "tone-select" | "result" | "translate-result";
+type MenuLevel = "main" | "tone-select" | "result" | "translate-result" | "quick-replies-select" | "quick-replies-result";
 
 interface RephraseResult {
   id: string;
@@ -138,6 +173,22 @@ interface TranslateResult {
   id: string;
   text: string;
   language: string;
+  timestamp: number;
+}
+
+interface QuickReplyAction {
+  id: string;
+  label: string;
+  emoji: string;
+  tooltip: string;
+  colorClass: string;
+  borderClass: string;
+}
+
+interface QuickReplyResult {
+  id: string;
+  text: string;
+  action: string;
   timestamp: number;
 }
 
@@ -159,10 +210,10 @@ const PROMPT_BUTTONS: PromptButton[] = [
     borderClass: "border-border",
   },
   {
-    id: "snippets",
-    label: "Snippets",
-    icon: <FileText className="h-6 w-6 text-emerald-500" />,
-    description: "Insert saved text blocks",
+    id: "quick-replies",
+    label: "Quick Replies",
+    icon: <MessageSquare className="h-6 w-6 text-emerald-500" />,
+    description: "Quick replies for common work situations",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
   },
@@ -207,6 +258,10 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const [translateResults, setTranslateResults] = useState<TranslateResult[]>([]);
   const [selectedTranslateResultId, setSelectedTranslateResultId] = useState<string | null>(null);
 
+  const [selectedQuickReplyAction, setSelectedQuickReplyAction] = useState<string | null>(null);
+  const [quickReplyResults, setQuickReplyResults] = useState<QuickReplyResult[]>([]);
+  const [selectedQuickReplyResultId, setSelectedQuickReplyResultId] = useState<string | null>(null);
+
   // Ref for auto-scrolling to the bottom when new variant is generated
   const resultsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -236,6 +291,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       setSelectedTone(null);
       setRephraseResults([]);
       setTranslateResults([]);
+      setQuickReplyResults([]);
+      setSelectedQuickReplyAction(null);
     };
     window.addEventListener("resetPreviewText", handleReset);
     return () => window.removeEventListener("resetPreviewText", handleReset);
@@ -243,14 +300,14 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Auto-scroll to bottom when new variant is generated
   useEffect(() => {
-    if (resultsContainerRef.current && (rephraseResults.length > 0 || translateResults.length > 0)) {
+    if (resultsContainerRef.current && (rephraseResults.length > 0 || translateResults.length > 0 || quickReplyResults.length > 0)) {
       // Use smooth scrolling to the bottom
       resultsContainerRef.current.scrollTo({
         top: resultsContainerRef.current.scrollHeight,
         behavior: 'smooth'
       });
     }
-  }, [rephraseResults.length, translateResults.length]);
+  }, [rephraseResults.length, translateResults.length, quickReplyResults.length]);
 
   // Определяем текст для предпросмотра: приоритет за полем ввода кроме одного случая:
   // мы вставили текст из буфера (previewText), при этом он еще не синхронизировался с основным полем
@@ -385,6 +442,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setSelectedResultId(null);
     setTranslateResults([]);
     setSelectedTranslateResultId(null);
+    setSelectedQuickReplyAction(null);
+    setQuickReplyResults([]);
+    setSelectedQuickReplyResultId(null);
   };
 
   const handleBackToTones = () => {
@@ -455,6 +515,68 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     });
   };
 
+  const handleQuickReplyActionSelect = (actionId: string) => {
+    setSelectedQuickReplyAction(actionId);
+    const actionName = QUICK_REPLY_ACTIONS.find(a => a.id === actionId)?.label || actionId;
+    const originalText = selectedText || previewText || text;
+
+    const newResult: QuickReplyResult = {
+      id: `quick-reply-${Date.now()}`,
+      text: `[${actionName}] This is a placeholder for your ${actionName.toLowerCase()} message. Context: "${truncateText(originalText, 50)}". This is temporary mock content that will be replaced with actual AI-generated text.`,
+      action: actionId,
+      timestamp: Date.now(),
+    };
+
+    setQuickReplyResults([newResult]);
+    setMenuLevel("quick-replies-result");
+    setCopiedResultId(null);
+    setSelectedQuickReplyResultId(newResult.id);
+  };
+
+  const handleRegenerateQuickReply = () => {
+    if (!selectedQuickReplyAction) return;
+
+    const actionName = QUICK_REPLY_ACTIONS.find(a => a.id === selectedQuickReplyAction)?.label || selectedQuickReplyAction;
+    const originalText = selectedText || previewText || text;
+
+    const newResult: QuickReplyResult = {
+      id: `quick-reply-${Date.now()}`,
+      text: `[${actionName}] Regenerated placeholder #${quickReplyResults.length + 1} for ${actionName.toLowerCase()}. Context: "${truncateText(originalText, 50)}". This is mock content.`,
+      action: selectedQuickReplyAction,
+      timestamp: Date.now(),
+    };
+
+    setQuickReplyResults([...quickReplyResults, newResult]);
+    setCopiedResultId(null);
+    setSelectedQuickReplyResultId(newResult.id);
+  };
+
+  const handleApplyQuickReplyResult = (resultId: string) => {
+    const result = quickReplyResults.find(r => r.id === resultId);
+    if (!result) return;
+
+    if (selectedText) {
+      // Replace selected text in the original text
+      const startIndex = text.indexOf(selectedText);
+      if (startIndex !== -1) {
+        const newText = text.substring(0, startIndex) + result.text + text.substring(startIndex + selectedText.length);
+        onTextChange(newText);
+      } else {
+        onTextChange(result.text);
+      }
+    } else {
+      // Replace all text
+      onTextChange(result.text);
+    }
+    // Reset to main menu
+    setMenuLevel("main");
+    setQuickReplyResults([]);
+    toast({
+      title: "Применено",
+      description: "Quick reply применён",
+    });
+  };
+
   const handlePromptClick = async (promptId: string) => {
     switch (promptId) {
       case "rephrase":
@@ -481,11 +603,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         handleTranslate();
         break;
 
-      case "snippets":
-        toast({
-          title: "Snippets",
-          description: "Snippet library will be available soon",
-        });
+      case "quick-replies":
+        setMenuLevel("quick-replies-select");
         break;
 
       case "clipboard":
@@ -541,6 +660,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       );
     } else if (menuLevel === "tone-select") {
       title = "👉 Choose a tone for your message";
+    } else if (menuLevel === "quick-replies-select") {
+      title = "💼 Quick replies for common work situations";
     } else if (menuLevel === "translate-result") {
       title = "👉 Translate incoming message";
 
@@ -548,6 +669,50 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
           <div className="flex items-center gap-2 flex-1">
             <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+      );
+    } else if (menuLevel === "quick-replies-result" && selectedQuickReplyAction) {
+      const action = QUICK_REPLY_ACTIONS.find(a => a.id === selectedQuickReplyAction);
+      title = `${action?.emoji || ''} ${action?.label || selectedQuickReplyAction}`;
+      const tooltip = action?.tooltip;
+
+      return (
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+          <div className="flex items-center gap-2 flex-1">
+            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+            {tooltip && (
+              <Tooltip
+                delayDuration={0}
+                open={openTooltipId === "header-info"}
+                onOpenChange={(open) => setOpenTooltipId(open ? "header-info" : null)}
+              >
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenTooltipId(openTooltipId === "header-info" ? null : "header-info");
+                    }}
+                    aria-label={`Info about ${title}`}
+                  >
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[250px] z-50">
+                  <p className="text-xs">{tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
           <button
             type="button"
@@ -950,6 +1115,138 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     </div>
   );
 
+  // Render quick replies selection menu
+  const renderQuickRepliesSelect = () => (
+    <div className="flex flex-col gap-3 p-1">
+      {/* Quick reply action options */}
+      <div className="grid grid-cols-2 gap-3">
+        {QUICK_REPLY_ACTIONS.map((action) => (
+          <div key={action.id} className="relative">
+            <button
+              type="button"
+              onClick={() => handleQuickReplyActionSelect(action.id)}
+              className={`
+                w-full flex items-center justify-center gap-2
+                min-h-[56px] p-3
+                rounded-xl border
+                ${action.colorClass}
+                ${action.borderClass}
+                hover-elevate active-elevate-2
+                active:scale-[0.98]
+                transition-transform duration-75
+                touch-manipulation select-none
+              `}
+              data-testid={`button-quick-reply-${action.id}`}
+              aria-label={action.label}
+            >
+              <span className="text-lg">{action.emoji}</span>
+              <span className="text-sm font-medium text-foreground">
+                {action.label}
+              </span>
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Render quick replies result view with scrollable results
+  const renderQuickRepliesResult = () => (
+    <div className="flex flex-col gap-3 p-1 max-h-[400px]">
+      {/* Results container with scroll */}
+      <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
+        {quickReplyResults.map((result, index) => {
+          const isSelected = selectedQuickReplyResultId === result.id;
+          return (
+            <div
+              key={result.id}
+              onClick={() => setSelectedQuickReplyResultId(isSelected ? null : result.id)}
+              className={`
+                flex flex-col gap-2 p-4 rounded-xl cursor-pointer
+                ${isSelected
+                  ? "bg-accent/20 border border-primary/50"
+                  : "bg-accent/10 border border-accent"}
+                active:scale-[0.99] transition-all duration-75
+                touch-manipulation
+              `}
+            >
+              {/* Result text */}
+              <div className="space-y-2">
+                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                  {result.text}
+                </div>
+              </div>
+              {/* Action buttons for this result - only show when selected */}
+              {isSelected && (
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopyResult(result.id);
+                    }}
+                    className={`
+                      flex-1 flex items-center justify-center gap-2
+                      min-h-[40px] px-3
+                      rounded-lg border-2
+                      ${copiedResultId === result.id
+                        ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
+                        : "bg-secondary border-border"}
+                      active:scale-[0.98]
+                      transition-all duration-75
+                      touch-manipulation select-none
+                    `}
+                    data-testid={`button-copy-quick-reply-${result.id}`}
+                  >
+                    {copiedResultId === result.id ? (
+                      <>
+                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        <span className="text-xs font-medium">Скопировано</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4" />
+                        <span className="text-xs font-medium">Копировать</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleApplyQuickReplyResult(result.id);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 border-[#0b9786] active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none bg-[#0b9786] text-[#ffffff]"
+                    data-testid={`button-apply-quick-reply-${result.id}`}
+                  >
+                    <Check className="h-4 w-4" />
+                    <span className="text-xs font-semibold">Применить</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Control panel */}
+      <div className="flex gap-2 pt-2 border-t border-border">
+        {/* Create new variant button */}
+        <button
+          type="button"
+          onClick={handleRegenerateQuickReply}
+          className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
+          data-testid="button-regenerate-quick-reply"
+          aria-label="Создать новый вариант"
+        >
+          <RefreshCw className="h-5 w-5" />
+          <span className="text-sm font-medium">Создать новый вариант</span>
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex flex-col gap-2 w-full">
       {renderHeader()}
@@ -959,6 +1256,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       {menuLevel === "tone-select" && renderToneSelect()}
       {menuLevel === "result" && renderResult()}
       {menuLevel === "translate-result" && renderTranslateResult()}
+      {menuLevel === "quick-replies-select" && renderQuickRepliesSelect()}
+      {menuLevel === "quick-replies-result" && renderQuickRepliesResult()}
 
       {/* Globe button at bottom left - iOS style */}
       {onSwitchKeyboard && (
