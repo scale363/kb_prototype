@@ -446,7 +446,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     return (
       <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
         <div className="flex-1">
-          {title && <div className="text-sm font-semibold text-foreground">{title}</div>}
+          {title && <div className="text-sm font-semibold text-[#6c7180]">{title}</div>}
         </div>
         {onSwitchKeyboard && (
           <button
