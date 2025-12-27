@@ -67,6 +67,7 @@ interface PromptButton {
 interface ToneOption {
   id: string;
   label: string;
+  emoji: string;
   tooltip: string;
   colorClass: string;
   borderClass: string;
@@ -76,37 +77,42 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "work-safe",
     label: "Work-Safe",
+    emoji: "\u{1F3E2}",
     tooltip: "Rewrites your message to sound natural, polite, and culturally appropriate at work.",
-    colorClass: "bg-blue-50 dark:bg-blue-950/30",
-    borderClass: "border-blue-200 dark:border-blue-800",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
   },
   {
     id: "professional",
     label: "Professional",
+    emoji: "\u{1F454}",
     tooltip: "Clear, neutral business tone suitable for clients, managers, and formal communication.",
-    colorClass: "bg-slate-50 dark:bg-slate-950/30",
-    borderClass: "border-slate-200 dark:border-slate-800",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
   },
   {
     id: "friendly",
     label: "Friendly",
+    emoji: "\u{1F44B}",
     tooltip: "Warm and human tone while staying professional and work-appropriate.",
-    colorClass: "bg-green-50 dark:bg-green-950/30",
-    borderClass: "border-green-200 dark:border-green-800",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
   },
   {
     id: "urgent",
     label: "Urgent",
+    emoji: "\u{26A1}",
     tooltip: "Adds urgency and clarity without sounding rude or aggressive.",
-    colorClass: "bg-red-50 dark:bg-red-950/30",
-    borderClass: "border-red-200 dark:border-red-800",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
   },
   {
     id: "short-clear",
     label: "Short & Clear",
+    emoji: "\u{2702}\uFE0F",
     tooltip: "Makes your message concise, easy to read, and action-oriented.",
-    colorClass: "bg-amber-50 dark:bg-amber-950/30",
-    borderClass: "border-amber-200 dark:border-amber-800",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
   },
 ];
 
@@ -132,34 +138,34 @@ const PROMPT_BUTTONS: PromptButton[] = [
   {
     id: "rephrase",
     label: "Rephrase",
-    icon: <RefreshCw className="h-6 w-6" />,
+    icon: <RefreshCw className="h-6 w-6 text-blue-500" />,
     description: "Rewrite text differently",
-    colorClass: "bg-blue-50 dark:bg-blue-950/30",
-    borderClass: "border-blue-200 dark:border-blue-800",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
   },
   {
     id: "translate",
     label: "Translate",
-    icon: <Languages className="h-6 w-6" />,
+    icon: <Languages className="h-6 w-6 text-purple-500" />,
     description: "Translate to another language",
-    colorClass: "bg-purple-50 dark:bg-purple-950/30",
-    borderClass: "border-purple-200 dark:border-purple-800",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
   },
   {
     id: "snippets",
     label: "Snippets",
-    icon: <FileText className="h-6 w-6" />,
+    icon: <FileText className="h-6 w-6 text-emerald-500" />,
     description: "Insert saved text blocks",
-    colorClass: "bg-green-50 dark:bg-green-950/30",
-    borderClass: "border-green-200 dark:border-green-800",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
   },
   {
     id: "clipboard",
     label: "Clipboard",
-    icon: <Clipboard className="h-6 w-6" />,
+    icon: <Clipboard className="h-6 w-6 text-orange-500" />,
     description: "Paste and format clipboard",
-    colorClass: "bg-orange-50 dark:bg-orange-950/30",
-    borderClass: "border-orange-200 dark:border-orange-800",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
   },
 ];
 
@@ -504,9 +510,10 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           className={`
             flex flex-col items-center justify-center gap-2
             min-h-[72px] p-4
-            rounded-xl border-2
+            rounded-xl border
             ${button.colorClass}
             ${button.borderClass}
+            hover-elevate active-elevate-2
             active:scale-[0.98]
             transition-transform duration-75
             touch-manipulation select-none
@@ -514,9 +521,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           data-testid={`button-prompt-${button.id}`}
           aria-label={button.label}
         >
-          <div className="text-foreground/80">
-            {button.icon}
-          </div>
+          {button.icon}
           <span className="text-sm font-medium text-foreground">
             {button.label}
           </span>
@@ -538,9 +543,10 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               className={`
                 w-full flex items-center justify-center gap-2
                 min-h-[56px] p-3 pr-9
-                rounded-xl border-2
+                rounded-xl border
                 ${tone.colorClass}
                 ${tone.borderClass}
+                hover-elevate active-elevate-2
                 active:scale-[0.98]
                 transition-transform duration-75
                 touch-manipulation select-none
@@ -548,6 +554,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               data-testid={`button-tone-${tone.id}`}
               aria-label={tone.label}
             >
+              <span className="text-lg">{tone.emoji}</span>
               <span className="text-sm font-medium text-foreground">
                 {tone.label}
               </span>
