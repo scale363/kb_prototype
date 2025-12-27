@@ -39,8 +39,8 @@ export default function Home() {
       style={{ touchAction: "manipulation" }}
     >
       <header className="flex items-center justify-center p-3 border-b border-border bg-card">
-        <h1 className="text-lg font-semibold text-foreground" data-testid="text-app-title">
-          AI Keyboard
+        <h1 className="text-lg font-semibold text-foreground uppercase tracking-widest" data-testid="text-app-title">
+          Text Processing
         </h1>
       </header>
 
