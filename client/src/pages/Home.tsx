@@ -5,6 +5,7 @@ import { KeyboardContainer } from "@/components/KeyboardContainer";
 export default function Home() {
   const [text, setText] = useState("");
   const [cursorPosition, setCursorPosition] = useState(0);
+  const [selectedText, setSelectedText] = useState("");
 
   useEffect(() => {
     const preventZoom = (e: TouchEvent) => {
@@ -47,6 +48,7 @@ export default function Home() {
         onChange={setText}
         cursorPosition={cursorPosition}
         onCursorChange={setCursorPosition}
+        onSelectionChange={setSelectedText}
       />
 
       <div className="fixed bottom-0 left-0 right-0 z-50">
@@ -55,6 +57,7 @@ export default function Home() {
           onTextChange={setText}
           cursorPosition={cursorPosition}
           onCursorChange={setCursorPosition}
+          selectedText={selectedText}
         />
       </div>
     </div>
