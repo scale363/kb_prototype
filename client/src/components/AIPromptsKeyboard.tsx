@@ -1,4 +1,4 @@
-import { RefreshCw, Languages, FileText, Clipboard, Globe, ArrowLeft, Copy, Check, RotateCcw, ChevronRight } from "lucide-react";
+import { RefreshCw, Languages, FileText, Clipboard, Globe, ArrowLeft, Copy, Check, RotateCcw, ChevronRight, X, HelpCircle, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -319,8 +319,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       timestamp: Date.now(),
     };
 
-    // Add new result to the beginning of the array
-    setRephraseResults([newResult, ...rephraseResults]);
+    // Add new result to the end of the array
+    setRephraseResults([...rephraseResults, newResult]);
     setCopiedResultId(null);
   };
 
@@ -399,37 +399,42 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
   };
 
-  // Render breadcrumbs for navigation
-  const renderBreadcrumbs = () => {
-    if (menuLevel === "main") return null;
+  // Render header with title and close button for all levels
+  const renderHeader = () => {
+    let title = "";
+    let subtitle = "";
+    let onClose = handleBackToMain;
 
-    const crumbs = [];
-
-    if (menuLevel === "tone-select" || menuLevel === "result") {
-      crumbs.push({ label: "Rephrase", onClick: handleBackToMain });
-    }
-
-    if (menuLevel === "result" && selectedTone) {
-      const toneName = TONE_OPTIONS.find(t => t.id === selectedTone)?.label || selectedTone;
-      crumbs.push({ label: toneName, onClick: handleBackToTones });
+    if (menuLevel === "main") {
+      // On main level, close button switches keyboard
+      if (!onSwitchKeyboard) return null;
+      onClose = onSwitchKeyboard;
+    } else if (menuLevel === "tone-select") {
+      title = "Rephrase";
+    } else if (menuLevel === "result" && selectedTone) {
+      const tone = TONE_OPTIONS.find(t => t.id === selectedTone);
+      title = tone?.label || selectedTone;
+      subtitle = tone?.tooltip || "";
     }
 
     return (
-      <div className="px-1 py-2 flex items-center gap-1 text-xs text-muted-foreground">
-        {crumbs.map((crumb, index) => (
-          <div key={index} className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={crumb.onClick}
-              className="hover:text-foreground transition-colors touch-manipulation"
-            >
-              {crumb.label}
-            </button>
-            {index < crumbs.length - 1 && (
-              <ChevronRight className="h-3 w-3" />
-            )}
-          </div>
-        ))}
+      <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+        <div className="flex-1">
+          {title && <div className="text-sm font-semibold text-foreground">{title}</div>}
+          {subtitle && (
+            <div className="text-xs text-muted-foreground mt-0.5">{subtitle}</div>
+          )}
+        </div>
+        {onSwitchKeyboard && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label={menuLevel === "main" ? "Switch keyboard" : "Close and return to main menu"}
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        )}
       </div>
     );
   };
@@ -471,50 +476,34 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render main menu buttons
   const renderMainMenu = () => (
-    <>
-      <div className="grid grid-cols-2 gap-3 p-1">
-        {PROMPT_BUTTONS.map((button) => (
-          <button
-            key={button.id}
-            type="button"
-            onClick={() => handlePromptClick(button.id)}
-            className={`
-              flex flex-col items-center justify-center gap-2
-              min-h-[72px] p-4
-              rounded-xl border-2
-              ${button.colorClass}
-              ${button.borderClass}
-              active:scale-[0.98]
-              transition-transform duration-75
-              touch-manipulation select-none
-            `}
-            data-testid={`button-prompt-${button.id}`}
-            aria-label={button.label}
-          >
-            <div className="text-foreground/80">
-              {button.icon}
-            </div>
-            <span className="text-sm font-medium text-foreground">
-              {button.label}
-            </span>
-          </button>
-        ))}
-      </div>
-
-      {onSwitchKeyboard && (
-        <div className="flex justify-start px-1">
-          <button
-            type="button"
-            onClick={onSwitchKeyboard}
-            className="flex items-center justify-center min-h-[44px] min-w-[44px] px-4 bg-muted rounded-lg touch-manipulation active:scale-[0.97] transition-transform duration-0"
-            data-testid="key-switch-keyboard-ai"
-            aria-label="Switch keyboard"
-          >
-            <Globe className="h-5 w-5" />
-          </button>
-        </div>
-      )}
-    </>
+    <div className="grid grid-cols-2 gap-3 p-1">
+      {PROMPT_BUTTONS.map((button) => (
+        <button
+          key={button.id}
+          type="button"
+          onClick={() => handlePromptClick(button.id)}
+          className={`
+            flex flex-col items-center justify-center gap-2
+            min-h-[72px] p-4
+            rounded-xl border-2
+            ${button.colorClass}
+            ${button.borderClass}
+            active:scale-[0.98]
+            transition-transform duration-75
+            touch-manipulation select-none
+          `}
+          data-testid={`button-prompt-${button.id}`}
+          aria-label={button.label}
+        >
+          <div className="text-foreground/80">
+            {button.icon}
+          </div>
+          <span className="text-sm font-medium text-foreground">
+            {button.label}
+          </span>
+        </button>
+      ))}
+    </div>
   );
 
   // Render tone selection menu
@@ -523,65 +512,46 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       {/* Tone options */}
       <div className="grid grid-cols-2 gap-3">
         {TONE_OPTIONS.map((tone) => (
-          <Tooltip key={tone.id}>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={() => handleToneSelect(tone.id)}
-                className={`
-                  flex items-center justify-center gap-2
-                  min-h-[56px] p-3
-                  rounded-xl border-2
-                  ${tone.colorClass}
-                  ${tone.borderClass}
-                  active:scale-[0.98]
-                  transition-transform duration-75
-                  touch-manipulation select-none
-                `}
-                data-testid={`button-tone-${tone.id}`}
-                aria-label={tone.label}
-              >
-                <span className="text-sm font-medium text-foreground">
-                  {tone.label}
-                </span>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-[250px]">
-              <p className="text-xs">{tone.tooltip}</p>
-            </TooltipContent>
-          </Tooltip>
+          <div key={tone.id} className="relative">
+            <button
+              type="button"
+              onClick={() => handleToneSelect(tone.id)}
+              className={`
+                w-full flex items-center justify-center gap-2
+                min-h-[56px] p-3 pr-9
+                rounded-xl border-2
+                ${tone.colorClass}
+                ${tone.borderClass}
+                active:scale-[0.98]
+                transition-transform duration-75
+                touch-manipulation select-none
+              `}
+              data-testid={`button-tone-${tone.id}`}
+              aria-label={tone.label}
+            >
+              <span className="text-sm font-medium text-foreground">
+                {tone.label}
+              </span>
+            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                  aria-label={`Info about ${tone.label}`}
+                >
+                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[250px]">
+                <p className="text-xs">{tone.tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         ))}
-      </div>
-
-      {/* Language selector and keyboard switch */}
-      <div className="flex gap-2">
-        <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-          <SelectTrigger
-            className="flex-1 min-h-[44px] rounded-xl border-2"
-            data-testid="select-language-tone"
-          >
-            <SelectValue placeholder="Язык" />
-          </SelectTrigger>
-          <SelectContent>
-            {LANGUAGES.map((lang) => (
-              <SelectItem key={lang.code} value={lang.code} data-testid={`option-lang-${lang.code}`}>
-                {lang.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {onSwitchKeyboard && (
-          <button
-            type="button"
-            onClick={onSwitchKeyboard}
-            className="flex items-center justify-center min-h-[44px] min-w-[44px] px-4 bg-muted rounded-lg touch-manipulation active:scale-[0.97] transition-transform duration-0"
-            data-testid="key-switch-keyboard-tone"
-            aria-label="Switch keyboard"
-          >
-            <Globe className="h-5 w-5" />
-          </button>
-        )}
       </div>
     </div>
   );
@@ -600,7 +570,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             <div className="space-y-2">
               {rephraseResults.length > 1 && (
                 <div className="text-xs font-medium text-muted-foreground">
-                  Вариант {rephraseResults.length - index}
+                  Вариант {index + 1}
                 </div>
               )}
               <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
@@ -654,55 +624,41 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       </div>
 
       {/* Control panel */}
-      <div className="flex flex-col gap-2 pt-2 border-t border-border">
-        {/* Reprocess button */}
+      <div className="flex gap-2 pt-2 border-t border-border">
+        {/* Language selector (compact) */}
+        <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+          <SelectTrigger
+            className="flex-1 min-h-[40px] rounded-lg border-2 text-sm"
+            data-testid="select-language"
+          >
+            <SelectValue placeholder="Язык" />
+          </SelectTrigger>
+          <SelectContent>
+            {LANGUAGES.map((lang) => (
+              <SelectItem key={lang.code} value={lang.code} data-testid={`option-lang-${lang.code}`}>
+                {lang.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Create new variant button (icon only) */}
         <button
           type="button"
           onClick={handleReprocess}
-          className="flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-xl border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
+          className="flex items-center justify-center min-h-[40px] min-w-[40px] rounded-lg border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
           data-testid="button-reprocess"
+          aria-label="Создать новый вариант"
         >
-          <RotateCcw className="h-5 w-5" />
-          <span className="text-sm font-medium">Создать новый вариант</span>
+          <Plus className="h-5 w-5" />
         </button>
-
-        {/* Language selector and keyboard switch */}
-        <div className="flex gap-2">
-          <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-            <SelectTrigger
-              className="flex-1 min-h-[44px] rounded-xl border-2"
-              data-testid="select-language"
-            >
-              <SelectValue placeholder="Язык" />
-            </SelectTrigger>
-            <SelectContent>
-              {LANGUAGES.map((lang) => (
-                <SelectItem key={lang.code} value={lang.code} data-testid={`option-lang-${lang.code}`}>
-                  {lang.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {onSwitchKeyboard && (
-            <button
-              type="button"
-              onClick={onSwitchKeyboard}
-              className="flex items-center justify-center min-h-[44px] min-w-[44px] px-4 bg-muted rounded-lg touch-manipulation active:scale-[0.97] transition-transform duration-0"
-              data-testid="key-switch-keyboard-result"
-              aria-label="Switch keyboard"
-            >
-              <Globe className="h-5 w-5" />
-            </button>
-          )}
-        </div>
       </div>
     </div>
   );
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      {renderBreadcrumbs()}
+      {renderHeader()}
       {renderPreviewField()}
 
       {menuLevel === "main" && renderMainMenu()}
