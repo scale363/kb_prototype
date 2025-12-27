@@ -124,12 +124,19 @@ const LANGUAGES = [
   { code: "zh", label: "Chinese" },
 ];
 
-type MenuLevel = "main" | "tone-select" | "result";
+type MenuLevel = "main" | "tone-select" | "result" | "translate-result";
 
 interface RephraseResult {
   id: string;
   text: string;
   tone: string;
+  language: string;
+  timestamp: number;
+}
+
+interface TranslateResult {
+  id: string;
+  text: string;
   language: string;
   timestamp: number;
 }
@@ -188,6 +195,18 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
   const [openTooltipId, setOpenTooltipId] = useState<string | null>(null);
 
+  // Load saved translation language from localStorage or default to "en"
+  const [translateLanguage, setTranslateLanguage] = useState<string>(() => {
+    try {
+      return localStorage.getItem("translate-language") || "en";
+    } catch {
+      return "en";
+    }
+  });
+
+  const [translateResults, setTranslateResults] = useState<TranslateResult[]>([]);
+  const [selectedTranslateResultId, setSelectedTranslateResultId] = useState<string | null>(null);
+
   // Ref for auto-scrolling to the bottom when new variant is generated
   const resultsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -200,6 +219,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
   }, [selectedLanguage]);
 
+  // Save translation language selection to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("translate-language", translateLanguage);
+    } catch {
+      // localStorage might not be available
+    }
+  }, [translateLanguage]);
+
   useEffect(() => {
     const handleReset = () => {
       onPreviewTextChange("");
@@ -207,6 +235,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       setMenuLevel("main");
       setSelectedTone(null);
       setRephraseResults([]);
+      setTranslateResults([]);
     };
     window.addEventListener("resetPreviewText", handleReset);
     return () => window.removeEventListener("resetPreviewText", handleReset);
@@ -214,14 +243,14 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Auto-scroll to bottom when new variant is generated
   useEffect(() => {
-    if (resultsContainerRef.current && rephraseResults.length > 0) {
+    if (resultsContainerRef.current && (rephraseResults.length > 0 || translateResults.length > 0)) {
       // Use smooth scrolling to the bottom
       resultsContainerRef.current.scrollTo({
         top: resultsContainerRef.current.scrollHeight,
         behavior: 'smooth'
       });
     }
-  }, [rephraseResults.length]);
+  }, [rephraseResults.length, translateResults.length]);
 
   // Определяем текст для предпросмотра: приоритет за полем ввода кроме одного случая:
   // мы вставили текст из буфера (previewText), при этом он еще не синхронизировался с основным полем
@@ -354,6 +383,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setSelectedTone(null);
     setRephraseResults([]);
     setSelectedResultId(null);
+    setTranslateResults([]);
+    setSelectedTranslateResultId(null);
   };
 
   const handleBackToTones = () => {
@@ -361,6 +392,67 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setRephraseResults([]);
     setCopiedResultId(null);
     setSelectedResultId(null);
+  };
+
+  const handleTranslate = () => {
+    const originalText = selectedText || previewText || text;
+    const langName = LANGUAGES.find(l => l.code === translateLanguage)?.label || translateLanguage;
+
+    const newResult: TranslateResult = {
+      id: `translate-result-${Date.now()}`,
+      text: `[Translated to ${langName}] This is a translation placeholder. The original message "${truncateText(originalText, 50)}" has been translated to ${langName}. This is temporary mock content that will be replaced with actual AI-generated translation.`,
+      language: translateLanguage,
+      timestamp: Date.now(),
+    };
+
+    setTranslateResults([newResult]);
+    setMenuLevel("translate-result");
+    setCopiedResultId(null);
+    setSelectedTranslateResultId(newResult.id);
+  };
+
+  const handleRetranslate = () => {
+    const originalText = selectedText || previewText || text;
+    const langName = LANGUAGES.find(l => l.code === translateLanguage)?.label || translateLanguage;
+
+    const newResult: TranslateResult = {
+      id: `translate-result-${Date.now()}`,
+      text: `[Translated to ${langName}] Retranslated placeholder text #${translateResults.length + 1}. The message "${truncateText(originalText, 50)}" has been translated to ${langName}. This is mock content.`,
+      language: translateLanguage,
+      timestamp: Date.now(),
+    };
+
+    // Add new result to the end of the array
+    setTranslateResults([...translateResults, newResult]);
+    setCopiedResultId(null);
+    // Automatically select the new variant
+    setSelectedTranslateResultId(newResult.id);
+  };
+
+  const handleApplyTranslateResult = (resultId: string) => {
+    const result = translateResults.find(r => r.id === resultId);
+    if (!result) return;
+
+    if (selectedText) {
+      // Replace selected text in the original text
+      const startIndex = text.indexOf(selectedText);
+      if (startIndex !== -1) {
+        const newText = text.substring(0, startIndex) + result.text + text.substring(startIndex + selectedText.length);
+        onTextChange(newText);
+      } else {
+        onTextChange(result.text);
+      }
+    } else {
+      // Replace all text
+      onTextChange(result.text);
+    }
+    // Reset to main menu
+    setMenuLevel("main");
+    setTranslateResults([]);
+    toast({
+      title: "Применено",
+      description: "Перевод применён",
+    });
   };
 
   const handlePromptClick = async (promptId: string) => {
@@ -378,7 +470,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         break;
 
       case "translate":
-        if (!text.trim()) {
+        if (!text.trim() && !previewText.trim()) {
           toast({
             title: "No text to translate",
             description: "Please enter some text first",
@@ -386,10 +478,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           });
           return;
         }
-        toast({
-          title: "Translate",
-          description: "AI translation will be available soon",
-        });
+        handleTranslate();
         break;
 
       case "snippets":
@@ -451,7 +540,25 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "tone-select") {
-      title = "Rephrase";
+      title = "👉 Choose a tone for your message";
+    } else if (menuLevel === "translate-result") {
+      title = "👉 Translate incoming message";
+
+      return (
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+          <div className="flex items-center gap-2 flex-1">
+            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+      );
     } else if (menuLevel === "result" && selectedTone) {
       const tone = TONE_OPTIONS.find(t => t.id === selectedTone);
       title = `${tone?.emoji || ''} Optimized for ${(tone?.label || selectedTone).toLowerCase()} tone`;
@@ -730,6 +837,119 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     </div>
   );
 
+  // Render translate result view with scrollable results
+  const renderTranslateResult = () => (
+    <div className="flex flex-col gap-3 p-1 max-h-[400px]">
+      {/* Results container with scroll */}
+      <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
+        {translateResults.map((result, index) => {
+          const isSelected = selectedTranslateResultId === result.id;
+          return (
+            <div
+              key={result.id}
+              onClick={() => setSelectedTranslateResultId(isSelected ? null : result.id)}
+              className={`
+                flex flex-col gap-2 p-4 rounded-xl cursor-pointer
+                ${isSelected
+                  ? "bg-accent/20 border border-primary/50"
+                  : "bg-accent/10 border border-accent"}
+                active:scale-[0.99] transition-all duration-75
+                touch-manipulation
+              `}
+            >
+              {/* Result text */}
+              <div className="space-y-2">
+                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                  {result.text}
+                </div>
+              </div>
+              {/* Action buttons for this result - only show when selected */}
+              {isSelected && (
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopyResult(result.id);
+                    }}
+                    className={`
+                      flex-1 flex items-center justify-center gap-2
+                      min-h-[40px] px-3
+                      rounded-lg border-2
+                      ${copiedResultId === result.id
+                        ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
+                        : "bg-secondary border-border"}
+                      active:scale-[0.98]
+                      transition-all duration-75
+                      touch-manipulation select-none
+                    `}
+                    data-testid={`button-copy-translate-${result.id}`}
+                  >
+                    {copiedResultId === result.id ? (
+                      <>
+                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        <span className="text-xs font-medium">Скопировано</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4" />
+                        <span className="text-xs font-medium">Копировать</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleApplyTranslateResult(result.id);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 border-[#0b9786] active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none bg-[#0b9786] text-[#ffffff]"
+                    data-testid={`button-apply-translate-${result.id}`}
+                  >
+                    <Check className="h-4 w-4" />
+                    <span className="text-xs font-semibold">Применить</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Control panel */}
+      <div className="flex gap-2 pt-2 border-t border-border">
+        {/* Language selector (compact) */}
+        <Select value={translateLanguage} onValueChange={setTranslateLanguage}>
+          <SelectTrigger
+            className="flex-1 min-h-[40px] rounded-lg border-2 text-sm"
+            data-testid="select-translate-language"
+          >
+            <SelectValue placeholder="Язык" />
+          </SelectTrigger>
+          <SelectContent>
+            {LANGUAGES.map((lang) => (
+              <SelectItem key={lang.code} value={lang.code} data-testid={`option-translate-lang-${lang.code}`}>
+                {lang.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Create new variant button (icon only) */}
+        <button
+          type="button"
+          onClick={handleRetranslate}
+          className="flex items-center justify-center min-h-[40px] min-w-[40px] rounded-lg border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
+          data-testid="button-retranslate"
+          aria-label="Создать новый вариант перевода"
+        >
+          <RefreshCw className="h-5 w-5" />
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex flex-col gap-2 w-full">
       {renderHeader()}
@@ -738,6 +958,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       {menuLevel === "main" && renderMainMenu()}
       {menuLevel === "tone-select" && renderToneSelect()}
       {menuLevel === "result" && renderResult()}
+      {menuLevel === "translate-result" && renderTranslateResult()}
 
       {/* Globe button at bottom left - iOS style */}
       {onSwitchKeyboard && (
