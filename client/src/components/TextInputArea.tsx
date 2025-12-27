@@ -114,6 +114,10 @@ export function TextInputArea({
 
   const handleClick = () => {
     handleSelectionChange();
+    // При клике в поле ввода сбрасываем временный предпросмотр в клавиатуре, 
+    // чтобы он синхронизировался с текущим текстом/выделением
+    const event = new CustomEvent("resetPreviewText");
+    window.dispatchEvent(event);
   };
 
   const handleMouseUp = () => {

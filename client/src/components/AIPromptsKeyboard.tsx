@@ -88,9 +88,20 @@ const PROMPT_BUTTONS: PromptButton[] = [
 export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTextChange, onTextChange, onSwitchKeyboard }: AIPromptsKeyboardProps) {
   const { toast } = useToast();
 
+  useEffect(() => {
+    const handleReset = () => {
+      onPreviewTextChange("");
+    };
+    window.addEventListener("resetPreviewText", handleReset);
+    return () => window.removeEventListener("resetPreviewText", handleReset);
+  }, [onPreviewTextChange]);
+
   // Определяем текст для предпросмотра: приоритет за полем ввода кроме одного случая:
-  // мы кликаем в поле пустое поле ввода, при этом поле предпросмотра заполнено (previewText)
-  const displayPreviewText = (previewText && !text) ? previewText : (selectedText || text);
+  // мы вставили текст из буфера (previewText), при этом он еще не синхронизировался с основным полем
+  // Или если основное поле пустое, а предпросмотр заполнен
+  const displayPreviewText = (previewText && (!text || previewText !== text && previewText !== selectedText)) 
+    ? previewText 
+    : (selectedText || text);
   const displayText = truncateText(displayPreviewText);
 
   const handlePasteFromClipboard = async () => {
