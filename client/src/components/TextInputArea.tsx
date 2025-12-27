@@ -66,6 +66,15 @@ export function TextInputArea({
     }
   };
 
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      // Optional: add visual feedback
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
   const handleClear = () => {
     onChange("");
     onCursorChange(0);
@@ -125,35 +134,29 @@ export function TextInputArea({
   };
 
   return (
-    <div className="flex-1 flex flex-col relative bg-background">
-      <div className="absolute top-3 right-3 flex gap-2 z-10">
+    <div className="flex flex-col relative bg-background rounded-2xl border-2 border-border p-5 mb-6 hover:border-primary/20 transition-all group">
+      <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">
+        Input
+      </div>
+      
+      <div className="absolute top-4 right-4 flex gap-2 z-10">
         <Button
+          variant="outline"
           size="icon"
-          variant="ghost"
-          onClick={handlePaste}
-          data-testid="button-paste"
-          aria-label="Paste from clipboard"
+          className="h-8 w-8 rounded-lg border-2 border-border hover:bg-blue-50 hover:border-blue-600 transition-all"
+          onClick={handleCopy}
+          data-testid="button-copy"
+          aria-label="Copy to clipboard"
         >
-          <Clipboard className="h-5 w-5" />
+          <Copy className="h-4 w-4" />
         </Button>
-        {value.length > 0 && (
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={handleClear}
-            data-testid="button-clear"
-            aria-label="Clear text"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        )}
       </div>
 
       <div
         ref={textareaRef}
         contentEditable
         suppressContentEditableWarning
-        className="h-[120px] max-h-[120px] min-h-[120px] px-4 py-3 pt-14 m-3 text-base leading-relaxed outline-none border-2 border-border rounded-xl overflow-y-auto touch-manipulation select-text"
+        className="text-[15px] leading-[1.6] text-foreground outline-none touch-manipulation select-text min-h-[100px] overflow-y-auto"
         style={{
           WebkitUserSelect: "text",
           userSelect: "text",
@@ -172,12 +175,6 @@ export function TextInputArea({
       >
         {value}
       </div>
-
-      {value.length > 0 && (
-        <div className="absolute bottom-2 left-4 text-xs text-muted-foreground" data-testid="text-character-count">
-          {value.length} символов
-        </div>
-      )}
     </div>
   );
 }

@@ -493,37 +493,70 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     );
   };
 
-  // Render main menu buttons
-  const renderMainMenu = () => (
-    <div className="grid grid-cols-2 gap-3 p-1">
+  const PROMPT_BUTTONS = [
+    {
+      id: "rephrase",
+      label: "Rephrase",
+      icon: <RefreshCw className="h-6 w-6 stroke-[2.5px]" />,
+      colorClass: "hover:bg-blue-50 hover:border-[#3b82f6] text-[#3b82f6]",
+    },
+    {
+      id: "translate",
+      label: "Translate",
+      icon: <Languages className="h-6 w-6 stroke-[2.5px]" />,
+      colorClass: "hover:bg-purple-50 hover:border-[#8b5cf6] text-[#8b5cf6]",
+    },
+    {
+      id: "snippets",
+      label: "Snippets",
+      icon: <FileText className="h-6 w-6 stroke-[2.5px]" />,
+      colorClass: "hover:bg-green-50 hover:border-[#10b981] text-[#10b981]",
+    },
+    {
+      id: "clipboard",
+      label: "Clipboard",
+      icon: <Clipboard className="h-6 w-6 stroke-[2.5px]" />,
+      colorClass: "hover:bg-orange-50 hover:border-[#f59e0b] text-[#f59e0b]",
+    },
+  ];
+
+  if (menuLevel !== "main") {
+    // Return existing submenu logic but wrapped in basic structure
+    return (
+      <div className="flex flex-col gap-3">
+        {renderHeader()}
+        {menuLevel === "tone-select" ? renderToneSelect() : renderResult()}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-3">
       {PROMPT_BUTTONS.map((button) => (
         <button
           key={button.id}
           type="button"
           onClick={() => handlePromptClick(button.id)}
           className={`
-            flex flex-col items-center justify-center gap-2
-            min-h-[72px] p-4
-            rounded-xl border-2
+            flex flex-col items-center justify-center p-6
+            rounded-2xl border-2 border-border bg-card
+            transition-all duration-200 hover:-translate-y-0.5
+            hover:shadow-md active:translate-y-0
             ${button.colorClass}
-            ${button.borderClass}
-            active:scale-[0.98]
-            transition-transform duration-75
-            touch-manipulation select-none
           `}
           data-testid={`button-prompt-${button.id}`}
-          aria-label={button.label}
         >
-          <div className="text-foreground/80">
+          <div className="mb-3 transition-transform duration-200 group-hover:scale-110">
             {button.icon}
           </div>
-          <span className="text-sm font-medium text-foreground">
+          <span className="text-[15px] font-semibold text-foreground">
             {button.label}
           </span>
         </button>
       ))}
     </div>
   );
+}
 
   // Render tone selection menu
   const renderToneSelect = () => (

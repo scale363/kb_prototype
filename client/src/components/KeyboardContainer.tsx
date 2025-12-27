@@ -63,28 +63,25 @@ export function KeyboardContainer({
   }, [onPreviewTextChange]);
 
   return (
-    <div className="flex flex-col bg-card border-t border-border rounded-t-2xl shadow-lg">
-      <div className="p-3 pt-4">
-        {mode === "russian" ? (
-          <RussianKeyboard
-            onKeyPress={handleKeyPress}
-            onBackspace={handleBackspace}
-            onEnter={handleEnter}
-            onSwitchKeyboard={handleSwitchKeyboard}
-          />
-        ) : (
-          <AIPromptsKeyboard
-            text={text}
-            selectedText={selectedText}
-            previewText={previewText}
-            onPreviewTextChange={onPreviewTextChange}
-            onTextChange={handleAITextChange}
-            onSwitchKeyboard={handleSwitchKeyboard}
-          />
-        )}
-      </div>
-
-      <div className="h-safe-area-inset-bottom bg-card" />
+    <div className="flex flex-col bg-card">
+      {mode === "russian" ? (
+        <RussianKeyboard
+          onKeyPress={handleKeyPress}
+          onBackspace={handleBackspace}
+          onEnter={handleEnter}
+          onSwitchKeyboard={handleSwitchKeyboard}
+        />
+      ) : (
+        <AIPromptsKeyboard
+          text={text}
+          selectedText={selectedText}
+          previewText={previewText}
+          onPreviewTextChange={onPreviewTextChange}
+          onTextChange={handleAITextChange}
+          onSwitchKeyboard={handleSwitchKeyboard}
+        />
+      )}
     </div>
   );
+}
 }
