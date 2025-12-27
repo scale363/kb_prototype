@@ -6,11 +6,48 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  app.post("/api/ai/rephrase", async (req, res) => {
+    const { text } = req.body;
+    
+    if (!text || typeof text !== "string") {
+      return res.status(400).json({ error: "Text is required" });
+    }
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+    res.json({
+      success: true,
+      original: text,
+      rephrased: null,
+      message: "AI rephrasing will be available in the next version",
+    });
+  });
+
+  app.post("/api/ai/translate", async (req, res) => {
+    const { text, targetLanguage } = req.body;
+    
+    if (!text || typeof text !== "string") {
+      return res.status(400).json({ error: "Text is required" });
+    }
+
+    res.json({
+      success: true,
+      original: text,
+      translated: null,
+      targetLanguage: targetLanguage || "en",
+      message: "AI translation will be available in the next version",
+    });
+  });
+
+  app.get("/api/snippets", async (_req, res) => {
+    res.json({
+      success: true,
+      snippets: [],
+      message: "Snippets library will be available in the next version",
+    });
+  });
+
+  app.get("/api/health", async (_req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
 
   return httpServer;
 }
