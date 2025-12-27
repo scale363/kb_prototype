@@ -545,25 +545,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             </button>
           </div>
         </div>
-
-        {/* Language selector moved here - only on main menu */}
-        <div className="flex gap-2">
-          <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-            <SelectTrigger
-              className="w-1/2 min-h-[40px] rounded-lg border-2 text-sm"
-              data-testid="select-language"
-            >
-              <SelectValue placeholder="Язык" />
-            </SelectTrigger>
-            <SelectContent>
-              {LANGUAGES.map((lang) => (
-                <SelectItem key={lang.code} value={lang.code} data-testid={`option-lang-${lang.code}`}>
-                  {lang.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
       </div>
     );
   };
@@ -715,7 +696,26 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       </div>
 
       {/* Control panel */}
-      <div className="flex gap-2 pt-2 border-t border-border justify-end">
+      <div className="flex gap-2 pt-2 border-t border-border">
+        {/* Language selector (compact) */}
+        <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+          <SelectTrigger
+            className="w-1/2 min-h-[40px] rounded-lg border-2 text-sm"
+            data-testid="select-language"
+          >
+            <SelectValue placeholder="Язык" />
+          </SelectTrigger>
+          <SelectContent>
+            {LANGUAGES.map((lang) => (
+              <SelectItem key={lang.code} value={lang.code} data-testid={`option-lang-${lang.code}`}>
+                {lang.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <div className="flex-1" />
+
         {/* Create new variant button (icon only) */}
         <button
           type="button"
