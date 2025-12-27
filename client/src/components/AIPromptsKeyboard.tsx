@@ -132,34 +132,34 @@ const PROMPT_BUTTONS: PromptButton[] = [
   {
     id: "rephrase",
     label: "Rephrase",
-    icon: <RefreshCw className="h-6 w-6 text-blue-500" />,
+    icon: <RefreshCw className="h-6 w-6" />,
     description: "Rewrite text differently",
-    colorClass: "bg-white",
-    borderClass: "border-gray-100",
+    colorClass: "bg-blue-50 dark:bg-blue-950/30",
+    borderClass: "border-blue-200 dark:border-blue-800",
   },
   {
     id: "translate",
     label: "Translate",
-    icon: <Languages className="h-6 w-6 text-purple-500" />,
+    icon: <Languages className="h-6 w-6" />,
     description: "Translate to another language",
-    colorClass: "bg-white",
-    borderClass: "border-gray-100",
+    colorClass: "bg-purple-50 dark:bg-purple-950/30",
+    borderClass: "border-purple-200 dark:border-purple-800",
   },
   {
     id: "snippets",
     label: "Snippets",
-    icon: <FileText className="h-6 w-6 text-green-500" />,
+    icon: <FileText className="h-6 w-6" />,
     description: "Insert saved text blocks",
-    colorClass: "bg-white",
-    borderClass: "border-gray-100",
+    colorClass: "bg-green-50 dark:bg-green-950/30",
+    borderClass: "border-green-200 dark:border-green-800",
   },
   {
     id: "clipboard",
     label: "Clipboard",
-    icon: <Clipboard className="h-6 w-6 text-orange-500" />,
+    icon: <Clipboard className="h-6 w-6" />,
     description: "Paste and format clipboard",
-    colorClass: "bg-white",
-    borderClass: "border-gray-100",
+    colorClass: "bg-orange-50 dark:bg-orange-950/30",
+    borderClass: "border-orange-200 dark:border-orange-800",
   },
 ];
 
@@ -411,20 +411,18 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     let onClose = handleBackToMain;
 
     if (menuLevel === "main") {
-      // On main menu, show title and X button
+      // On main menu, show only X button that switches keyboard
       return (
-        <div className="px-2 py-4 flex items-center justify-between min-h-[56px]">
-          <div className="text-[10px] font-extrabold tracking-[0.2em] text-gray-500 uppercase px-1">
-            TEXT PROCESSING
-          </div>
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+          <div className="flex-1"></div>
           {onSwitchKeyboard && (
             <button
               type="button"
               onClick={onSwitchKeyboard}
-              className="p-1 rounded-md hover:bg-gray-100 active:scale-95 transition-all duration-75 touch-manipulation"
+              className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
               aria-label="Switch keyboard"
             >
-              <X className="h-6 w-6 text-gray-400" />
+              <X className="h-5 w-5 text-muted-foreground" />
             </button>
           )}
         </div>
@@ -464,30 +462,32 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     return (
       <div className="px-1">
-        <div className="flex flex-col gap-2 p-5 bg-white border border-gray-100 rounded-2xl relative shadow-sm">
-          <div className="flex items-center justify-between mb-1">
-            <div className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-              INPUT
+        <div className="flex flex-col gap-2 p-3 pb-2.5 bg-accent/30 border-2 border-accent rounded-lg relative">
+          {hasContent ? (
+            <>
+              <div className="text-xs font-medium text-muted-foreground pr-16">
+                {selectedText ? "Выделенный текст:" : previewText ? "Предпросмотр:" : "Текст для обработки:"}
+              </div>
+              <div className="text-sm text-foreground font-medium leading-relaxed pr-2">
+                {displayText}
+              </div>
+            </>
+          ) : (
+            <div className="text-xs font-medium text-muted-foreground pr-16">
+              Введите или вставьте текст для работы
             </div>
+          )}
+          <div className="absolute top-2 right-2 flex gap-1">
             <button
               type="button"
               onClick={handlePasteFromClipboard}
-              className="p-1.5 rounded-lg hover:bg-gray-50 active:scale-95 transition-all duration-75 touch-manipulation"
+              className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
               data-testid="button-paste-empty"
               aria-label="Paste from clipboard"
             >
-              <Clipboard className="h-5 w-5 text-gray-400" />
+              <Clipboard className="h-4 w-4 text-muted-foreground" />
             </button>
           </div>
-          {hasContent ? (
-            <div className="text-base text-gray-800 font-medium leading-relaxed pr-2">
-              {displayText}
-            </div>
-          ) : (
-            <div className="text-sm font-medium text-gray-400">
-              Enter or paste text to work with
-            </div>
-          )}
         </div>
       </div>
     );
@@ -502,22 +502,22 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           type="button"
           onClick={() => handlePromptClick(button.id)}
           className={`
-            flex flex-col items-center justify-center gap-3
-            min-h-[140px] p-6
-            rounded-2xl border border-gray-100
+            flex flex-col items-center justify-center gap-2
+            min-h-[72px] p-4
+            rounded-xl border-2
             ${button.colorClass}
-            shadow-sm hover:shadow-md
+            ${button.borderClass}
             active:scale-[0.98]
-            transition-all duration-200
+            transition-transform duration-75
             touch-manipulation select-none
           `}
           data-testid={`button-prompt-${button.id}`}
           aria-label={button.label}
         >
-          <div className="transform transition-transform group-hover:scale-110">
+          <div className="text-foreground/80">
             {button.icon}
           </div>
-          <span className="text-base font-bold text-gray-900">
+          <span className="text-sm font-medium text-foreground">
             {button.label}
           </span>
         </button>
