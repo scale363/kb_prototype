@@ -1,16 +1,38 @@
 # Design Guidelines: AI-Powered Keyboard Web Application
 
-## Design Approach: Modern Keyboard Interface System
+## Design Approach: Modern Light Teal Theme
 
-**Selected Approach**: Hybrid system combining Material Design principles with keyboard app best practices (Gboard, SwiftKey, Grammarly)
+**Selected Approach**: Clean, modern design with teal (#14B8A6) as the primary accent color, emphasizing lightness and clarity.
 
-**Rationale**: This is a utility-focused productivity tool where usability, touch accuracy, and clarity are paramount. The design should feel familiar to users of modern mobile keyboards while introducing AI-powered functionality seamlessly.
+**Rationale**: This is a utility-focused productivity tool where usability, touch accuracy, and clarity are paramount. The fresh teal accent provides energy while maintaining a professional, clean aesthetic.
 
 **Core Principles**:
 - Touch-first optimization with generous tap targets
 - Instant visual feedback for all interactions
 - Clear mode distinction between Russian layout and AI prompts
-- Professional, distraction-free interface
+- Light, airy aesthetic with teal accent color
+- Minimal shadows, white backgrounds for cleanliness
+
+---
+
+## Color Palette
+
+**Primary Accent**: Teal (#14B8A6 / HSL: 173 80% 40%)
+- Used for primary buttons, active states, links
+- Light mode variant: `--primary: 173 80% 40%`
+- Dark mode variant: `--primary: 173 80% 46%`
+
+**Backgrounds**:
+- Light mode: Pure white (`#FFFFFF`) for cards, sidebar, popovers
+- Dark mode: Deep blue-gray (`200 15% 8%`) for depth
+
+**Text Colors**:
+- Primary text: Soft dark (`200 10% 15%`) in light, (`180 10% 95%`) in dark
+- Secondary/muted: (`200 5% 45%`) in light, (`180 5% 60%`) in dark
+
+**Borders**: Very subtle, with slight teal undertones
+- Light: `180 10% 92%`
+- Dark: `200 10% 18%`
 
 ---
 
@@ -75,15 +97,15 @@
 **Visual Treatment**:
 - Larger than keyboard keys: min-height 56px
 - Rounded: `rounded-xl`
-- Each button distinct color accent:
-  - Rephrase: Blue accent (`bg-blue-50`, `border-blue-200`)
-  - Translate: Purple accent (`bg-purple-50`, `border-purple-200`)
-  - Snippets: Green accent (`bg-green-50`, `border-green-200`)
-  - Clipboard: Orange accent (`bg-orange-50`, `border-orange-200`)
-- Border: 2px solid
+- Each button uses teal-based accent colors:
+  - Rephrase: Teal accent (`bg-teal-50`, `border-teal-200`)
+  - Translate: Cyan accent (`bg-cyan-50`, `border-cyan-200`)
+  - Snippets: Emerald accent (`bg-emerald-50`, `border-emerald-200`)
+  - Clipboard: Sky accent (`bg-sky-50`, `border-sky-200`)
+- Border: 1px solid for lighter feel
 - Icon + label layout (vertical stack)
-- Icons: 24px from Heroicons
-- Subtle hover: Lighten background by 5%
+- Icons: 24px from Lucide
+- Use built-in hover-elevate for interactions
 
 ### D. Mode Toggle Switch
 **Position**: Between input area and keyboard
