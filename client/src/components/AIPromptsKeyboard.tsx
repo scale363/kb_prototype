@@ -276,7 +276,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setRephraseResults([newResult]);
     setMenuLevel("result");
     setCopiedResultId(null);
-    setSelectedResultId(null);
+    setSelectedResultId(newResult.id);
   };
 
   const handleCopyResult = async (resultId: string) => {
@@ -454,7 +454,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       title = "Rephrase";
     } else if (menuLevel === "result" && selectedTone) {
       const tone = TONE_OPTIONS.find(t => t.id === selectedTone);
-      title = `Optimized for ${(tone?.label || selectedTone).toLowerCase()} tone`;
+      title = `${tone?.emoji || ''} Optimized for ${(tone?.label || selectedTone).toLowerCase()} tone`;
       const tooltip = tone?.tooltip;
 
       return (
@@ -724,7 +724,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           data-testid="button-reprocess"
           aria-label="Создать новый вариант"
         >
-          <RotateCcw className="h-5 w-5" />
+          <RefreshCw className="h-5 w-5" />
         </button>
       </div>
     </div>
