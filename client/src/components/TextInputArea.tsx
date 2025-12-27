@@ -153,11 +153,11 @@ export function TextInputArea({
         ref={textareaRef}
         contentEditable
         suppressContentEditableWarning
-        className="h-[120px] max-h-[120px] min-h-[120px] px-4 py-3 pt-14 m-3 text-base leading-relaxed outline-none border-2 border-border rounded-xl overflow-y-auto touch-manipulation select-text"
+        className="h-full px-6 py-4 pt-20 text-lg leading-relaxed outline-none border-none overflow-y-auto touch-manipulation select-text text-gray-800"
         style={{
           WebkitUserSelect: "text",
           userSelect: "text",
-          caretColor: "hsl(var(--primary))",
+          caretColor: "#3b82f6",
           resize: "none"
         }}
         onInput={handleInput}
