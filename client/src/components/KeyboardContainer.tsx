@@ -52,8 +52,15 @@ export function KeyboardContainer({
   }, [onTextChange, onCursorChange]);
 
   const handleSwitchKeyboard = useCallback(() => {
-    setMode(prev => prev === "russian" ? "prompts" : "russian");
-  }, []);
+    setMode(prev => {
+      const newMode = prev === "russian" ? "prompts" : "russian";
+      // При переключении на промты сбрасываем предпросмотр, чтобы он синхронизировался
+      if (newMode === "prompts") {
+        onPreviewTextChange("");
+      }
+      return newMode;
+    });
+  }, [onPreviewTextChange]);
 
   return (
     <div className="flex flex-col bg-card border-t border-border rounded-t-2xl shadow-lg">
