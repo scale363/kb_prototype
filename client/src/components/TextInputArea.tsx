@@ -126,9 +126,6 @@ export function TextInputArea({
 
   return (
     <div className="flex-1 flex flex-col relative bg-background">
-      <div className="px-4 pt-4 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-        Input
-      </div>
       <div className="absolute top-3 right-3 flex gap-2 z-10">
         <Button
           size="icon"
