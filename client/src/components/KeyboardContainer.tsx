@@ -54,7 +54,6 @@ export function KeyboardContainer({
   const handleSwitchKeyboard = useCallback(() => {
     setMode(prev => {
       const newMode = prev === "russian" ? "prompts" : "russian";
-      // При переключении на промты сбрасываем предпросмотр, чтобы он синхронизировался
       if (newMode === "prompts") {
         onPreviewTextChange("");
       }
