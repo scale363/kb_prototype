@@ -636,7 +636,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                   {result.text}
                 </div>
               </div>
-
               {/* Action buttons for this result - only show when selected */}
               {isSelected && (
                 <div className="flex gap-2 pt-2">
@@ -678,7 +677,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                       e.stopPropagation();
                       handleApplyResult(result.id);
                     }}
-                    className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
+                    className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none bg-[#0b9786] text-[#ffffff]"
                     data-testid={`button-apply-${result.id}`}
                   >
                     <Check className="h-4 w-4" />
