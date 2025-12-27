@@ -1,4 +1,5 @@
 import { RefreshCw, Languages, FileText, Clipboard, Globe } from "lucide-react";
+import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 // Умная функция для усечения текста, которая не режет слова и показывает начало и конец
