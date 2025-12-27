@@ -6,6 +6,7 @@ export default function Home() {
   const [text, setText] = useState("");
   const [cursorPosition, setCursorPosition] = useState(0);
   const [selectedText, setSelectedText] = useState("");
+  const [previewText, setPreviewText] = useState("");
 
   useEffect(() => {
     const preventZoom = (e: TouchEvent) => {
@@ -58,6 +59,8 @@ export default function Home() {
           cursorPosition={cursorPosition}
           onCursorChange={setCursorPosition}
           selectedText={selectedText}
+          previewText={previewText}
+          onPreviewTextChange={setPreviewText}
         />
       </div>
     </div>
