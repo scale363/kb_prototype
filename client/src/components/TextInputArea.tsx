@@ -67,8 +67,7 @@ export function TextInputArea({
   };
 
   const handleFocus = (e: React.FocusEvent<HTMLDivElement>) => {
-    e.target.blur();
-    e.target.focus();
+    // Prevent focus recursion by avoiding manual focus triggering if already focused
   };
 
   const handleClick = () => {
