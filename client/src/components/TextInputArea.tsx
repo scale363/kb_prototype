@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import { Clipboard, X } from "lucide-react";
+import { Clipboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TextInputAreaProps {
@@ -64,11 +64,6 @@ export function TextInputArea({
     } catch (err) {
       console.error("Failed to read clipboard:", err);
     }
-  };
-
-  const handleClear = () => {
-    onChange("");
-    onCursorChange(0);
   };
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
@@ -136,17 +131,6 @@ export function TextInputArea({
         >
           <Clipboard className="h-5 w-5" />
         </Button>
-        {value.length > 0 && (
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={handleClear}
-            data-testid="button-clear"
-            aria-label="Clear text"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        )}
       </div>
 
       <div
