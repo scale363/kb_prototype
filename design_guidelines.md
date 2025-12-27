@@ -17,10 +17,10 @@
 
 ## Color Palette
 
-**Primary Accent**: Teal (#14B8A6 / HSL: 173 80% 40%)
+**Primary Accent**: Teal (HSL: 173 85% 32%)
 - Used for primary buttons, active states, links
-- Light mode variant: `--primary: 173 80% 40%`
-- Dark mode variant: `--primary: 173 80% 46%`
+- Light mode variant: `--primary: 173 85% 32%` (darker for WCAG AA contrast with white text)
+- Dark mode variant: `--primary: 173 85% 38%`
 
 **Backgrounds**:
 - Light mode: Pure white (`#FFFFFF`) for cards, sidebar, popovers
