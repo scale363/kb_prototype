@@ -179,6 +179,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   const [rephraseResults, setRephraseResults] = useState<RephraseResult[]>([]);
   const [copiedResultId, setCopiedResultId] = useState<string | null>(null);
+  const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
 
   // Save language selection to localStorage
   useEffect(() => {
@@ -254,6 +255,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setRephraseResults([newResult]);
     setMenuLevel("result");
     setCopiedResultId(null);
+    setSelectedResultId(null);
   };
 
   const handleCopyResult = async (resultId: string) => {
@@ -322,18 +324,21 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     // Add new result to the end of the array
     setRephraseResults([...rephraseResults, newResult]);
     setCopiedResultId(null);
+    setSelectedResultId(null);
   };
 
   const handleBackToMain = () => {
     setMenuLevel("main");
     setSelectedTone(null);
     setRephraseResults([]);
+    setSelectedResultId(null);
   };
 
   const handleBackToTones = () => {
     setMenuLevel("tone-select");
     setRephraseResults([]);
     setCopiedResultId(null);
+    setSelectedResultId(null);
   };
 
   const handlePromptClick = async (promptId: string) => {
@@ -399,38 +404,33 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
   };
 
-  // Render header with title and close button for all levels
+  // Render header with title and close button for non-main levels
   const renderHeader = () => {
     let title = "";
-    let subtitle = "";
     let onClose = handleBackToMain;
 
+    // Don't show header on main menu level
     if (menuLevel === "main") {
-      // On main level, close button switches keyboard
-      if (!onSwitchKeyboard) return null;
-      onClose = onSwitchKeyboard;
+      return null;
     } else if (menuLevel === "tone-select") {
       title = "Rephrase";
     } else if (menuLevel === "result" && selectedTone) {
       const tone = TONE_OPTIONS.find(t => t.id === selectedTone);
       title = tone?.label || selectedTone;
-      subtitle = tone?.tooltip || "";
+      // Don't show subtitle/tooltip on result level
     }
 
     return (
       <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
         <div className="flex-1">
           {title && <div className="text-sm font-semibold text-foreground">{title}</div>}
-          {subtitle && (
-            <div className="text-xs text-muted-foreground mt-0.5">{subtitle}</div>
-          )}
         </div>
         {onSwitchKeyboard && (
           <button
             type="button"
             onClick={onClose}
             className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
-            aria-label={menuLevel === "main" ? "Switch keyboard" : "Close and return to main menu"}
+            aria-label="Close and return to main menu"
           >
             <X className="h-5 w-5 text-muted-foreground" />
           </button>
@@ -533,11 +533,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                 {tone.label}
               </span>
             </button>
-            <Tooltip>
+            <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
                 <button
                   type="button"
-                  className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
+                  className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation z-10"
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
@@ -546,7 +546,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                   <HelpCircle className="h-4 w-4 text-muted-foreground" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[250px]">
+              <TooltipContent side="top" className="max-w-[250px] z-50">
                 <p className="text-xs">{tone.tooltip}</p>
               </TooltipContent>
             </Tooltip>
@@ -561,66 +561,85 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     <div className="flex flex-col gap-3 p-1 max-h-[400px]">
       {/* Results container with scroll */}
       <div className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
-        {rephraseResults.map((result, index) => (
-          <div
-            key={result.id}
-            className="flex flex-col gap-2 p-4 bg-accent/30 border-2 border-accent rounded-xl"
-          >
-            {/* Result number and text */}
-            <div className="space-y-2">
-              {rephraseResults.length > 1 && (
-                <div className="text-xs font-medium text-muted-foreground">
-                  Вариант {index + 1}
+        {rephraseResults.map((result, index) => {
+          const isSelected = selectedResultId === result.id;
+          return (
+            <div
+              key={result.id}
+              onClick={() => setSelectedResultId(isSelected ? null : result.id)}
+              className={`
+                flex flex-col gap-2 p-4 rounded-xl cursor-pointer
+                ${isSelected
+                  ? "bg-accent/50 border-2 border-primary"
+                  : "bg-accent/30 border-2 border-accent"}
+                active:scale-[0.99] transition-all duration-75
+                touch-manipulation
+              `}
+            >
+              {/* Result number and text */}
+              <div className="space-y-2">
+                {rephraseResults.length > 1 && (
+                  <div className="text-xs font-medium text-muted-foreground">
+                    Вариант {index + 1}
+                  </div>
+                )}
+                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                  {result.text}
+                </div>
+              </div>
+
+              {/* Action buttons for this result - only show when selected */}
+              {isSelected && (
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopyResult(result.id);
+                    }}
+                    className={`
+                      flex-1 flex items-center justify-center gap-2
+                      min-h-[40px] px-3
+                      rounded-lg border-2
+                      ${copiedResultId === result.id
+                        ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
+                        : "bg-secondary border-border"}
+                      active:scale-[0.98]
+                      transition-all duration-75
+                      touch-manipulation select-none
+                    `}
+                    data-testid={`button-copy-${result.id}`}
+                  >
+                    {copiedResultId === result.id ? (
+                      <>
+                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        <span className="text-xs font-medium">Скопировано</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4" />
+                        <span className="text-xs font-medium">Копировать</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleApplyResult(result.id);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
+                    data-testid={`button-apply-${result.id}`}
+                  >
+                    <Check className="h-4 w-4" />
+                    <span className="text-xs font-medium">Применить</span>
+                  </button>
                 </div>
               )}
-              <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                {result.text}
-              </div>
             </div>
-
-            {/* Action buttons for this result */}
-            <div className="flex gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => handleCopyResult(result.id)}
-                className={`
-                  flex-1 flex items-center justify-center gap-2
-                  min-h-[40px] px-3
-                  rounded-lg border-2
-                  ${copiedResultId === result.id
-                    ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
-                    : "bg-secondary border-border"}
-                  active:scale-[0.98]
-                  transition-all duration-75
-                  touch-manipulation select-none
-                `}
-                data-testid={`button-copy-${result.id}`}
-              >
-                {copiedResultId === result.id ? (
-                  <>
-                    <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    <span className="text-xs font-medium">Скопировано</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4" />
-                    <span className="text-xs font-medium">Копировать</span>
-                  </>
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleApplyResult(result.id)}
-                className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
-                data-testid={`button-apply-${result.id}`}
-              >
-                <Check className="h-4 w-4" />
-                <span className="text-xs font-medium">Применить</span>
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Control panel */}
@@ -650,7 +669,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           data-testid="button-reprocess"
           aria-label="Создать новый вариант"
         >
-          <Plus className="h-5 w-5" />
+          <RotateCcw className="h-5 w-5" />
         </button>
       </div>
     </div>
@@ -664,6 +683,21 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       {menuLevel === "main" && renderMainMenu()}
       {menuLevel === "tone-select" && renderToneSelect()}
       {menuLevel === "result" && renderResult()}
+
+      {/* Globe button at bottom left - iOS style */}
+      {onSwitchKeyboard && (
+        <div className="px-1 py-2">
+          <button
+            type="button"
+            onClick={onSwitchKeyboard}
+            className="flex items-center justify-center min-h-[44px] min-w-[44px] px-4 bg-muted rounded-lg touch-manipulation active:scale-[0.97] transition-transform duration-75"
+            data-testid="key-switch-keyboard-ai"
+            aria-label="Switch keyboard"
+          >
+            <Globe className="h-5 w-5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
