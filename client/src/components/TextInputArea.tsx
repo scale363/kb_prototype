@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import { Clipboard, X } from "lucide-react";
+import { Clipboard, X, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TextInputAreaProps {
