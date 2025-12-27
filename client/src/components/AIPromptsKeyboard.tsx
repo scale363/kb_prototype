@@ -520,40 +520,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     },
   ];
 
-  if (menuLevel !== "main") {
-    // Return existing submenu logic but wrapped in basic structure
-    return (
-      <div className="flex flex-col gap-3">
-        {renderHeader()}
-        {menuLevel === "tone-select" ? renderToneSelect() : renderResult()}
-      </div>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-2 gap-3">
-      {PROMPT_BUTTONS.map((button) => (
-        <button
-          key={button.id}
-          type="button"
-          onClick={() => handlePromptClick(button.id)}
-          className={`
-            flex flex-col items-center justify-center p-6
-            rounded-2xl border-2 border-border bg-card
-            transition-all duration-200 hover:-translate-y-0.5
-            hover:shadow-md active:translate-y-0
-            ${button.colorClass}
-          `}
-          data-testid={`button-prompt-${button.id}`}
-        >
-          <div className="mb-3 transition-transform duration-200 group-hover:scale-110">
-            {button.icon}
-          </div>
-          <span className="text-[15px] font-semibold text-foreground">
-            {button.label}
-          </span>
-        </button>
-      ))}
+    <div className="flex flex-col gap-2 w-full">
+      {renderHeader()}
+      {renderPreviewField()}
+      {renderMainMenu()}
     </div>
   );
 }

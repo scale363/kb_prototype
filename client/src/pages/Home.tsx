@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { TextInputArea } from "@/components/TextInputArea";
 import { KeyboardContainer } from "@/components/KeyboardContainer";
+import { Button } from "@/components/ui/button";
+import { X, Globe } from "lucide-react";
 
 export default function Home() {
   const [text, setText] = useState("");
