@@ -1,5 +1,5 @@
 import { RefreshCw, Languages, FileText, Clipboard, Globe, ArrowLeft, Copy, Check, RotateCcw, ChevronRight, X, HelpCircle, Plus } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Tooltip,
@@ -188,9 +188,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
   const [openTooltipId, setOpenTooltipId] = useState<string | null>(null);
 
-  // Ref for auto-scrolling to the bottom when new variant is generated
-  const resultsContainerRef = useRef<HTMLDivElement>(null);
-
   // Save language selection to localStorage
   useEffect(() => {
     try {
@@ -211,17 +208,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     window.addEventListener("resetPreviewText", handleReset);
     return () => window.removeEventListener("resetPreviewText", handleReset);
   }, [onPreviewTextChange]);
-
-  // Auto-scroll to bottom when new variant is generated
-  useEffect(() => {
-    if (resultsContainerRef.current && rephraseResults.length > 0) {
-      // Use smooth scrolling to the bottom
-      resultsContainerRef.current.scrollTo({
-        top: resultsContainerRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  }, [rephraseResults.length]);
 
   // Определяем текст для предпросмотра: приоритет за полем ввода кроме одного случая:
   // мы вставили текст из буфера (previewText), при этом он еще не синхронизировался с основным полем
@@ -345,8 +331,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     // Add new result to the end of the array
     setRephraseResults([...rephraseResults, newResult]);
     setCopiedResultId(null);
-    // Automatically select the new variant
-    setSelectedResultId(newResult.id);
+    setSelectedResultId(null);
   };
 
   const handleBackToMain = () => {
@@ -454,7 +439,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       title = "Rephrase";
     } else if (menuLevel === "result" && selectedTone) {
       const tone = TONE_OPTIONS.find(t => t.id === selectedTone);
-      title = `Optimized for ${(tone?.label || selectedTone).toLowerCase()} tone`;
+      title = tone?.label || selectedTone;
       const tooltip = tone?.tooltip;
 
       return (
@@ -519,10 +504,12 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render preview field (only on main menu)
   const renderPreviewField = () => {
+    if (menuLevel !== "main") return null;
+
     const hasContent = displayPreviewText.trim();
 
     return (
-      <div className="px-1 flex flex-col gap-2">
+      <div className="px-1">
         <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
           {hasContent ? (
             <div className="text-sm text-foreground font-medium leading-relaxed pr-8">
@@ -619,7 +606,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const renderResult = () => (
     <div className="flex flex-col gap-3 p-1 max-h-[400px]">
       {/* Results container with scroll */}
-      <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
+      <div className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
         {rephraseResults.map((result, index) => {
           const isSelected = selectedResultId === result.id;
           return (
@@ -629,14 +616,19 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               className={`
                 flex flex-col gap-2 p-4 rounded-xl cursor-pointer
                 ${isSelected
-                  ? "bg-accent/20 border border-primary/50"
-                  : "bg-accent/10 border border-accent"}
+                  ? "bg-accent/50 border-2 border-primary"
+                  : "bg-accent/30 border-2 border-accent"}
                 active:scale-[0.99] transition-all duration-75
                 touch-manipulation
               `}
             >
-              {/* Result text */}
+              {/* Result number and text */}
               <div className="space-y-2">
+                {rephraseResults.length > 1 && (
+                  <div className="text-xs font-medium text-muted-foreground">
+                    Вариант {index + 1}
+                  </div>
+                )}
                 <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                   {result.text}
                 </div>
@@ -700,7 +692,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         {/* Language selector (compact) */}
         <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
           <SelectTrigger
-            className="w-1/2 min-h-[40px] rounded-lg border-2 text-sm"
+            className="flex-1 min-h-[40px] rounded-lg border-2 text-sm"
             data-testid="select-language"
           >
             <SelectValue placeholder="Язык" />
@@ -714,15 +706,13 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           </SelectContent>
         </Select>
 
-        <div className="flex-1" />
-
         {/* Create new variant button (icon only) */}
         <button
           type="button"
           onClick={handleReprocess}
           className="flex items-center justify-center min-h-[40px] min-w-[40px] rounded-lg border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
           data-testid="button-reprocess"
-          aria-label="Создать новый variant"
+          aria-label="Создать новый вариант"
         >
           <RotateCcw className="h-5 w-5" />
         </button>
@@ -733,7 +723,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   return (
     <div className="flex flex-col gap-2 w-full">
       {renderHeader()}
-      {menuLevel === "main" && renderPreviewField()}
+      {renderPreviewField()}
 
       {menuLevel === "main" && renderMainMenu()}
       {menuLevel === "tone-select" && renderToneSelect()}
