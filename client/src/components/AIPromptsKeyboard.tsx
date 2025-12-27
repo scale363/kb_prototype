@@ -440,7 +440,47 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     } else if (menuLevel === "result" && selectedTone) {
       const tone = TONE_OPTIONS.find(t => t.id === selectedTone);
       title = tone?.label || selectedTone;
-      // Don't show subtitle/tooltip on result level
+      const tooltip = tone?.tooltip;
+
+      return (
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+          <div className="flex items-center gap-2 flex-1">
+            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+            {tooltip && (
+              <Tooltip
+                delayDuration={0}
+                open={openTooltipId === "header-info"}
+                onOpenChange={(open) => setOpenTooltipId(open ? "header-info" : null)}
+              >
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenTooltipId(openTooltipId === "header-info" ? null : "header-info");
+                    }}
+                    aria-label={`Info about ${title}`}
+                  >
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[250px] z-50">
+                  <p className="text-xs">{tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+      );
     }
 
     return (
@@ -542,7 +582,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               onClick={() => handleToneSelect(tone.id)}
               className={`
                 w-full flex items-center justify-center gap-2
-                min-h-[56px] p-3 pr-9
+                min-h-[56px] p-3
                 rounded-xl border
                 ${tone.colorClass}
                 ${tone.borderClass}
@@ -559,28 +599,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                 {tone.label}
               </span>
             </button>
-            <Tooltip
-              delayDuration={0}
-              open={openTooltipId === tone.id}
-              onOpenChange={(open) => setOpenTooltipId(open ? tone.id : null)}
-            >
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation z-10"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOpenTooltipId(openTooltipId === tone.id ? null : tone.id);
-                  }}
-                  aria-label={`Info about ${tone.label}`}
-                >
-                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[250px] z-50">
-                <p className="text-xs">{tone.tooltip}</p>
-              </TooltipContent>
-            </Tooltip>
           </div>
         ))}
       </div>
