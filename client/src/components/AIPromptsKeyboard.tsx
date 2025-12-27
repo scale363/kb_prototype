@@ -1,4 +1,4 @@
-import { RefreshCw, Languages, FileText, Clipboard, Globe, ArrowLeft, Copy, Check, RotateCcw } from "lucide-react";
+import { RefreshCw, Languages, FileText, Clipboard, Globe, ArrowLeft, Copy, Check, RotateCcw, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -120,6 +120,14 @@ const LANGUAGES = [
 
 type MenuLevel = "main" | "tone-select" | "result";
 
+interface RephraseResult {
+  id: string;
+  text: string;
+  tone: string;
+  language: string;
+  timestamp: number;
+}
+
 const PROMPT_BUTTONS: PromptButton[] = [
   {
     id: "rephrase",
@@ -159,9 +167,27 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const { toast } = useToast();
   const [menuLevel, setMenuLevel] = useState<MenuLevel>("main");
   const [selectedTone, setSelectedTone] = useState<string | null>(null);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>("en");
-  const [rephraseResult, setRephraseResult] = useState<string>("");
-  const [copied, setCopied] = useState(false);
+
+  // Load saved language from localStorage or default to "en"
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(() => {
+    try {
+      return localStorage.getItem("rephrase-language") || "en";
+    } catch {
+      return "en";
+    }
+  });
+
+  const [rephraseResults, setRephraseResults] = useState<RephraseResult[]>([]);
+  const [copiedResultId, setCopiedResultId] = useState<string | null>(null);
+
+  // Save language selection to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("rephrase-language", selectedLanguage);
+    } catch {
+      // localStorage might not be available
+    }
+  }, [selectedLanguage]);
 
   useEffect(() => {
     const handleReset = () => {
@@ -169,7 +195,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       // Reset menu state when preview is reset
       setMenuLevel("main");
       setSelectedTone(null);
-      setRephraseResult("");
+      setRephraseResults([]);
     };
     window.addEventListener("resetPreviewText", handleReset);
     return () => window.removeEventListener("resetPreviewText", handleReset);
@@ -212,23 +238,36 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   const handleToneSelect = (toneId: string) => {
     setSelectedTone(toneId);
-    // Generate placeholder result
+    // Generate first result
     const toneName = TONE_OPTIONS.find(t => t.id === toneId)?.label || toneId;
+    const langName = LANGUAGES.find(l => l.code === selectedLanguage)?.label || selectedLanguage;
     const originalText = selectedText || previewText || text;
-    setRephraseResult(`[${toneName} version] This is a rephrased placeholder text. The original message "${truncateText(originalText, 50)}" has been rewritten in a ${toneName.toLowerCase()} tone. This is temporary mock content that will be replaced with actual AI-generated text.`);
+
+    const newResult: RephraseResult = {
+      id: `result-${Date.now()}`,
+      text: `[${toneName} - ${langName}] This is a rephrased placeholder text. The original message "${truncateText(originalText, 50)}" has been rewritten in a ${toneName.toLowerCase()} tone for ${langName} audience. This is temporary mock content that will be replaced with actual AI-generated text.`,
+      tone: toneId,
+      language: selectedLanguage,
+      timestamp: Date.now(),
+    };
+
+    setRephraseResults([newResult]);
     setMenuLevel("result");
-    setCopied(false);
+    setCopiedResultId(null);
   };
 
-  const handleCopyResult = async () => {
+  const handleCopyResult = async (resultId: string) => {
+    const result = rephraseResults.find(r => r.id === resultId);
+    if (!result) return;
+
     try {
-      await navigator.clipboard.writeText(rephraseResult);
-      setCopied(true);
+      await navigator.clipboard.writeText(result.text);
+      setCopiedResultId(resultId);
       toast({
         title: "Скопировано",
         description: "Текст скопирован в буфер обмена",
       });
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopiedResultId(null), 2000);
     } catch {
       toast({
         title: "Ошибка копирования",
@@ -238,24 +277,27 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
   };
 
-  const handleApplyResult = () => {
+  const handleApplyResult = (resultId: string) => {
+    const result = rephraseResults.find(r => r.id === resultId);
+    if (!result) return;
+
     if (selectedText) {
       // Replace selected text in the original text
       const startIndex = text.indexOf(selectedText);
       if (startIndex !== -1) {
-        const newText = text.substring(0, startIndex) + rephraseResult + text.substring(startIndex + selectedText.length);
+        const newText = text.substring(0, startIndex) + result.text + text.substring(startIndex + selectedText.length);
         onTextChange(newText);
       } else {
-        onTextChange(rephraseResult);
+        onTextChange(result.text);
       }
     } else {
       // Replace all text
-      onTextChange(rephraseResult);
+      onTextChange(result.text);
     }
     // Reset to main menu
     setMenuLevel("main");
     setSelectedTone(null);
-    setRephraseResult("");
+    setRephraseResults([]);
     toast({
       title: "Применено",
       description: "Текст заменён",
@@ -263,25 +305,35 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   };
 
   const handleReprocess = () => {
-    if (selectedTone) {
-      const toneName = TONE_OPTIONS.find(t => t.id === selectedTone)?.label || selectedTone;
-      const langName = LANGUAGES.find(l => l.code === selectedLanguage)?.label || selectedLanguage;
-      const originalText = selectedText || previewText || text;
-      setRephraseResult(`[${toneName} - ${langName}] Reprocessed placeholder text. The message "${truncateText(originalText, 50)}" has been rewritten in ${toneName.toLowerCase()} tone for ${langName} audience. This is mock content.`);
-      setCopied(false);
-    }
+    if (!selectedTone) return;
+
+    const toneName = TONE_OPTIONS.find(t => t.id === selectedTone)?.label || selectedTone;
+    const langName = LANGUAGES.find(l => l.code === selectedLanguage)?.label || selectedLanguage;
+    const originalText = selectedText || previewText || text;
+
+    const newResult: RephraseResult = {
+      id: `result-${Date.now()}`,
+      text: `[${toneName} - ${langName}] Reprocessed placeholder text #${rephraseResults.length + 1}. The message "${truncateText(originalText, 50)}" has been rewritten in ${toneName.toLowerCase()} tone for ${langName} audience. This is mock content.`,
+      tone: selectedTone,
+      language: selectedLanguage,
+      timestamp: Date.now(),
+    };
+
+    // Add new result to the beginning of the array
+    setRephraseResults([newResult, ...rephraseResults]);
+    setCopiedResultId(null);
   };
 
   const handleBackToMain = () => {
     setMenuLevel("main");
     setSelectedTone(null);
-    setRephraseResult("");
+    setRephraseResults([]);
   };
 
   const handleBackToTones = () => {
     setMenuLevel("tone-select");
-    setRephraseResult("");
-    setCopied(false);
+    setRephraseResults([]);
+    setCopiedResultId(null);
   };
 
   const handlePromptClick = async (promptId: string) => {
@@ -347,35 +399,62 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
   };
 
-  // Render preview field (always visible)
-  const renderPreviewField = () => (
-    <div className="px-1">
-      <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
-        {menuLevel === "result" && rephraseResult ? (
-          <>
-            <div className="text-xs font-medium text-muted-foreground">
-              Результат ({TONE_OPTIONS.find(t => t.id === selectedTone)?.label}):
-            </div>
-            <div className="text-sm text-foreground font-medium leading-relaxed">
-              {truncateText(rephraseResult, 150)}
-            </div>
-          </>
-        ) : displayPreviewText.trim() ? (
-          <>
-            <div className="text-xs font-medium text-muted-foreground">
-              {selectedText ? "Выделенный текст:" : previewText ? "Предпросмотр:" : "Текст для обработки:"}
-            </div>
-            <div className="text-sm text-foreground font-medium leading-relaxed">
-              {displayText}
-            </div>
-          </>
-        ) : (
-          <div className="text-xs font-medium text-muted-foreground">
-            Введите или вставьте текст для работы
+  // Render breadcrumbs for navigation
+  const renderBreadcrumbs = () => {
+    if (menuLevel === "main") return null;
+
+    const crumbs = [];
+
+    if (menuLevel === "tone-select" || menuLevel === "result") {
+      crumbs.push({ label: "Rephrase", onClick: handleBackToMain });
+    }
+
+    if (menuLevel === "result" && selectedTone) {
+      const toneName = TONE_OPTIONS.find(t => t.id === selectedTone)?.label || selectedTone;
+      crumbs.push({ label: toneName, onClick: handleBackToTones });
+    }
+
+    return (
+      <div className="px-1 py-2 flex items-center gap-1 text-xs text-muted-foreground">
+        {crumbs.map((crumb, index) => (
+          <div key={index} className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={crumb.onClick}
+              className="hover:text-foreground transition-colors touch-manipulation"
+            >
+              {crumb.label}
+            </button>
+            {index < crumbs.length - 1 && (
+              <ChevronRight className="h-3 w-3" />
+            )}
           </div>
-        )}
-        {/* Paste button - only on main menu */}
-        {menuLevel === "main" && (
+        ))}
+      </div>
+    );
+  };
+
+  // Render preview field (only on main menu)
+  const renderPreviewField = () => {
+    if (menuLevel !== "main") return null;
+
+    return (
+      <div className="px-1">
+        <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
+          {displayPreviewText.trim() ? (
+            <>
+              <div className="text-xs font-medium text-muted-foreground">
+                {selectedText ? "Выделенный текст:" : previewText ? "Предпросмотр:" : "Текст для обработки:"}
+              </div>
+              <div className="text-sm text-foreground font-medium leading-relaxed">
+                {displayText}
+              </div>
+            </>
+          ) : (
+            <div className="text-xs font-medium text-muted-foreground">
+              Введите или вставьте текст для работы
+            </div>
+          )}
           <button
             type="button"
             onClick={handlePasteFromClipboard}
@@ -385,10 +464,10 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           >
             <Clipboard className="h-4 w-4 text-muted-foreground" />
           </button>
-        )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Render main menu buttons
   const renderMainMenu = () => (
@@ -441,17 +520,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render tone selection menu
   const renderToneSelect = () => (
     <div className="flex flex-col gap-3 p-1">
-      {/* Back button */}
-      <button
-        type="button"
-        onClick={handleBackToMain}
-        className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors touch-manipulation"
-        data-testid="button-back-to-main"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        <span>Назад</span>
-      </button>
-
       {/* Tone options */}
       <div className="grid grid-cols-2 gap-3">
         {TONE_OPTIONS.map((tone) => (
@@ -484,77 +552,125 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           </Tooltip>
         ))}
       </div>
+
+      {/* Language selector and keyboard switch */}
+      <div className="flex gap-2">
+        <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+          <SelectTrigger
+            className="flex-1 min-h-[44px] rounded-xl border-2"
+            data-testid="select-language-tone"
+          >
+            <SelectValue placeholder="Язык" />
+          </SelectTrigger>
+          <SelectContent>
+            {LANGUAGES.map((lang) => (
+              <SelectItem key={lang.code} value={lang.code} data-testid={`option-lang-${lang.code}`}>
+                {lang.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {onSwitchKeyboard && (
+          <button
+            type="button"
+            onClick={onSwitchKeyboard}
+            className="flex items-center justify-center min-h-[44px] min-w-[44px] px-4 bg-muted rounded-lg touch-manipulation active:scale-[0.97] transition-transform duration-0"
+            data-testid="key-switch-keyboard-tone"
+            aria-label="Switch keyboard"
+          >
+            <Globe className="h-5 w-5" />
+          </button>
+        )}
+      </div>
     </div>
   );
 
-  // Render result view with action buttons
+  // Render result view with scrollable results
   const renderResult = () => (
-    <div className="flex flex-col gap-3 p-1">
-      {/* Back button */}
-      <button
-        type="button"
-        onClick={handleBackToTones}
-        className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors touch-manipulation"
-        data-testid="button-back-to-tones"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        <span>Изменить тон</span>
-      </button>
+    <div className="flex flex-col gap-3 p-1 max-h-[400px]">
+      {/* Results container with scroll */}
+      <div className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
+        {rephraseResults.map((result, index) => (
+          <div
+            key={result.id}
+            className="flex flex-col gap-2 p-4 bg-accent/30 border-2 border-accent rounded-xl"
+          >
+            {/* Result number and text */}
+            <div className="space-y-2">
+              {rephraseResults.length > 1 && (
+                <div className="text-xs font-medium text-muted-foreground">
+                  Вариант {rephraseResults.length - index}
+                </div>
+              )}
+              <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                {result.text}
+              </div>
+            </div>
 
-      {/* Action buttons */}
-      <div className="flex flex-col gap-2">
-        {/* Copy and Apply row */}
+            {/* Action buttons for this result */}
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => handleCopyResult(result.id)}
+                className={`
+                  flex-1 flex items-center justify-center gap-2
+                  min-h-[40px] px-3
+                  rounded-lg border-2
+                  ${copiedResultId === result.id
+                    ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
+                    : "bg-secondary border-border"}
+                  active:scale-[0.98]
+                  transition-all duration-75
+                  touch-manipulation select-none
+                `}
+                data-testid={`button-copy-${result.id}`}
+              >
+                {copiedResultId === result.id ? (
+                  <>
+                    <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    <span className="text-xs font-medium">Скопировано</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4" />
+                    <span className="text-xs font-medium">Копировать</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleApplyResult(result.id)}
+                className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
+                data-testid={`button-apply-${result.id}`}
+              >
+                <Check className="h-4 w-4" />
+                <span className="text-xs font-medium">Применить</span>
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Control panel */}
+      <div className="flex flex-col gap-2 pt-2 border-t border-border">
+        {/* Reprocess button */}
+        <button
+          type="button"
+          onClick={handleReprocess}
+          className="flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-xl border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
+          data-testid="button-reprocess"
+        >
+          <RotateCcw className="h-5 w-5" />
+          <span className="text-sm font-medium">Создать новый вариант</span>
+        </button>
+
+        {/* Language selector and keyboard switch */}
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={handleCopyResult}
-            className={`
-              flex-1 flex items-center justify-center gap-2
-              min-h-[48px] px-4
-              rounded-xl border-2
-              ${copied ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800" : "bg-secondary border-border"}
-              active:scale-[0.98]
-              transition-all duration-75
-              touch-manipulation select-none
-            `}
-            data-testid="button-copy-result"
-          >
-            {copied ? (
-              <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
-            ) : (
-              <Copy className="h-5 w-5" />
-            )}
-            <span className="text-sm font-medium">
-              {copied ? "Скопировано" : "Копировать"}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleApplyResult}
-            className="flex-1 flex items-center justify-center gap-2 min-h-[48px] px-4 rounded-xl border-2 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
-            data-testid="button-apply-result"
-          >
-            <Check className="h-5 w-5" />
-            <span className="text-sm font-medium">Применить</span>
-          </button>
-        </div>
-
-        {/* Reprocess row with language selector */}
-        <div className="flex gap-2 items-center">
-          <button
-            type="button"
-            onClick={handleReprocess}
-            className="flex items-center justify-center gap-2 min-h-[48px] px-4 rounded-xl border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
-            data-testid="button-reprocess"
-          >
-            <RotateCcw className="h-5 w-5" />
-            <span className="text-sm font-medium">Повторить</span>
-          </button>
-
           <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-            <SelectTrigger 
-              className="flex-1 min-h-[48px] rounded-xl border-2"
+            <SelectTrigger
+              className="flex-1 min-h-[44px] rounded-xl border-2"
               data-testid="select-language"
             >
               <SelectValue placeholder="Язык" />
@@ -567,15 +683,28 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               ))}
             </SelectContent>
           </Select>
+
+          {onSwitchKeyboard && (
+            <button
+              type="button"
+              onClick={onSwitchKeyboard}
+              className="flex items-center justify-center min-h-[44px] min-w-[44px] px-4 bg-muted rounded-lg touch-manipulation active:scale-[0.97] transition-transform duration-0"
+              data-testid="key-switch-keyboard-result"
+              aria-label="Switch keyboard"
+            >
+              <Globe className="h-5 w-5" />
+            </button>
+          )}
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="flex flex-col gap-3 w-full">
+    <div className="flex flex-col gap-2 w-full">
+      {renderBreadcrumbs()}
       {renderPreviewField()}
-      
+
       {menuLevel === "main" && renderMainMenu()}
       {menuLevel === "tone-select" && renderToneSelect()}
       {menuLevel === "result" && renderResult()}
