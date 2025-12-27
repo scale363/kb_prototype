@@ -681,7 +681,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                     data-testid={`button-apply-${result.id}`}
                   >
                     <Check className="h-4 w-4" />
-                    <span className="text-xs font-medium">Применить</span>
+                    <span className="text-xs font-semibold">Применить</span>
                   </button>
                 </div>
               )}
