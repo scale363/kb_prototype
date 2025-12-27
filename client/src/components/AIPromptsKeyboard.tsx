@@ -519,12 +519,10 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render preview field (only on main menu)
   const renderPreviewField = () => {
-    if (menuLevel !== "main") return null;
-
     const hasContent = displayPreviewText.trim();
 
     return (
-      <div className="px-1">
+      <div className="px-1 flex flex-col gap-2">
         <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
           {hasContent ? (
             <div className="text-sm text-foreground font-medium leading-relaxed pr-8">
@@ -546,6 +544,25 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               <Clipboard className="h-4 w-4 text-muted-foreground" />
             </button>
           </div>
+        </div>
+
+        {/* Language selector moved here - only on main menu */}
+        <div className="flex gap-2">
+          <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+            <SelectTrigger
+              className="w-1/2 min-h-[40px] rounded-lg border-2 text-sm"
+              data-testid="select-language"
+            >
+              <SelectValue placeholder="Язык" />
+            </SelectTrigger>
+            <SelectContent>
+              {LANGUAGES.map((lang) => (
+                <SelectItem key={lang.code} value={lang.code} data-testid={`option-lang-${lang.code}`}>
+                  {lang.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     );
@@ -698,31 +715,14 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       </div>
 
       {/* Control panel */}
-      <div className="flex gap-2 pt-2 border-t border-border">
-        {/* Language selector (compact) */}
-        <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-          <SelectTrigger
-            className="flex-1 min-h-[40px] rounded-lg border-2 text-sm"
-            data-testid="select-language"
-          >
-            <SelectValue placeholder="Язык" />
-          </SelectTrigger>
-          <SelectContent>
-            {LANGUAGES.map((lang) => (
-              <SelectItem key={lang.code} value={lang.code} data-testid={`option-lang-${lang.code}`}>
-                {lang.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
+      <div className="flex gap-2 pt-2 border-t border-border justify-end">
         {/* Create new variant button (icon only) */}
         <button
           type="button"
           onClick={handleReprocess}
           className="flex items-center justify-center min-h-[40px] min-w-[40px] rounded-lg border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
           data-testid="button-reprocess"
-          aria-label="Создать новый вариант"
+          aria-label="Создать новый variant"
         >
           <RotateCcw className="h-5 w-5" />
         </button>
@@ -733,7 +733,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   return (
     <div className="flex flex-col gap-2 w-full">
       {renderHeader()}
-      {renderPreviewField()}
+      {menuLevel === "main" && renderPreviewField()}
 
       {menuLevel === "main" && renderMainMenu()}
       {menuLevel === "tone-select" && renderToneSelect()}
