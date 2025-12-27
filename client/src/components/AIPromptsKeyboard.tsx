@@ -493,6 +493,40 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     );
   };
 
+  // Render main menu buttons
+  const renderMainMenu = () => {
+    if (menuLevel !== "main") {
+      return menuLevel === "tone-select" ? renderToneSelect() : renderResult();
+    }
+
+    return (
+      <div className="grid grid-cols-2 gap-3 p-1">
+        {PROMPT_BUTTONS.map((button) => (
+          <button
+            key={button.id}
+            type="button"
+            onClick={() => handlePromptClick(button.id)}
+            className={`
+              flex flex-col items-center justify-center p-6
+              rounded-2xl border-2 border-border bg-card
+              transition-all duration-200 hover:-translate-y-0.5
+              hover:shadow-md active:translate-y-0
+              ${button.colorClass}
+            `}
+            data-testid={`button-prompt-${button.id}`}
+          >
+            <div className="mb-3 transition-transform duration-200 group-hover:scale-110">
+              {button.icon}
+            </div>
+            <span className="text-[15px] font-semibold text-foreground">
+              {button.label}
+            </span>
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   const PROMPT_BUTTONS = [
     {
       id: "rephrase",
@@ -648,13 +682,46 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                         <Copy className="h-4 w-4" />
                         <span className="text-xs font-medium">Копировать</span>
                       </>
-                    )}
                   </button>
 
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
+                      handleApplyResult(result.id);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 bg-primary border-primary-border text-primary-foreground active:scale-[0.98] transition-all duration-75 touch-manipulation select-none"
+                    data-testid={`button-apply-${result.id}`}
+                  >
+                    <span className="text-xs font-medium">Apply</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer actions */}
+      <div className="flex gap-2 pt-2 border-t border-border mt-auto">
+        <button
+          type="button"
+          onClick={handleReprocess}
+          className="flex-1 flex items-center justify-center gap-2 min-h-[44px] rounded-xl border-2 border-border bg-card hover:bg-accent active:scale-[0.98] transition-all duration-75 touch-manipulation"
+        >
+          <RotateCcw className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Reprocess</span>
+        </button>
+        <button
+          type="button"
+          onClick={handleBackToTones}
+          className="flex items-center justify-center min-h-[44px] px-4 rounded-xl border-2 border-border bg-card hover:bg-accent active:scale-[0.98] transition-all duration-75 touch-manipulation"
+        >
+          <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+        </button>
+      </div>
+    </div>
+  );
                       handleApplyResult(result.id);
                     }}
                     className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
