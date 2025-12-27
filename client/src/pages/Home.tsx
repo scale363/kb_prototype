@@ -32,7 +32,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div 
+    <div
       className="flex flex-col h-screen bg-background overflow-hidden"
       style={{ touchAction: "manipulation" }}
     >
@@ -49,12 +49,14 @@ export default function Home() {
         onCursorChange={setCursorPosition}
       />
 
-      <KeyboardContainer
-        text={text}
-        onTextChange={setText}
-        cursorPosition={cursorPosition}
-        onCursorChange={setCursorPosition}
-      />
+      <div className="fixed bottom-0 left-0 right-0 z-50">
+        <KeyboardContainer
+          text={text}
+          onTextChange={setText}
+          cursorPosition={cursorPosition}
+          onCursorChange={setCursorPosition}
+        />
+      </div>
     </div>
   );
 }

@@ -45,58 +45,25 @@ export function KeyboardContainer({
     onCursorChange(newText.length);
   }, [onTextChange, onCursorChange]);
 
+  const handleSwitchKeyboard = useCallback(() => {
+    setMode(prev => prev === "russian" ? "prompts" : "russian");
+  }, []);
+
   return (
     <div className="flex flex-col bg-card border-t border-border rounded-t-2xl shadow-lg">
-      <div className="flex justify-center p-3 pb-2">
-        <div className="inline-flex bg-muted rounded-full p-1 gap-1">
-          <button
-            type="button"
-            onClick={() => setMode("russian")}
-            className={`
-              px-5 py-2 rounded-full text-sm font-medium
-              transition-all duration-150 touch-manipulation
-              ${mode === "russian" 
-                ? "bg-background text-foreground shadow-sm" 
-                : "text-muted-foreground"
-              }
-            `}
-            data-testid="toggle-mode-russian"
-            aria-label="Russian keyboard"
-            aria-pressed={mode === "russian"}
-          >
-            АБВ
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("prompts")}
-            className={`
-              px-5 py-2 rounded-full text-sm font-medium
-              transition-all duration-150 touch-manipulation
-              ${mode === "prompts" 
-                ? "bg-primary text-primary-foreground shadow-sm" 
-                : "text-muted-foreground"
-              }
-            `}
-            data-testid="toggle-mode-prompts"
-            aria-label="AI prompts"
-            aria-pressed={mode === "prompts"}
-          >
-            AI
-          </button>
-        </div>
-      </div>
-
-      <div className="p-3 pt-1">
+      <div className="p-3 pt-4">
         {mode === "russian" ? (
           <RussianKeyboard
             onKeyPress={handleKeyPress}
             onBackspace={handleBackspace}
             onEnter={handleEnter}
+            onSwitchKeyboard={handleSwitchKeyboard}
           />
         ) : (
           <AIPromptsKeyboard
             text={text}
             onTextChange={handleAITextChange}
+            onSwitchKeyboard={handleSwitchKeyboard}
           />
         )}
       </div>

@@ -1,9 +1,10 @@
-import { RefreshCw, Languages, FileText, Clipboard } from "lucide-react";
+import { RefreshCw, Languages, FileText, Clipboard, Globe } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AIPromptsKeyboardProps {
   text: string;
   onTextChange: (text: string) => void;
+  onSwitchKeyboard?: () => void;
 }
 
 interface PromptButton {
@@ -50,7 +51,7 @@ const PROMPT_BUTTONS: PromptButton[] = [
   },
 ];
 
-export function AIPromptsKeyboard({ text, onTextChange }: AIPromptsKeyboardProps) {
+export function AIPromptsKeyboard({ text, onTextChange, onSwitchKeyboard }: AIPromptsKeyboardProps) {
   const { toast } = useToast();
 
   const handlePromptClick = async (promptId: string) => {
@@ -120,33 +121,49 @@ export function AIPromptsKeyboard({ text, onTextChange }: AIPromptsKeyboardProps
   };
 
   return (
-    <div className="grid grid-cols-2 gap-3 w-full p-1">
-      {PROMPT_BUTTONS.map((button) => (
-        <button
-          key={button.id}
-          type="button"
-          onClick={() => handlePromptClick(button.id)}
-          className={`
-            flex flex-col items-center justify-center gap-2
-            min-h-[72px] p-4
-            rounded-xl border-2
-            ${button.colorClass}
-            ${button.borderClass}
-            active:scale-[0.98]
-            transition-transform duration-75
-            touch-manipulation select-none
-          `}
-          data-testid={`button-prompt-${button.id}`}
-          aria-label={button.label}
-        >
-          <div className="text-foreground/80">
-            {button.icon}
-          </div>
-          <span className="text-sm font-medium text-foreground">
-            {button.label}
-          </span>
-        </button>
-      ))}
+    <div className="flex flex-col gap-3 w-full">
+      <div className="grid grid-cols-2 gap-3 p-1">
+        {PROMPT_BUTTONS.map((button) => (
+          <button
+            key={button.id}
+            type="button"
+            onClick={() => handlePromptClick(button.id)}
+            className={`
+              flex flex-col items-center justify-center gap-2
+              min-h-[72px] p-4
+              rounded-xl border-2
+              ${button.colorClass}
+              ${button.borderClass}
+              active:scale-[0.98]
+              transition-transform duration-75
+              touch-manipulation select-none
+            `}
+            data-testid={`button-prompt-${button.id}`}
+            aria-label={button.label}
+          >
+            <div className="text-foreground/80">
+              {button.icon}
+            </div>
+            <span className="text-sm font-medium text-foreground">
+              {button.label}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {onSwitchKeyboard && (
+        <div className="flex justify-start px-1">
+          <button
+            type="button"
+            onClick={onSwitchKeyboard}
+            className="flex items-center justify-center min-h-[44px] min-w-[44px] px-4 bg-muted rounded-lg touch-manipulation active:scale-[0.97] transition-transform duration-0"
+            data-testid="key-switch-keyboard-ai"
+            aria-label="Switch keyboard"
+          >
+            <Globe className="h-5 w-5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
