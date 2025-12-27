@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Clipboard, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -18,27 +18,38 @@ export function TextInputArea({
   onSelectionChange
 }: TextInputAreaProps) {
   const textareaRef = useRef<HTMLDivElement>(null);
+  const [selectionRange, setSelectionRange] = useState<{ start: number; end: number } | null>(null);
 
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.focus();
       const selection = window.getSelection();
       const range = document.createRange();
-      
+
       if (textareaRef.current.firstChild) {
         const textNode = textareaRef.current.firstChild;
-        const pos = Math.min(cursorPosition, value.length);
-        range.setStart(textNode, pos);
-        range.setEnd(textNode, pos);
+
+        // Если есть сохраненный диапазон выделения, восстанавливаем его
+        if (selectionRange && selectionRange.start !== selectionRange.end) {
+          const startPos = Math.min(selectionRange.start, value.length);
+          const endPos = Math.min(selectionRange.end, value.length);
+          range.setStart(textNode, startPos);
+          range.setEnd(textNode, endPos);
+        } else {
+          // Иначе устанавливаем курсор
+          const pos = Math.min(cursorPosition, value.length);
+          range.setStart(textNode, pos);
+          range.setEnd(textNode, pos);
+        }
       } else {
         range.selectNodeContents(textareaRef.current);
         range.collapse(false);
       }
-      
+
       selection?.removeAllRanges();
       selection?.addRange(range);
     }
-  }, [cursorPosition, value.length]);
+  }, [cursorPosition, value.length, selectionRange]);
 
   const handlePaste = async () => {
     try {
@@ -82,13 +93,22 @@ export function TextInputArea({
       const range = selection.getRangeAt(0);
       const selectedText = selection.toString();
 
-      if (selectedText && onSelectionChange) {
-        onSelectionChange(selectedText);
-      } else if (onSelectionChange) {
-        onSelectionChange("");
+      // Сохраняем диапазон выделения
+      if (selectedText) {
+        setSelectionRange({
+          start: range.startOffset,
+          end: range.endOffset
+        });
+        if (onSelectionChange) {
+          onSelectionChange(selectedText);
+        }
+      } else {
+        setSelectionRange(null);
+        if (onSelectionChange) {
+          onSelectionChange("");
+        }
+        onCursorChange(range.startOffset);
       }
-
-      onCursorChange(range.startOffset);
     }
   };
 
@@ -129,11 +149,12 @@ export function TextInputArea({
         ref={textareaRef}
         contentEditable
         suppressContentEditableWarning
-        className="max-h-[33vh] min-h-[120px] px-4 py-3 pt-14 m-3 text-base leading-relaxed outline-none border-2 border-border rounded-xl overflow-y-auto touch-manipulation select-text"
+        className="h-[120px] max-h-[120px] min-h-[120px] px-4 py-3 pt-14 m-3 text-base leading-relaxed outline-none border-2 border-border rounded-xl overflow-y-auto touch-manipulation select-text"
         style={{
           WebkitUserSelect: "text",
           userSelect: "text",
-          caretColor: "hsl(var(--primary))"
+          caretColor: "hsl(var(--primary))",
+          resize: "none"
         }}
         onInput={handleInput}
         onKeyDown={handleKeyDown}

@@ -1,16 +1,35 @@
 import { RefreshCw, Languages, FileText, Clipboard, Globe } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-// Функция для усечения длинного текста
-function truncateText(text: string, maxLength: number = 50): string {
+// Умная функция для усечения текста, которая не режет слова и показывает начало и конец
+function truncateText(text: string, maxLength: number = 100): string {
   if (text.length <= maxLength) {
     return text;
   }
 
-  const sideLength = Math.floor((maxLength - 3) / 2);
-  const start = text.slice(0, sideLength);
-  const end = text.slice(-sideLength);
-  return `${start}...${end}`;
+  // Вычисляем сколько символов показать с каждой стороны
+  const ellipsisLength = 3; // "..."
+  const availableLength = maxLength - ellipsisLength;
+  const startLength = Math.ceil(availableLength * 0.6); // 60% для начала
+  const endLength = Math.floor(availableLength * 0.4); // 40% для конца
+
+  // Получаем начальную часть
+  let start = text.slice(0, startLength);
+  // Находим последний пробел, чтобы не резать слово
+  const lastSpaceInStart = start.lastIndexOf(' ');
+  if (lastSpaceInStart > startLength * 0.7) { // Только если пробел не слишком далеко
+    start = start.slice(0, lastSpaceInStart);
+  }
+
+  // Получаем конечную часть
+  let end = text.slice(-endLength);
+  // Находим первый пробел, чтобы не резать слово
+  const firstSpaceInEnd = end.indexOf(' ');
+  if (firstSpaceInEnd !== -1 && firstSpaceInEnd < endLength * 0.3) { // Только если пробел не слишком далеко
+    end = end.slice(firstSpaceInEnd + 1);
+  }
+
+  return `${start.trim()}...${end.trim()}`;
 }
 
 interface AIPromptsKeyboardProps {
@@ -164,34 +183,39 @@ export function AIPromptsKeyboard({ text, selectedText, onTextChange, onSwitchKe
 
   return (
     <div className="flex flex-col gap-3 w-full">
-      {/* Поле предпросмотра или кнопка вставки */}
-      {text.trim() ? (
-        <div className="px-1">
-          <div className="flex flex-col gap-1 p-3 bg-accent/30 border-2 border-accent rounded-lg">
-            <div className="text-xs font-medium text-muted-foreground">
-              {selectedText ? "Выделенный текст:" : "Текст для обработки:"}
-            </div>
-            <div className="text-sm text-foreground font-medium truncate">
-              {displayText || "Пусто"}
-            </div>
-          </div>
+      {/* Поле предпросмотра */}
+      <div className="px-1">
+        <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg">
+          {text.trim() ? (
+            <>
+              <div className="text-xs font-medium text-muted-foreground">
+                {selectedText ? "Выделенный текст:" : "Текст для обработки:"}
+              </div>
+              <div className="text-sm text-foreground font-medium leading-relaxed">
+                {displayText}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-xs font-medium text-muted-foreground">
+                Введите или вставьте текст для работы
+              </div>
+              <button
+                type="button"
+                onClick={handlePasteFromClipboard}
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-primary/10 border border-primary/30 rounded-md active:scale-[0.98] transition-transform duration-75 touch-manipulation"
+                data-testid="button-paste-empty"
+                aria-label="Paste from clipboard"
+              >
+                <Clipboard className="h-4 w-4 text-primary" />
+                <span className="text-xs font-medium text-primary">
+                  Вставить из буфера
+                </span>
+              </button>
+            </>
+          )}
         </div>
-      ) : (
-        <div className="px-1">
-          <button
-            type="button"
-            onClick={handlePasteFromClipboard}
-            className="w-full flex items-center justify-center gap-2 p-3 bg-primary/10 border-2 border-primary/30 rounded-lg active:scale-[0.98] transition-transform duration-75 touch-manipulation"
-            data-testid="button-paste-empty"
-            aria-label="Paste from clipboard"
-          >
-            <Clipboard className="h-5 w-5 text-primary" />
-            <span className="text-sm font-medium text-primary">
-              Вставить из буфера обмена
-            </span>
-          </button>
-        </div>
-      )}
+      </div>
 
       <div className="grid grid-cols-2 gap-3 p-1">
         {PROMPT_BUTTONS.map((button) => (
