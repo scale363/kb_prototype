@@ -88,8 +88,9 @@ const PROMPT_BUTTONS: PromptButton[] = [
 export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTextChange, onTextChange, onSwitchKeyboard }: AIPromptsKeyboardProps) {
   const { toast } = useToast();
 
-  // Определяем текст для предпросмотра: приоритет - previewText, затем selectedText, затем text
-  const displayPreviewText = previewText || selectedText || text;
+  // Определяем текст для предпросмотра: приоритет за полем ввода кроме одного случая:
+  // мы кликаем в поле пустое поле ввода, при этом поле предпросмотра заполнено (previewText)
+  const displayPreviewText = (previewText && !text) ? previewText : (selectedText || text);
   const displayText = truncateText(displayPreviewText);
 
   const handlePasteFromClipboard = async () => {
