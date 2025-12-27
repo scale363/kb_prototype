@@ -258,6 +258,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const [translateResults, setTranslateResults] = useState<TranslateResult[]>([]);
   const [selectedTranslateResultId, setSelectedTranslateResultId] = useState<string | null>(null);
 
+  // Load saved quick replies language from localStorage or default to "en"
+  const [quickRepliesLanguage, setQuickRepliesLanguage] = useState<string>(() => {
+    try {
+      return localStorage.getItem("quick-replies-language") || "en";
+    } catch {
+      return "en";
+    }
+  });
+
   const [selectedQuickReplyAction, setSelectedQuickReplyAction] = useState<string | null>(null);
   const [quickReplyResults, setQuickReplyResults] = useState<QuickReplyResult[]>([]);
   const [selectedQuickReplyResultId, setSelectedQuickReplyResultId] = useState<string | null>(null);
@@ -282,6 +291,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       // localStorage might not be available
     }
   }, [translateLanguage]);
+
+  // Save quick replies language selection to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("quick-replies-language", quickRepliesLanguage);
+    } catch {
+      // localStorage might not be available
+    }
+  }, [quickRepliesLanguage]);
 
   useEffect(() => {
     const handleReset = () => {
@@ -518,11 +536,12 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const handleQuickReplyActionSelect = (actionId: string) => {
     setSelectedQuickReplyAction(actionId);
     const actionName = QUICK_REPLY_ACTIONS.find(a => a.id === actionId)?.label || actionId;
+    const langName = LANGUAGES.find(l => l.code === quickRepliesLanguage)?.label || quickRepliesLanguage;
     const originalText = selectedText || previewText || text;
 
     const newResult: QuickReplyResult = {
       id: `quick-reply-${Date.now()}`,
-      text: `[${actionName}] This is a placeholder for your ${actionName.toLowerCase()} message. Context: "${truncateText(originalText, 50)}". This is temporary mock content that will be replaced with actual AI-generated text.`,
+      text: `[${actionName} - ${langName}] This is a placeholder for your ${actionName.toLowerCase()} message. Context: "${truncateText(originalText, 50)}". This is temporary mock content that will be replaced with actual AI-generated text in ${langName}.`,
       action: actionId,
       timestamp: Date.now(),
     };
@@ -537,11 +556,12 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     if (!selectedQuickReplyAction) return;
 
     const actionName = QUICK_REPLY_ACTIONS.find(a => a.id === selectedQuickReplyAction)?.label || selectedQuickReplyAction;
+    const langName = LANGUAGES.find(l => l.code === quickRepliesLanguage)?.label || quickRepliesLanguage;
     const originalText = selectedText || previewText || text;
 
     const newResult: QuickReplyResult = {
       id: `quick-reply-${Date.now()}`,
-      text: `[${actionName}] Regenerated placeholder #${quickReplyResults.length + 1} for ${actionName.toLowerCase()}. Context: "${truncateText(originalText, 50)}". This is mock content.`,
+      text: `[${actionName} - ${langName}] Regenerated placeholder #${quickReplyResults.length + 1} for ${actionName.toLowerCase()}. Context: "${truncateText(originalText, 50)}". This is mock content in ${langName}.`,
       action: selectedQuickReplyAction,
       timestamp: Date.now(),
     };
@@ -661,7 +681,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     } else if (menuLevel === "tone-select") {
       title = "👉 Choose a tone for your message";
     } else if (menuLevel === "quick-replies-select") {
-      title = "💼 Quick replies for common work situations";
+      title = "👉 Quick replies for common work situations";
     } else if (menuLevel === "translate-result") {
       title = "👉 Translate incoming message";
 
@@ -1232,16 +1252,32 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
       {/* Control panel */}
       <div className="flex gap-2 pt-2 border-t border-border">
-        {/* Create new variant button */}
+        {/* Language selector (compact) */}
+        <Select value={quickRepliesLanguage} onValueChange={setQuickRepliesLanguage}>
+          <SelectTrigger
+            className="flex-1 min-h-[40px] rounded-lg border-2 text-sm"
+            data-testid="select-quick-replies-language"
+          >
+            <SelectValue placeholder="Язык" />
+          </SelectTrigger>
+          <SelectContent>
+            {LANGUAGES.map((lang) => (
+              <SelectItem key={lang.code} value={lang.code} data-testid={`option-quick-replies-lang-${lang.code}`}>
+                {lang.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Create new variant button (icon only) */}
         <button
           type="button"
           onClick={handleRegenerateQuickReply}
-          className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
+          className="flex items-center justify-center min-h-[40px] min-w-[40px] rounded-lg border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
           data-testid="button-regenerate-quick-reply"
           aria-label="Создать новый вариант"
         >
           <RefreshCw className="h-5 w-5" />
-          <span className="text-sm font-medium">Создать новый вариант</span>
         </button>
       </div>
     </div>
