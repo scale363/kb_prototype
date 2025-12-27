@@ -80,7 +80,7 @@ export function TextInputArea({
   };
 
   return (
-    <div className="flex-1 flex flex-col relative bg-background">
+    <div className="flex-1 flex flex-col relative bg-background pb-80">
       <div className="absolute top-3 right-3 flex gap-2 z-10">
         <Button
           size="icon"
@@ -103,13 +103,13 @@ export function TextInputArea({
           </Button>
         )}
       </div>
-      
+
       <div
         ref={textareaRef}
         contentEditable
         suppressContentEditableWarning
         className="flex-1 min-h-[120px] px-4 py-3 pt-14 text-base leading-relaxed outline-none border-b border-border overflow-y-auto touch-manipulation select-text"
-        style={{ 
+        style={{
           WebkitUserSelect: "text",
           userSelect: "text",
           caretColor: "hsl(var(--primary))"
@@ -124,7 +124,7 @@ export function TextInputArea({
       >
         {value}
       </div>
-      
+
       {value.length > 0 && (
         <div className="absolute bottom-2 left-4 text-xs text-muted-foreground" data-testid="text-character-count">
           {value.length} символов

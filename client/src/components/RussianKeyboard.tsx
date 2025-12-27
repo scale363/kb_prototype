@@ -1,20 +1,21 @@
 import { useState, useCallback } from "react";
-import { Delete, CornerDownLeft } from "lucide-react";
+import { Delete, CornerDownLeft, Globe } from "lucide-react";
 
 interface RussianKeyboardProps {
   onKeyPress: (key: string) => void;
   onBackspace: () => void;
   onEnter: () => void;
+  onSwitchKeyboard?: () => void;
 }
 
 const RUSSIAN_LAYOUT_LOWER = [
-  ["й", "ц", "у", "к", "е", "н", "г", "ш", "щ", "з", "х", "ъ"],
+  ["й", "ц", "у", "к", "е", "н", "г", "ш", "щ", "з", "х"],
   ["ф", "ы", "в", "а", "п", "р", "о", "л", "д", "ж", "э"],
   ["я", "ч", "с", "м", "и", "т", "ь", "б", "ю"],
 ];
 
 const RUSSIAN_LAYOUT_UPPER = [
-  ["Й", "Ц", "У", "К", "Е", "Н", "Г", "Ш", "Щ", "З", "Х", "Ъ"],
+  ["Й", "Ц", "У", "К", "Е", "Н", "Г", "Ш", "Щ", "З", "Х"],
   ["Ф", "Ы", "В", "А", "П", "Р", "О", "Л", "Д", "Ж", "Э"],
   ["Я", "Ч", "С", "М", "И", "Т", "Ь", "Б", "Ю"],
 ];
@@ -24,7 +25,7 @@ const SYMBOLS_ROW_1 = ["!", "@", "#", "$", "%", "^", "&", "*", "(", ")"];
 const SYMBOLS_ROW_2 = ["-", "_", "=", "+", "[", "]", "{", "}", "|", "\\"];
 const PUNCTUATION = [".", ",", "?", "!", "'", "\"", ":", ";"];
 
-export function RussianKeyboard({ onKeyPress, onBackspace, onEnter }: RussianKeyboardProps) {
+export function RussianKeyboard({ onKeyPress, onBackspace, onEnter, onSwitchKeyboard }: RussianKeyboardProps) {
   const [isShift, setIsShift] = useState(false);
   const [isSymbols, setIsSymbols] = useState(false);
 
@@ -45,38 +46,45 @@ export function RussianKeyboard({ onKeyPress, onBackspace, onEnter }: RussianKey
     setIsSymbols(prev => !prev);
   }, []);
 
-  const KeyButton = ({ 
-    children, 
-    onClick, 
+  const KeyButton = ({
+    children,
+    onClick,
     className = "",
     dataTestId,
     ariaLabel
-  }: { 
-    children: React.ReactNode; 
+  }: {
+    children: React.ReactNode;
     onClick: () => void;
     className?: string;
     dataTestId?: string;
     ariaLabel?: string;
-  }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`
-        flex items-center justify-center
-        min-h-[44px] min-w-[28px]
-        bg-secondary text-secondary-foreground
-        rounded-lg font-medium text-base sm:text-lg
-        active:scale-95 active:bg-muted
-        transition-transform duration-75
-        touch-manipulation select-none
-        ${className}
-      `}
-      data-testid={dataTestId}
-      aria-label={ariaLabel}
-    >
-      {children}
-    </button>
-  );
+  }) => {
+    const handlePointerDown = useCallback((e: React.PointerEvent) => {
+      e.preventDefault();
+      onClick();
+    }, [onClick]);
+
+    return (
+      <button
+        type="button"
+        onPointerDown={handlePointerDown}
+        className={`
+          flex items-center justify-center
+          min-h-[44px] min-w-[28px]
+          bg-secondary text-secondary-foreground
+          rounded-lg font-medium text-base sm:text-lg
+          active:scale-[0.97] active:bg-muted
+          transition-transform duration-0
+          touch-manipulation select-none
+          ${className}
+        `}
+        data-testid={dataTestId}
+        aria-label={ariaLabel}
+      >
+        {children}
+      </button>
+    );
+  };
 
   if (isSymbols) {
     return (
@@ -152,6 +160,16 @@ export function RussianKeyboard({ onKeyPress, onBackspace, onEnter }: RussianKey
         </div>
 
         <div className="flex gap-1.5 justify-center">
+          {onSwitchKeyboard && (
+            <KeyButton
+              onClick={onSwitchKeyboard}
+              className="flex-[1.3] bg-muted"
+              dataTestId="key-switch-keyboard-symbols"
+              ariaLabel="Switch keyboard"
+            >
+              <Globe className="h-5 w-5" />
+            </KeyButton>
+          )}
           <KeyButton
             onClick={() => handleKeyPress(" ")}
             className="flex-[5] min-w-0 bg-card"
@@ -235,9 +253,20 @@ export function RussianKeyboard({ onKeyPress, onBackspace, onEnter }: RussianKey
       </div>
 
       <div className="flex gap-1.5 justify-center">
+        {onSwitchKeyboard && (
+          <KeyButton
+            onClick={onSwitchKeyboard}
+            className="flex-[1.3] bg-muted"
+            dataTestId="key-switch-keyboard"
+            ariaLabel="Switch keyboard"
+          >
+            <Globe className="h-5 w-5" />
+          </KeyButton>
+        )}
+
         <KeyButton
           onClick={handleSymbols}
-          className="flex-[1.5] bg-muted"
+          className="flex-[1.3] bg-muted"
           dataTestId="key-symbols"
           ariaLabel="Switch to symbols"
         >
