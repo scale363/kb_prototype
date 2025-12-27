@@ -35,6 +35,8 @@ function truncateText(text: string, maxLength: number = 100): string {
 interface AIPromptsKeyboardProps {
   text: string;
   selectedText: string;
+  previewText: string;
+  onPreviewTextChange: (text: string) => void;
   onTextChange: (text: string) => void;
   onSwitchKeyboard?: () => void;
 }
@@ -83,18 +85,20 @@ const PROMPT_BUTTONS: PromptButton[] = [
   },
 ];
 
-export function AIPromptsKeyboard({ text, selectedText, onTextChange, onSwitchKeyboard }: AIPromptsKeyboardProps) {
+export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTextChange, onTextChange, onSwitchKeyboard }: AIPromptsKeyboardProps) {
   const { toast } = useToast();
 
-  // Определяем текст для предпросмотра
-  const previewText = selectedText || text;
-  const displayText = truncateText(previewText);
+  // Определяем текст для предпросмотра: приоритет - previewText, затем selectedText, затем text
+  const displayPreviewText = previewText || selectedText || text;
+  const displayText = truncateText(displayPreviewText);
 
   const handlePasteFromClipboard = async () => {
     try {
+      // Только текст из буфера обмена
       const clipboardText = await navigator.clipboard.readText();
       if (clipboardText) {
-        onTextChange(clipboardText);
+        // Обновляем только поле предпросмотра, не трогая поле ввода
+        onPreviewTextChange(clipboardText);
         toast({
           title: "Вставлено из буфера",
           description: `${clipboardText.length} символов`,
@@ -185,35 +189,31 @@ export function AIPromptsKeyboard({ text, selectedText, onTextChange, onSwitchKe
     <div className="flex flex-col gap-3 w-full">
       {/* Поле предпросмотра */}
       <div className="px-1">
-        <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg">
-          {text.trim() ? (
+        <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
+          {displayPreviewText.trim() ? (
             <>
               <div className="text-xs font-medium text-muted-foreground">
-                {selectedText ? "Выделенный текст:" : "Текст для обработки:"}
+                {selectedText ? "Выделенный текст:" : previewText ? "Предпросмотр:" : "Текст для обработки:"}
               </div>
               <div className="text-sm text-foreground font-medium leading-relaxed">
                 {displayText}
               </div>
             </>
           ) : (
-            <>
-              <div className="text-xs font-medium text-muted-foreground">
-                Введите или вставьте текст для работы
-              </div>
-              <button
-                type="button"
-                onClick={handlePasteFromClipboard}
-                className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-primary/10 border border-primary/30 rounded-md active:scale-[0.98] transition-transform duration-75 touch-manipulation"
-                data-testid="button-paste-empty"
-                aria-label="Paste from clipboard"
-              >
-                <Clipboard className="h-4 w-4 text-primary" />
-                <span className="text-xs font-medium text-primary">
-                  Вставить из буфера
-                </span>
-              </button>
-            </>
+            <div className="text-xs font-medium text-muted-foreground">
+              Введите или вставьте текст для работы
+            </div>
           )}
+          {/* Минималистичная кнопка вставки */}
+          <button
+            type="button"
+            onClick={handlePasteFromClipboard}
+            className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
+            data-testid="button-paste-empty"
+            aria-label="Paste from clipboard"
+          >
+            <Clipboard className="h-4 w-4 text-muted-foreground" />
+          </button>
         </div>
       </div>
 

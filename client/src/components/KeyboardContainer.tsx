@@ -10,6 +10,8 @@ interface KeyboardContainerProps {
   cursorPosition: number;
   onCursorChange: (position: number) => void;
   selectedText: string;
+  previewText: string;
+  onPreviewTextChange: (text: string) => void;
 }
 
 export function KeyboardContainer({
@@ -17,7 +19,9 @@ export function KeyboardContainer({
   onTextChange,
   cursorPosition,
   onCursorChange,
-  selectedText
+  selectedText,
+  previewText,
+  onPreviewTextChange
 }: KeyboardContainerProps) {
   const [mode, setMode] = useState<KeyboardMode>("russian");
 
@@ -65,6 +69,8 @@ export function KeyboardContainer({
           <AIPromptsKeyboard
             text={text}
             selectedText={selectedText}
+            previewText={previewText}
+            onPreviewTextChange={onPreviewTextChange}
             onTextChange={handleAITextChange}
             onSwitchKeyboard={handleSwitchKeyboard}
           />
