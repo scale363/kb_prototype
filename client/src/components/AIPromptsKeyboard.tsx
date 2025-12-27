@@ -180,6 +180,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const [rephraseResults, setRephraseResults] = useState<RephraseResult[]>([]);
   const [copiedResultId, setCopiedResultId] = useState<string | null>(null);
   const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
+  const [openTooltipId, setOpenTooltipId] = useState<string | null>(null);
 
   // Save language selection to localStorage
   useEffect(() => {
@@ -443,32 +444,52 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const renderPreviewField = () => {
     if (menuLevel !== "main") return null;
 
+    const hasContent = displayPreviewText.trim();
+
     return (
       <div className="px-1">
-        <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
-          {displayPreviewText.trim() ? (
+        <div className="flex flex-col gap-2 p-3 pb-2.5 bg-accent/30 border-2 border-accent rounded-lg relative">
+          {hasContent ? (
             <>
-              <div className="text-xs font-medium text-muted-foreground">
+              <div className="text-xs font-medium text-muted-foreground pr-16">
                 {selectedText ? "Выделенный текст:" : previewText ? "Предпросмотр:" : "Текст для обработки:"}
               </div>
-              <div className="text-sm text-foreground font-medium leading-relaxed">
+              <div className="text-sm text-foreground font-medium leading-relaxed pr-2">
                 {displayText}
               </div>
             </>
           ) : (
-            <div className="text-xs font-medium text-muted-foreground">
+            <div className="text-xs font-medium text-muted-foreground pr-16">
               Введите или вставьте текст для работы
             </div>
           )}
-          <button
-            type="button"
-            onClick={handlePasteFromClipboard}
-            className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
-            data-testid="button-paste-empty"
-            aria-label="Paste from clipboard"
-          >
-            <Clipboard className="h-4 w-4 text-muted-foreground" />
-          </button>
+          <div className="absolute top-2 right-2 flex gap-1">
+            {hasContent && (
+              <button
+                type="button"
+                onClick={() => {
+                  onPreviewTextChange("");
+                  if (!selectedText) {
+                    onTextChange("");
+                  }
+                }}
+                className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
+                data-testid="button-clear-preview"
+                aria-label="Clear text"
+              >
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handlePasteFromClipboard}
+              className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
+              data-testid="button-paste-empty"
+              aria-label="Paste from clipboard"
+            >
+              <Clipboard className="h-4 w-4 text-muted-foreground" />
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -533,13 +554,18 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                 {tone.label}
               </span>
             </button>
-            <Tooltip delayDuration={0}>
+            <Tooltip
+              delayDuration={0}
+              open={openTooltipId === tone.id}
+              onOpenChange={(open) => setOpenTooltipId(open ? tone.id : null)}
+            >
               <TooltipTrigger asChild>
                 <button
                   type="button"
                   className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation z-10"
                   onClick={(e) => {
                     e.stopPropagation();
+                    setOpenTooltipId(openTooltipId === tone.id ? null : tone.id);
                   }}
                   aria-label={`Info about ${tone.label}`}
                 >
