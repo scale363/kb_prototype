@@ -125,7 +125,7 @@ export function TextInputArea({
   };
 
   return (
-    <div className="flex-1 flex flex-col relative bg-background">
+    <div className="flex-1 flex flex-col relative bg-muted">
       <div className="absolute top-3 right-3 flex gap-2 z-10">
         <Button
           size="icon"

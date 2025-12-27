@@ -419,7 +419,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     if (menuLevel === "main") {
       // On main menu, show title and X button that switches keyboard
       return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px] bg-muted rounded-t-lg">
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
           <div className="flex-1">
             <div className="text-sm font-semibold text-foreground">Text Processing</div>
           </div>
@@ -444,7 +444,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
 
     return (
-      <div className="px-1 py-2 flex items-center justify-between min-h-[44px] bg-muted rounded-t-lg">
+      <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
         <div className="flex-1">
           {title && <div className="text-sm font-semibold text-foreground">{title}</div>}
         </div>
