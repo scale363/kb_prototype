@@ -118,42 +118,66 @@ const TONE_OPTIONS: ToneOption[] = [
 
 const QUICK_REPLY_ACTIONS: QuickReplyAction[] = [
   {
-    id: "reply-to-client",
-    label: "Reply to client",
-    emoji: "\u{1F4AC}",
-    tooltip: "Generate a professional response to a client message",
-    colorClass: "bg-card dark:bg-card",
-    borderClass: "border-border",
-  },
-  {
     id: "help-me-write",
     label: "Help me write",
-    emoji: "\u{270D}\uFE0F",
-    tooltip: "Get help writing a professional message from scratch",
+    emoji: "📝",
+    tooltip: "Describe the situation, and we'll help you write a clear, professional message.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
   },
   {
-    id: "follow-up",
-    label: "Follow-up",
-    emoji: "\u{1F504}",
-    tooltip: "Create a polite follow-up message to check on status or get a response",
+    id: "neutral-reply",
+    label: "Neutral reply",
+    emoji: "🛡️",
+    tooltip: "Paste the message to generate a socially appropriate, neutral response that buys you time and avoids risks in business communication.",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
+  },
+  {
+    id: "agree-politely",
+    label: "Agree politely",
+    emoji: "🤝",
+    tooltip: "Paste the message to generate a polite, professional agreement without taking on unnecessary commitments.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
   },
   {
     id: "decline-politely",
     label: "Decline politely",
-    emoji: "\u{1F645}",
-    tooltip: "Politely decline a request or offer while maintaining good relations",
+    emoji: "🚫",
+    tooltip: "Paste the message to generate a polite, professional decline based on its content.",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
+  },
+  {
+    id: "ask-to-clarify",
+    label: "Ask to clarify",
+    emoji: "❓",
+    tooltip: "Paste the message to generate professional clarification questions based on its content.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
   },
   {
     id: "apologize",
     label: "Apologize",
-    emoji: "\u{1F64F}",
-    tooltip: "Express sincere apology in a professional and empathetic way",
+    emoji: "🙏",
+    tooltip: "Briefly describe the situation to write a polite apology.",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
+  },
+  {
+    id: "service-complaint",
+    label: "Service Complaint",
+    emoji: "⚠️",
+    tooltip: "Briefly describe the issue to write a clear, professional complaint message without escalation.",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
+  },
+  {
+    id: "remind-politely",
+    label: "Remind politely",
+    emoji: "⏰",
+    tooltip: "Paste your previous message to write a polite reminder.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
   },
@@ -1253,6 +1277,35 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render quick replies result view with scrollable results
   const renderQuickRepliesResult = () => (
     <div className="flex flex-col gap-3 p-1 max-h-[400px]">
+      {/* Context field */}
+      <div className="px-0">
+        <label className="block text-xs font-medium text-muted-foreground mb-1.5 px-1">
+          Context
+        </label>
+        <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
+          {displayPreviewText.trim() ? (
+            <div className="text-sm text-foreground font-medium leading-relaxed pr-8">
+              {displayText}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground/60 pr-8">
+              Paste the relevant message or description here.
+            </div>
+          )}
+          <div className="absolute top-2 right-2 flex gap-1">
+            <button
+              type="button"
+              onClick={handlePasteFromClipboard}
+              className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
+              data-testid="button-paste-context-quick-reply"
+              aria-label="Paste from clipboard"
+            >
+              <Clipboard className="h-4 w-4 text-muted-foreground" />
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Results container with scroll */}
       <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
         {quickReplyResults.map((result, index) => {
