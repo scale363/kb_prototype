@@ -1375,7 +1375,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           data-testid="button-save-from-clipboard"
         >
           <Clipboard className="h-4 w-4" />
-          <span className="text-sm font-medium">Save from clipboard</span>
+          <span className="text-sm font-medium">Save text from clipboard to reuse it later</span>
         </button>
         <div className="text-xs text-muted-foreground text-center px-2">
           Save text from clipboard to reuse it later
