@@ -1554,7 +1554,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       {/* Saved text items list */}
       <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[250px]">
         {savedTextItems.length === 0 ? (
-          <div className="text-sm text-muted-foreground py-8 text-center">No saved texts yet.
+          <div className="text-muted-foreground py-8 text-center text-[15px] pl-[5px] pr-[5px] font-medium">No saved texts yet.
 
           Save addresses, common phrases, or replies 
           to insert them in one click.</div>
