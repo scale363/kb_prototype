@@ -927,9 +927,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               {displayText}
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground/60 pr-8">
-              Enter or paste text to process
-            </div>
+            <div className="text-sm text-muted-foreground/60 pr-8">Paste a message or situation here</div>
           )}
           <div className="absolute top-2 right-2 flex gap-1">
             <button
