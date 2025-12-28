@@ -1,6 +1,5 @@
 import { RefreshCw, Languages, FileText, Clipboard, Globe, ArrowLeft, Copy, Check, RotateCcw, ChevronRight, X, HelpCircle, Plus, MessageSquare, Bookmark, Trash2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { useToast } from "@/hooks/use-toast";
 import {
   Tooltip,
   TooltipContent,
@@ -183,6 +182,18 @@ const QUICK_REPLY_ACTIONS: QuickReplyAction[] = [
   },
 ];
 
+// Subtexts for quick reply actions in the result form
+const QUICK_REPLY_SUBTEXTS: Record<string, string> = {
+  "neutral-reply": "Improve the result by pasting the message.",
+  "agree-politely": "Improve the result by pasting the message.",
+  "decline-politely": "Improve the result by pasting the request.",
+  "ask-to-clarify": "Improve the result by pasting the message.",
+  "apologize": "Improve the result by describing the situation.",
+  "service-complaint": "Improve the result by describing the issue.",
+  "remind-politely": "Improve the result by pasting your previous message.",
+  "help-me-write": "Improve the result by describing the situation.",
+};
+
 const LANGUAGES = [
   { code: "en", label: "English" },
   { code: "ru", label: "Russian" },
@@ -191,7 +202,7 @@ const LANGUAGES = [
   { code: "zh", label: "Chinese" },
 ];
 
-type MenuLevel = "main" | "tone-select" | "result" | "translate-result" | "quick-replies-select" | "quick-replies-result" | "saved-text" | "rephrase-empty-preview";
+type MenuLevel = "main" | "tone-select" | "result" | "translate-result" | "quick-replies-select" | "quick-replies-result" | "saved-text" | "rephrase-empty-preview" | "translate-empty-preview" | "quick-replies-empty-preview";
 
 interface RephraseResult {
   id: string;
@@ -266,7 +277,6 @@ const PROMPT_BUTTONS: PromptButton[] = [
 ];
 
 export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTextChange, onTextChange, onSwitchKeyboard }: AIPromptsKeyboardProps) {
-  const { toast } = useToast();
   const [menuLevel, setMenuLevel] = useState<MenuLevel>("main");
   const [selectedTone, setSelectedTone] = useState<string | null>(null);
 
@@ -391,6 +401,20 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
   }, [menuLevel, previewText, text]);
 
+  // Auto-transition from translate-empty-preview to translate-result when preview becomes non-empty
+  useEffect(() => {
+    if (menuLevel === "translate-empty-preview" && (previewText.trim() || text.trim())) {
+      handleTranslate();
+    }
+  }, [menuLevel, previewText, text]);
+
+  // Auto-transition from quick-replies-empty-preview to quick-replies-select when preview becomes non-empty
+  useEffect(() => {
+    if (menuLevel === "quick-replies-empty-preview" && (previewText.trim() || text.trim())) {
+      setMenuLevel("quick-replies-select");
+    }
+  }, [menuLevel, previewText, text]);
+
   // Определяем текст для предпросмотра: приоритет за полем ввода кроме одного случая:
   // мы вставили текст из буфера (previewText), при этом он еще не синхронизировался с основным полем
   // Или если основное поле пустое, а предпросмотр заполнен
@@ -406,23 +430,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       if (clipboardText) {
         // Обновляем только поле предпросмотра, не трогая поле ввода
         onPreviewTextChange(clipboardText);
-        toast({
-          title: "Вставлено из буфера",
-          description: `${clipboardText.length} символов`,
-        });
-      } else {
-        toast({
-          title: "Буфер обмена пуст",
-          description: "Нет текста в буфере обмена",
-          variant: "destructive",
-        });
       }
     } catch (err) {
-      toast({
-        title: "Нет доступа к буферу",
-        description: "Разрешите доступ к буферу обмена",
-        variant: "destructive",
-      });
+      // Ignore clipboard errors silently
     }
   };
 
@@ -454,17 +464,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     try {
       await navigator.clipboard.writeText(result.text);
       setCopiedResultId(resultId);
-      toast({
-        title: "Скопировано",
-        description: "Текст скопирован в буфер обмена",
-      });
       setTimeout(() => setCopiedResultId(null), 2000);
     } catch {
-      toast({
-        title: "Ошибка копирования",
-        description: "Не удалось скопировать текст",
-        variant: "destructive",
-      });
+      // Ignore copy errors silently
     }
   };
 
@@ -489,10 +491,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setMenuLevel("main");
     setSelectedTone(null);
     setRephraseResults([]);
-    toast({
-      title: "Применено",
-      description: "Текст заменён",
-    });
   };
 
   const handleReprocess = () => {
@@ -591,10 +589,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     // Reset to main menu
     setMenuLevel("main");
     setTranslateResults([]);
-    toast({
-      title: "Применено",
-      description: "Перевод применён",
-    });
   };
 
   const handleQuickReplyActionSelect = (actionId: string) => {
@@ -655,10 +649,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     // Reset to main menu
     setMenuLevel("main");
     setQuickReplyResults([]);
-    toast({
-      title: "Применено",
-      description: "Quick reply применён",
-    });
   };
 
   const handleSaveFromClipboard = async () => {
@@ -671,32 +661,14 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           timestamp: Date.now(),
         };
         setSavedTextItems([newItem, ...savedTextItems]);
-        toast({
-          title: "Saved",
-          description: "Text saved from clipboard",
-        });
-      } else {
-        toast({
-          title: "Clipboard empty",
-          description: "No text found in clipboard",
-          variant: "destructive",
-        });
       }
     } catch (err) {
-      toast({
-        title: "Clipboard access denied",
-        description: "Please allow clipboard access",
-        variant: "destructive",
-      });
+      // Ignore clipboard errors silently
     }
   };
 
   const handleDeleteSavedText = (itemId: string) => {
     setSavedTextItems(savedTextItems.filter(item => item.id !== itemId));
-    toast({
-      title: "Deleted",
-      description: "Saved text removed",
-    });
   };
 
   const handleInsertSavedText = (itemId: string) => {
@@ -705,10 +677,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     onTextChange(text + item.text);
     setMenuLevel("main");
-    toast({
-      title: "Inserted",
-      description: "Text inserted into input field",
-    });
   };
 
   const handlePromptClick = async (promptId: string) => {
@@ -724,17 +692,19 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
       case "translate":
         if (!text.trim() && !previewText.trim()) {
-          toast({
-            title: "No text to translate",
-            description: "Please enter some text first",
-            variant: "destructive",
-          });
+          // Show empty preview state with prompt to paste text
+          setMenuLevel("translate-empty-preview");
           return;
         }
         handleTranslate();
         break;
 
       case "quick-replies":
+        if (!text.trim() && !previewText.trim()) {
+          // Show empty preview state with prompt to paste text
+          setMenuLevel("quick-replies-empty-preview");
+          return;
+        }
         setMenuLevel("quick-replies-select");
         break;
 
@@ -785,17 +755,76 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           </button>
         </div>
       );
+    } else if (menuLevel === "translate-empty-preview") {
+      title = "🌍 Translate";
+      return (
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+          <div className="flex-1">
+            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+      );
+    } else if (menuLevel === "quick-replies-empty-preview") {
+      title = "💬 Quick Replies";
+      return (
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+          <div className="flex-1">
+            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+      );
     } else if (menuLevel === "tone-select") {
       title = "👉 Choose a tone for your message";
     } else if (menuLevel === "quick-replies-select") {
       title = "👉 Quick replies for common work situations";
     } else if (menuLevel === "saved-text") {
       title = "🔖 Saved text";
+      const tooltip = "Addresses, replies, and common phrases — always at hand";
 
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
           <div className="flex items-center gap-2 flex-1">
             <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+            {tooltip && (
+              <Tooltip
+                delayDuration={0}
+                open={openTooltipId === "saved-text-info"}
+                onOpenChange={(open) => setOpenTooltipId(open ? "saved-text-info" : null)}
+              >
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenTooltipId(openTooltipId === "saved-text-info" ? null : "saved-text-info");
+                    }}
+                    aria-label={`Info about ${title}`}
+                  >
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[250px] z-50">
+                  <p className="text-xs">{tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
           <button
             type="button"
@@ -1027,6 +1056,66 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     </div>
   );
 
+  // Render empty preview prompt for translate
+  const renderTranslateEmptyPreview = () => (
+    <div className="flex flex-col gap-4 p-1">
+      {/* Preview field */}
+      <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
+        <div className="text-sm text-muted-foreground/60 pr-8">
+          Paste the message you received
+        </div>
+        <div className="absolute top-2 right-2 flex gap-1">
+          <button
+            type="button"
+            onClick={handlePasteFromClipboard}
+            className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
+            data-testid="button-paste-translate-empty"
+            aria-label="Paste from clipboard"
+          >
+            <Clipboard className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+      </div>
+
+      {/* Large prompt message */}
+      <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
+        <div className="text-base font-medium text-center text-muted-foreground">
+          Understand the message clearly in your language.
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render empty preview prompt for quick replies
+  const renderQuickRepliesEmptyPreview = () => (
+    <div className="flex flex-col gap-4 p-1">
+      {/* Preview field */}
+      <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
+        <div className="text-sm text-muted-foreground/60 pr-8">
+          Paste a message or describe the situation
+        </div>
+        <div className="absolute top-2 right-2 flex gap-1">
+          <button
+            type="button"
+            onClick={handlePasteFromClipboard}
+            className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
+            data-testid="button-paste-quick-replies-empty"
+            aria-label="Paste from clipboard"
+          >
+            <Clipboard className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+      </div>
+
+      {/* Large prompt message */}
+      <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
+        <div className="text-base font-medium text-center text-muted-foreground">
+          Get a ready-to-send reply in seconds.
+        </div>
+      </div>
+    </div>
+  );
+
   // Render tone selection menu
   const renderToneSelect = () => (
     <div className="flex flex-col gap-3 p-1">
@@ -1143,7 +1232,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       </div>
 
       {/* Control panel */}
-      <div className="flex gap-2 pt-2 border-t border-border">
+      <div className="flex gap-2 pt-2">
         {/* Language selector (compact) */}
         <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
           <SelectTrigger
@@ -1256,7 +1345,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       </div>
 
       {/* Control panel */}
-      <div className="flex gap-2 pt-2 border-t border-border">
+      <div className="flex gap-2 pt-2">
         {/* Language selector (compact) */}
         <Select value={translateLanguage} onValueChange={setTranslateLanguage}>
           <SelectTrigger
@@ -1324,36 +1413,22 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   );
 
   // Render quick replies result view with scrollable results
-  const renderQuickRepliesResult = () => (
-    <div className="flex flex-col gap-3 p-1 max-h-[400px]">
-      {/* Context field */}
-      <div className="px-0">
-        <label className="block text-xs font-medium text-muted-foreground mb-1.5 px-1">Paste the message to generate a polite, professional agreement without taking on unnecessary commitments. </label>
-        <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
-          {displayPreviewText.trim() ? (
-            <div className="text-sm text-foreground font-medium leading-relaxed pr-8">
-              {displayText}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground/60 pr-8">
-              Paste the relevant message or description here.
-            </div>
-          )}
-          <div className="absolute top-2 right-2 flex gap-1">
-            <button
-              type="button"
-              onClick={handlePasteFromClipboard}
-              className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
-              data-testid="button-paste-context-quick-reply"
-              aria-label="Paste from clipboard"
-            >
-              <Clipboard className="h-4 w-4 text-muted-foreground" />
-            </button>
-          </div>
-        </div>
-      </div>
+  const renderQuickRepliesResult = () => {
+    // Get subtext for the selected action
+    const subtext = selectedQuickReplyAction
+      ? QUICK_REPLY_SUBTEXTS[selectedQuickReplyAction] || ""
+      : "";
 
-      {/* Results container with scroll */}
+    return (
+      <div className="flex flex-col gap-3 p-1 max-h-[400px]">
+        {/* Subtext label */}
+        {subtext && (
+          <div className="px-0">
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5 px-1">{subtext}</label>
+          </div>
+        )}
+
+        {/* Results container with scroll */}
       <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
         {quickReplyResults.map((result, index) => {
           const isSelected = selectedQuickReplyResultId === result.id;
@@ -1431,7 +1506,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       </div>
 
       {/* Control panel */}
-      <div className="flex gap-2 pt-2 border-t border-border">
+      <div className="flex gap-2 pt-2">
         {/* Language selector (compact) */}
         <Select value={quickRepliesLanguage} onValueChange={setQuickRepliesLanguage}>
           <SelectTrigger
@@ -1461,7 +1536,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </button>
       </div>
     </div>
-  );
+    );
+  };
 
   // Render saved text view
   const renderSavedText = () => (
@@ -1522,6 +1598,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
       {menuLevel === "main" && renderMainMenu()}
       {menuLevel === "rephrase-empty-preview" && renderRephraseEmptyPreview()}
+      {menuLevel === "translate-empty-preview" && renderTranslateEmptyPreview()}
+      {menuLevel === "quick-replies-empty-preview" && renderQuickRepliesEmptyPreview()}
       {menuLevel === "tone-select" && renderToneSelect()}
       {menuLevel === "result" && renderResult()}
       {menuLevel === "translate-result" && renderTranslateResult()}
