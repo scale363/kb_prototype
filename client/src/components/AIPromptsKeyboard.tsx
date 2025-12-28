@@ -1,4 +1,4 @@
-import { RefreshCw, Languages, FileText, Clipboard, Globe, ArrowLeft, Copy, Check, RotateCcw, ChevronRight, X, HelpCircle, Plus, MessageSquare } from "lucide-react";
+import { RefreshCw, Languages, FileText, Clipboard, Globe, ArrowLeft, Copy, Check, RotateCcw, ChevronRight, X, HelpCircle, Plus, MessageSquare, Bookmark, Trash2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -126,6 +126,14 @@ const QUICK_REPLY_ACTIONS: QuickReplyAction[] = [
     borderClass: "border-border",
   },
   {
+    id: "help-me-write",
+    label: "Help me write",
+    emoji: "\u{270D}\uFE0F",
+    tooltip: "Get help writing a professional message from scratch",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
+  },
+  {
     id: "follow-up",
     label: "Follow-up",
     emoji: "\u{1F504}",
@@ -159,7 +167,7 @@ const LANGUAGES = [
   { code: "zh", label: "Chinese" },
 ];
 
-type MenuLevel = "main" | "tone-select" | "result" | "translate-result" | "quick-replies-select" | "quick-replies-result";
+type MenuLevel = "main" | "tone-select" | "result" | "translate-result" | "quick-replies-select" | "quick-replies-result" | "saved-text";
 
 interface RephraseResult {
   id: string;
@@ -192,6 +200,12 @@ interface QuickReplyResult {
   timestamp: number;
 }
 
+interface SavedTextItem {
+  id: string;
+  text: string;
+  timestamp: number;
+}
+
 const PROMPT_BUTTONS: PromptButton[] = [
   {
     id: "rephrase",
@@ -218,10 +232,10 @@ const PROMPT_BUTTONS: PromptButton[] = [
     borderClass: "border-border",
   },
   {
-    id: "clipboard",
-    label: "Clipboard",
-    icon: <Clipboard className="h-6 w-6 text-orange-500" />,
-    description: "Paste and format clipboard",
+    id: "saved-text",
+    label: "Saved text",
+    icon: <Bookmark className="h-6 w-6 text-orange-500" />,
+    description: "Quick insert saved text",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
   },
@@ -271,6 +285,16 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const [quickReplyResults, setQuickReplyResults] = useState<QuickReplyResult[]>([]);
   const [selectedQuickReplyResultId, setSelectedQuickReplyResultId] = useState<string | null>(null);
 
+  // Load saved text items from localStorage
+  const [savedTextItems, setSavedTextItems] = useState<SavedTextItem[]>(() => {
+    try {
+      const saved = localStorage.getItem("saved-text-items");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   // Ref for auto-scrolling to the bottom when new variant is generated
   const resultsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -300,6 +324,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       // localStorage might not be available
     }
   }, [quickRepliesLanguage]);
+
+  // Save saved text items to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("saved-text-items", JSON.stringify(savedTextItems));
+    } catch {
+      // localStorage might not be available
+    }
+  }, [savedTextItems]);
 
   useEffect(() => {
     const handleReset = () => {
@@ -597,6 +630,56 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     });
   };
 
+  const handleSaveFromClipboard = async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      if (clipboardText && clipboardText.trim()) {
+        const newItem: SavedTextItem = {
+          id: `saved-${Date.now()}`,
+          text: clipboardText.trim(),
+          timestamp: Date.now(),
+        };
+        setSavedTextItems([newItem, ...savedTextItems]);
+        toast({
+          title: "Saved",
+          description: "Text saved from clipboard",
+        });
+      } else {
+        toast({
+          title: "Clipboard empty",
+          description: "No text found in clipboard",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Clipboard access denied",
+        description: "Please allow clipboard access",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteSavedText = (itemId: string) => {
+    setSavedTextItems(savedTextItems.filter(item => item.id !== itemId));
+    toast({
+      title: "Deleted",
+      description: "Saved text removed",
+    });
+  };
+
+  const handleInsertSavedText = (itemId: string) => {
+    const item = savedTextItems.find(i => i.id === itemId);
+    if (!item) return;
+
+    onTextChange(text + item.text);
+    setMenuLevel("main");
+    toast({
+      title: "Inserted",
+      description: "Text inserted into input field",
+    });
+  };
+
   const handlePromptClick = async (promptId: string) => {
     switch (promptId) {
       case "rephrase":
@@ -627,29 +710,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         setMenuLevel("quick-replies-select");
         break;
 
-      case "clipboard":
-        try {
-          const clipboardText = await navigator.clipboard.readText();
-          if (clipboardText) {
-            onTextChange(text + clipboardText);
-            toast({
-              title: "Pasted from clipboard",
-              description: `Added ${clipboardText.length} characters`,
-            });
-          } else {
-            toast({
-              title: "Clipboard empty",
-              description: "No text found in clipboard",
-              variant: "destructive",
-            });
-          }
-        } catch (err) {
-          toast({
-            title: "Clipboard access denied",
-            description: "Please allow clipboard access",
-            variant: "destructive",
-          });
-        }
+      case "saved-text":
+        setMenuLevel("saved-text");
         break;
     }
   };
@@ -682,6 +744,24 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       title = "👉 Choose a tone for your message";
     } else if (menuLevel === "quick-replies-select") {
       title = "👉 Quick replies for common work situations";
+    } else if (menuLevel === "saved-text") {
+      title = "🔖 Saved text for quick insert";
+
+      return (
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+          <div className="flex items-center gap-2 flex-1">
+            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+      );
     } else if (menuLevel === "translate-result") {
       title = "👉 Translate incoming message";
 
@@ -1283,6 +1363,60 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     </div>
   );
 
+  // Render saved text view
+  const renderSavedText = () => (
+    <div className="flex flex-col gap-3 p-1 max-h-[400px]">
+      {/* Save from clipboard button */}
+      <div className="flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={handleSaveFromClipboard}
+          className="flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-lg border-2 bg-primary text-primary-foreground border-primary active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
+          data-testid="button-save-from-clipboard"
+        >
+          <Clipboard className="h-4 w-4" />
+          <span className="text-sm font-medium">Save from clipboard</span>
+        </button>
+        <div className="text-xs text-muted-foreground text-center px-2">
+          Save text from clipboard to reuse it later
+        </div>
+      </div>
+
+      {/* Saved text items list */}
+      <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[250px]">
+        {savedTextItems.length === 0 ? (
+          <div className="text-sm text-muted-foreground text-center py-8">
+            No saved texts yet. Save text from clipboard to quick insert it later.
+          </div>
+        ) : (
+          savedTextItems.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => handleInsertSavedText(item.id)}
+              className="flex items-center gap-2 p-3 rounded-lg border bg-card border-border cursor-pointer hover:bg-accent/50 active:scale-[0.99] transition-all duration-75 touch-manipulation"
+            >
+              <div className="flex-1 text-sm text-foreground overflow-hidden text-ellipsis whitespace-nowrap">
+                {item.text}
+              </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteSavedText(item.id);
+                }}
+                className="p-1.5 rounded-md hover:bg-destructive/10 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
+                data-testid={`button-delete-${item.id}`}
+                aria-label="Delete saved text"
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex flex-col gap-2 w-full">
       {renderHeader()}
@@ -1294,6 +1428,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       {menuLevel === "translate-result" && renderTranslateResult()}
       {menuLevel === "quick-replies-select" && renderQuickRepliesSelect()}
       {menuLevel === "quick-replies-result" && renderQuickRepliesResult()}
+      {menuLevel === "saved-text" && renderSavedText()}
 
       {/* Globe button at bottom left - iOS style */}
       {onSwitchKeyboard && (
