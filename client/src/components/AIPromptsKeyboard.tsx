@@ -191,7 +191,7 @@ const LANGUAGES = [
   { code: "zh", label: "Chinese" },
 ];
 
-type MenuLevel = "main" | "tone-select" | "result" | "translate-result" | "quick-replies-select" | "quick-replies-result" | "saved-text";
+type MenuLevel = "main" | "tone-select" | "result" | "translate-result" | "quick-replies-select" | "quick-replies-result" | "saved-text" | "rephrase-empty-preview";
 
 interface RephraseResult {
   id: string;
@@ -383,6 +383,13 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       });
     }
   }, [rephraseResults.length, translateResults.length, quickReplyResults.length]);
+
+  // Auto-transition from rephrase-empty-preview to tone-select when preview becomes non-empty
+  useEffect(() => {
+    if (menuLevel === "rephrase-empty-preview" && (previewText.trim() || text.trim())) {
+      setMenuLevel("tone-select");
+    }
+  }, [menuLevel, previewText, text]);
 
   // Определяем текст для предпросмотра: приоритет за полем ввода кроме одного случая:
   // мы вставили текст из буфера (previewText), при этом он еще не синхронизировался с основным полем
@@ -708,11 +715,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     switch (promptId) {
       case "rephrase":
         if (!text.trim() && !previewText.trim()) {
-          toast({
-            title: "No text to rephrase",
-            description: "Please enter some text first",
-            variant: "destructive",
-          });
+          // Show empty preview state with prompt to paste text
+          setMenuLevel("rephrase-empty-preview");
           return;
         }
         setMenuLevel("tone-select");
@@ -762,6 +766,23 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               <X className="h-5 w-5 text-muted-foreground" />
             </button>
           )}
+        </div>
+      );
+    } else if (menuLevel === "rephrase-empty-preview") {
+      title = "✏️ Rephrase";
+      return (
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+          <div className="flex-1">
+            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
         </div>
       );
     } else if (menuLevel === "tone-select") {
@@ -973,6 +994,36 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           </span>
         </button>
       ))}
+    </div>
+  );
+
+  // Render empty preview prompt for rephrase
+  const renderRephraseEmptyPreview = () => (
+    <div className="flex flex-col gap-4 p-1">
+      {/* Preview field */}
+      <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
+        <div className="text-sm text-muted-foreground/60 pr-8">
+          Paste a message or situation here
+        </div>
+        <div className="absolute top-2 right-2 flex gap-1">
+          <button
+            type="button"
+            onClick={handlePasteFromClipboard}
+            className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
+            data-testid="button-paste-rephrase-empty"
+            aria-label="Paste from clipboard"
+          >
+            <Clipboard className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+      </div>
+
+      {/* Large prompt message */}
+      <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
+        <div className="text-lg font-semibold text-center text-foreground">
+          Paste the message you want to rephrase
+        </div>
+      </div>
     </div>
   );
 
@@ -1469,6 +1520,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       {renderPreviewField()}
 
       {menuLevel === "main" && renderMainMenu()}
+      {menuLevel === "rephrase-empty-preview" && renderRephraseEmptyPreview()}
       {menuLevel === "tone-select" && renderToneSelect()}
       {menuLevel === "result" && renderResult()}
       {menuLevel === "translate-result" && renderTranslateResult()}
