@@ -808,7 +808,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "translate-result") {
-      title = "👉 Translate incoming message";
+      title = "🌍 Translate incoming message";
 
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
