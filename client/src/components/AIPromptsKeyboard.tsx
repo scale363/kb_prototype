@@ -1279,9 +1279,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     <div className="flex flex-col gap-3 p-1 max-h-[400px]">
       {/* Context field */}
       <div className="px-0">
-        <label className="block text-xs font-medium text-muted-foreground mb-1.5 px-1">
-          Context
-        </label>
+        <label className="block text-xs font-medium text-muted-foreground mb-1.5 px-1">Paste the message to generate a polite, professional agreement without taking on unnecessary commitments. </label>
         <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
           {displayPreviewText.trim() ? (
             <div className="text-sm text-foreground font-medium leading-relaxed pr-8">
