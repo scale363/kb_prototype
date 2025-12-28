@@ -1002,7 +1002,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     <div className="flex flex-col gap-4 p-1">
       {/* Preview field */}
       <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
-        <div className="text-sm text-muted-foreground/60 pr-8">Make your message sound natural, polite, and professional.</div>
+        <div className="text-sm text-muted-foreground/60 pr-8">Paste your message here</div>
         <div className="absolute top-2 right-2 flex gap-1">
           <button
             type="button"
