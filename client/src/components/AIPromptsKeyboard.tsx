@@ -790,7 +790,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     } else if (menuLevel === "quick-replies-select") {
       title = "👉 Quick replies for common work situations";
     } else if (menuLevel === "saved-text") {
-      title = "🔖 Saved text for quick insert";
+      title = "🔖 Saved text";
 
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
