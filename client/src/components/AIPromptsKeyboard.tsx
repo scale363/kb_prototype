@@ -190,7 +190,7 @@ const QUICK_REPLY_SUBTEXTS: Record<string, string> = {
   "ask-to-clarify": "Improve the result by pasting the message.",
   "apologize": "Improve the result by describing the situation.",
   "service-complaint": "Improve the result by describing the issue.",
-  "remind-politely": "Improve the result by pasting your previous message.",
+  "remind-politely": "Improve the result by pasting the message you want to follow up on.",
   "help-me-write": "Improve the result by describing the situation.",
 };
 
