@@ -786,7 +786,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "tone-select") {
-      title = "👉 Choose a tone for your message";
+      title = "✏️ Choose a tone for your message";
     } else if (menuLevel === "quick-replies-select") {
       title = "👉 Quick replies for common work situations";
     } else if (menuLevel === "saved-text") {
