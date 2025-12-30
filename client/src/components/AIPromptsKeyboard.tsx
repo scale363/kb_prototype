@@ -773,11 +773,37 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "quick-replies-empty-preview") {
-      title = "💬 Quick Replies";
+      title = "💬 Quick replies";
+      const tooltip = "All replies are generated in a safe, professional tone suitable for work communication. Paste a client message or briefly describe the situation to get started.";
+
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
-          <div className="flex-1">
+          <div className="flex items-center gap-2 flex-1">
             <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+            {tooltip && (
+              <Tooltip
+                delayDuration={0}
+                open={openTooltipId === "quick-replies-empty-info"}
+                onOpenChange={(open) => setOpenTooltipId(open ? "quick-replies-empty-info" : null)}
+              >
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenTooltipId(openTooltipId === "quick-replies-empty-info" ? null : "quick-replies-empty-info");
+                    }}
+                    aria-label={`Info about ${title}`}
+                  >
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[250px] z-50">
+                  <p className="text-xs">{tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
           <button
             type="button"
@@ -792,7 +818,48 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     } else if (menuLevel === "tone-select") {
       title = "✏️ Choose a tone for your message";
     } else if (menuLevel === "quick-replies-select") {
-      title = "💬 Quick replies for common work situations";
+      title = "💬 Quick replies";
+      const tooltip = "All replies are generated in a safe, professional tone suitable for work communication. Paste a client message or briefly describe the situation to get started.";
+
+      return (
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+          <div className="flex items-center gap-2 flex-1">
+            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+            {tooltip && (
+              <Tooltip
+                delayDuration={0}
+                open={openTooltipId === "quick-replies-select-info"}
+                onOpenChange={(open) => setOpenTooltipId(open ? "quick-replies-select-info" : null)}
+              >
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenTooltipId(openTooltipId === "quick-replies-select-info" ? null : "quick-replies-select-info");
+                    }}
+                    aria-label={`Info about ${title}`}
+                  >
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[250px] z-50">
+                  <p className="text-xs">{tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+      );
     } else if (menuLevel === "saved-text") {
       title = "🔖 Saved text";
       const tooltip = "Addresses, replies, and common phrases — always at hand";
