@@ -142,7 +142,7 @@ const QUICK_REPLY_ACTIONS: QuickReplyAction[] = [
   },
   {
     id: "ask-to-clarify",
-    label: "Ask to clarify",
+    label: "Clarify details",
     emoji: "❓",
     tooltip: "Paste the message to generate professional clarification questions based on its content.",
     colorClass: "bg-card dark:bg-card",
