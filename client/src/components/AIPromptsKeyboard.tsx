@@ -82,26 +82,18 @@ const TONE_OPTIONS: ToneOption[] = [
     borderClass: "border-border",
   },
   {
-    id: "professional",
-    label: "Professional",
-    emoji: "\u{1F454}",
-    tooltip: "Clear, neutral business tone suitable for clients, managers, and formal communication.",
+    id: "grammar-check",
+    label: "Grammar Check",
+    emoji: "✍️",
+    tooltip: "Fixes grammar, spelling, and punctuation without rewriting your message.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
   },
   {
-    id: "friendly",
-    label: "Friendly",
-    emoji: "\u{1F44B}",
-    tooltip: "Warm and human tone while staying professional and work-appropriate.",
-    colorClass: "bg-card dark:bg-card",
-    borderClass: "border-border",
-  },
-  {
-    id: "urgent",
-    label: "Urgent",
-    emoji: "\u{26A1}",
-    tooltip: "Adds urgency and clarity without sounding rude or aggressive.",
+    id: "informal",
+    label: "Informal",
+    emoji: "💬",
+    tooltip: "Makes your message sound informal and natural — not work-style.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
   },
@@ -967,7 +959,14 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       );
     } else if (menuLevel === "result" && selectedTone) {
       const tone = TONE_OPTIONS.find(t => t.id === selectedTone);
-      title = `${tone?.emoji || ''} Optimized for ${(tone?.label || selectedTone).toLowerCase()} tone`;
+      // Custom titles for each tone
+      const titleMap: Record<string, string> = {
+        "grammar-check": "✍️ Grammar corrected",
+        "work-safe": `${tone?.emoji || ''} Safe to send at work`,
+        "informal": "💬 Informal version",
+        "short-clear": `${tone?.emoji || ''} Shorter and clearer`,
+      };
+      title = titleMap[selectedTone] || `${tone?.emoji || ''} Optimized for ${(tone?.label || selectedTone).toLowerCase()} tone`;
       const tooltip = tone?.tooltip;
 
       return (
@@ -1215,117 +1214,124 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   );
 
   // Render result view with scrollable results
-  const renderResult = () => (
-    <div className="flex flex-col gap-3 p-1 max-h-[400px]">
-      {/* Results container with scroll */}
-      <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
-        {rephraseResults.map((result, index) => {
-          const isSelected = selectedResultId === result.id;
-          return (
-            <div
-              key={result.id}
-              onClick={() => setSelectedResultId(isSelected ? null : result.id)}
-              className={`
-                flex flex-col gap-2 p-4 rounded-xl cursor-pointer
-                ${isSelected
-                  ? "bg-accent/20 border border-primary/50"
-                  : "bg-accent/10 border border-accent"}
-                active:scale-[0.99] transition-all duration-75
-                touch-manipulation
-              `}
-            >
-              {/* Result text */}
-              <div className="space-y-2">
-                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                  {result.text}
+  const renderResult = () => {
+    // Check if current tone should hide language selector
+    const shouldHideLanguageSelector = selectedTone === "grammar-check" || selectedTone === "short-clear";
+
+    return (
+      <div className="flex flex-col gap-3 p-1 max-h-[400px]">
+        {/* Results container with scroll */}
+        <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
+          {rephraseResults.map((result, index) => {
+            const isSelected = selectedResultId === result.id;
+            return (
+              <div
+                key={result.id}
+                onClick={() => setSelectedResultId(isSelected ? null : result.id)}
+                className={`
+                  flex flex-col gap-2 p-4 rounded-xl cursor-pointer
+                  ${isSelected
+                    ? "bg-accent/20 border border-primary/50"
+                    : "bg-accent/10 border border-accent"}
+                  active:scale-[0.99] transition-all duration-75
+                  touch-manipulation
+                `}
+              >
+                {/* Result text */}
+                <div className="space-y-2">
+                  <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                    {result.text}
+                  </div>
                 </div>
+                {/* Action buttons for this result - only show when selected */}
+                {isSelected && (
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopyResult(result.id);
+                      }}
+                      className={`
+                        flex-1 flex items-center justify-center gap-2
+                        min-h-[40px] px-3
+                        rounded-lg border-2
+                        ${copiedResultId === result.id
+                          ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
+                          : "bg-secondary border-border"}
+                        active:scale-[0.98]
+                        transition-all duration-75
+                        touch-manipulation select-none
+                      `}
+                      data-testid={`button-copy-${result.id}`}
+                    >
+                      {copiedResultId === result.id ? (
+                        <>
+                          <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          <span className="text-xs font-medium">Скопировано</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-4 w-4" />
+                          <span className="text-xs font-medium">Копировать</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleApplyResult(result.id);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 border-[#0b9786] active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none bg-[#0b9786] text-[#ffffff]"
+                      data-testid={`button-apply-${result.id}`}
+                    >
+                      <Check className="h-4 w-4" />
+                      <span className="text-xs font-semibold">Применить</span>
+                    </button>
+                  </div>
+                )}
               </div>
-              {/* Action buttons for this result - only show when selected */}
-              {isSelected && (
-                <div className="flex gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopyResult(result.id);
-                    }}
-                    className={`
-                      flex-1 flex items-center justify-center gap-2
-                      min-h-[40px] px-3
-                      rounded-lg border-2
-                      ${copiedResultId === result.id
-                        ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
-                        : "bg-secondary border-border"}
-                      active:scale-[0.98]
-                      transition-all duration-75
-                      touch-manipulation select-none
-                    `}
-                    data-testid={`button-copy-${result.id}`}
-                  >
-                    {copiedResultId === result.id ? (
-                      <>
-                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        <span className="text-xs font-medium">Скопировано</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-4 w-4" />
-                        <span className="text-xs font-medium">Копировать</span>
-                      </>
-                    )}
-                  </button>
+            );
+          })}
+        </div>
 
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleApplyResult(result.id);
-                    }}
-                    className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 border-[#0b9786] active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none bg-[#0b9786] text-[#ffffff]"
-                    data-testid={`button-apply-${result.id}`}
-                  >
-                    <Check className="h-4 w-4" />
-                    <span className="text-xs font-semibold">Применить</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+        {/* Control panel */}
+        <div className="flex gap-2 pt-2">
+          {/* Language selector (compact) - hide for grammar-check and short-clear */}
+          {!shouldHideLanguageSelector && (
+            <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+              <SelectTrigger
+                className="flex-1 min-h-[40px] rounded-lg border-2 text-sm"
+                data-testid="select-language"
+              >
+                <SelectValue placeholder="Язык" />
+              </SelectTrigger>
+              <SelectContent>
+                {LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.code} value={lang.code} data-testid={`option-lang-${lang.code}`}>
+                    {lang.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
-      {/* Control panel */}
-      <div className="flex gap-2 pt-2">
-        {/* Language selector (compact) */}
-        <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-          <SelectTrigger
-            className="flex-1 min-h-[40px] rounded-lg border-2 text-sm"
-            data-testid="select-language"
+          {/* Create new variant button (icon only) */}
+          <button
+            type="button"
+            onClick={handleReprocess}
+            className={`flex items-center justify-center min-h-[40px] min-w-[40px] rounded-lg border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none ${shouldHideLanguageSelector ? 'ml-auto' : ''}`}
+            data-testid="button-reprocess"
+            aria-label="Создать новый вариант"
           >
-            <SelectValue placeholder="Язык" />
-          </SelectTrigger>
-          <SelectContent>
-            {LANGUAGES.map((lang) => (
-              <SelectItem key={lang.code} value={lang.code} data-testid={`option-lang-${lang.code}`}>
-                {lang.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Create new variant button (icon only) */}
-        <button
-          type="button"
-          onClick={handleReprocess}
-          className="flex items-center justify-center min-h-[40px] min-w-[40px] rounded-lg border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
-          data-testid="button-reprocess"
-          aria-label="Создать новый вариант"
-        >
-          <RefreshCw className="h-5 w-5" />
-        </button>
+            <RefreshCw className="h-5 w-5" />
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Render translate result view with scrollable results
   const renderTranslateResult = () => (
