@@ -1216,7 +1216,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render result view with scrollable results
   const renderResult = () => {
     // Check if current tone should hide language selector
-    const shouldHideLanguageSelector = selectedTone === "grammar-check" || selectedTone === "short-clear";
+    const shouldHideLanguageSelector = selectedTone === "grammar-check";
+    // Check if current tone should hide new variant button
+    const shouldHideNewVariantButton = selectedTone === "grammar-check";
 
     return (
       <div className="flex flex-col gap-3 p-1 max-h-[400px]">
@@ -1299,7 +1301,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
         {/* Control panel */}
         <div className="flex gap-2 pt-2">
-          {/* Language selector (compact) - hide for grammar-check and short-clear */}
+          {/* Language selector (compact) - hide for grammar-check */}
           {!shouldHideLanguageSelector && (
             <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
               <SelectTrigger
@@ -1318,16 +1320,18 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             </Select>
           )}
 
-          {/* Create new variant button (icon only) */}
-          <button
-            type="button"
-            onClick={handleReprocess}
-            className={`flex items-center justify-center min-h-[40px] min-w-[40px] rounded-lg border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none ${shouldHideLanguageSelector ? 'ml-auto' : ''}`}
-            data-testid="button-reprocess"
-            aria-label="Создать новый вариант"
-          >
-            <RefreshCw className="h-5 w-5" />
-          </button>
+          {/* Create new variant button (icon only) - hide for grammar-check */}
+          {!shouldHideNewVariantButton && (
+            <button
+              type="button"
+              onClick={handleReprocess}
+              className={`flex items-center justify-center min-h-[40px] min-w-[40px] rounded-lg border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none ${shouldHideLanguageSelector ? 'ml-auto' : ''}`}
+              data-testid="button-reprocess"
+              aria-label="Создать новый вариант"
+            >
+              <RefreshCw className="h-5 w-5" />
+            </button>
+          )}
         </div>
       </div>
     );
