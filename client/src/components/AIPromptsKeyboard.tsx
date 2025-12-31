@@ -916,7 +916,12 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       );
     } else if (menuLevel === "quick-replies-result" && selectedQuickReplyAction) {
       const action = QUICK_REPLY_ACTIONS.find(a => a.id === selectedQuickReplyAction);
-      title = `${action?.emoji || ''} ${action?.label || selectedQuickReplyAction}`;
+      // Special title for help-me-write action
+      if (selectedQuickReplyAction === "help-me-write") {
+        title = "📝 Message for your situation";
+      } else {
+        title = `${action?.emoji || ''} ${action?.label || selectedQuickReplyAction}`;
+      }
       const tooltip = action?.tooltip;
 
       return (
