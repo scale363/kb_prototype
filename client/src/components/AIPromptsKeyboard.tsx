@@ -1498,13 +1498,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     return (
       <div className="flex flex-col gap-3 p-1 max-h-[400px]">
-        {/* Subtext label */}
-        {subtext && (
-          <div className="px-0">
-            <label className="block text-xs font-medium text-muted-foreground mb-1.5 px-1">{subtext}</label>
-          </div>
-        )}
-
         {/* Results container with scroll */}
       <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
         {quickReplyResults.map((result, index) => {
