@@ -236,7 +236,7 @@ interface SavedTextItem {
 const PROMPT_BUTTONS: PromptButton[] = [
   {
     id: "rephrase",
-    label: "Rephrase",
+    label: "Improve your message",
     icon: <RefreshCw className="h-6 w-6 text-blue-500" />,
     description: "Rewrite text differently",
     colorClass: "bg-card dark:bg-card",
@@ -732,7 +732,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "rephrase-empty-preview") {
-      title = "✏️ Rephrase";
+      title = "✏️ Improve your message";
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
           <div className="flex-1">
@@ -809,7 +809,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "tone-select") {
-      title = "✏️ Rephrase";
+      title = "✏️ Improve your message";
     } else if (menuLevel === "quick-replies-select") {
       title = "💬 Quick replies";
       const tooltip = "All replies are generated in a safe, professional tone suitable for work communication. Paste a client message or briefly describe the situation to get started.";
