@@ -732,7 +732,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "rephrase-empty-preview") {
-      title = "✏️ Improve your message";
+      title = "✏️ Rephrase";
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
           <div className="flex-1">
@@ -809,7 +809,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "tone-select") {
-      title = "✏️ Improve your message";
+      title = "✏️ Rephrase";
     } else if (menuLevel === "quick-replies-select") {
       title = "💬 Quick replies";
       const tooltip = "All replies are generated in a safe, professional tone suitable for work communication. Paste a client message or briefly describe the situation to get started.";
