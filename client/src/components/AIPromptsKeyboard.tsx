@@ -766,7 +766,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "quick-replies-empty-preview") {
-      title = "📝 Message for your situation";
+      title = "📝 Help me write. ";
       const tooltip = "Describe the situation, and we'll help you write a clear, professional message.";
 
       return (
