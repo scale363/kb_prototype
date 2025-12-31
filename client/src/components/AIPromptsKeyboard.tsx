@@ -1114,7 +1114,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
       {/* Large prompt message */}
       <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-        <div className="text-lg font-semibold text-center text-foreground">✏️ Rephrase. </div>
         <div className="text-center text-[18px] font-semibold text-[#22282a]">Make your message sound natural, polite, and professional.</div>
       </div>
     </div>
