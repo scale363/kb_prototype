@@ -252,9 +252,9 @@ const PROMPT_BUTTONS: PromptButton[] = [
   },
   {
     id: "quick-replies",
-    label: "Quick Replies",
+    label: "Help me write",
     icon: <MessageSquare className="h-6 w-6 text-emerald-500" />,
-    description: "Quick replies for common work situations",
+    description: "Help me write a message for your situation",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
   },
@@ -400,10 +400,10 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
   }, [menuLevel, previewText, text]);
 
-  // Auto-transition from quick-replies-empty-preview to quick-replies-select when preview becomes non-empty
+  // Auto-transition from quick-replies-empty-preview to help-me-write action when preview becomes non-empty
   useEffect(() => {
     if (menuLevel === "quick-replies-empty-preview" && (previewText.trim() || text.trim())) {
-      setMenuLevel("quick-replies-select");
+      handleQuickReplyActionSelect("help-me-write");
     }
   }, [menuLevel, previewText, text]);
 
@@ -697,7 +697,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           setMenuLevel("quick-replies-empty-preview");
           return;
         }
-        setMenuLevel("quick-replies-select");
+        // Directly trigger "help-me-write" action
+        handleQuickReplyActionSelect("help-me-write");
         break;
 
       case "saved-text":
@@ -765,8 +766,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "quick-replies-empty-preview") {
-      title = "💬 Quick replies";
-      const tooltip = "All replies are generated in a safe, professional tone suitable for work communication. Paste a client message or briefly describe the situation to get started.";
+      title = "📝 Help me write";
+      const tooltip = "Describe the situation, and we'll help you write a clear, professional message.";
 
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
@@ -1113,7 +1114,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
       {/* Large prompt message */}
       <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-        <div className="text-lg font-semibold text-center text-foreground">Make your message sound natural, polite, and professional.</div>
+        <div className="text-lg font-semibold text-center text-foreground">✏️ Improve your message</div>
       </div>
     </div>
   );
@@ -1154,7 +1155,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       {/* Preview field */}
       <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
         <div className="text-sm text-muted-foreground/60 pr-8">
-          Paste a message or describe the situation
+          Briefly describe the situation…
         </div>
         <div className="absolute top-2 right-2 flex gap-1">
           <button
@@ -1172,7 +1173,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       {/* Large prompt message */}
       <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
         <div className="text-center text-[18px] font-semibold text-[#22282a]">
-          Get a ready-to-send reply in seconds.
+          We'll turn your situation into a clear, well-written message.
         </div>
       </div>
     </div>
