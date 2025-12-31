@@ -733,10 +733,36 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       );
     } else if (menuLevel === "rephrase-empty-preview") {
       title = "✏️ Rephrase";
+      const tooltip = "Make your message sound natural, polite, and professional.";
+
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
-          <div className="flex-1">
+          <div className="flex items-center gap-2 flex-1">
             <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+            {tooltip && (
+              <Tooltip
+                delayDuration={0}
+                open={openTooltipId === "rephrase-empty-info"}
+                onOpenChange={(open) => setOpenTooltipId(open ? "rephrase-empty-info" : null)}
+              >
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenTooltipId(openTooltipId === "rephrase-empty-info" ? null : "rephrase-empty-info");
+                    }}
+                    aria-label={`Info about ${title}`}
+                  >
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[250px] z-50">
+                  <p className="text-xs">{tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
           <button
             type="button"
@@ -750,10 +776,36 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       );
     } else if (menuLevel === "translate-empty-preview") {
       title = "🌍 Translate";
+      const tooltip = "Literal translation to clearly understand meaning and tone.";
+
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
-          <div className="flex-1">
+          <div className="flex items-center gap-2 flex-1">
             <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+            {tooltip && (
+              <Tooltip
+                delayDuration={0}
+                open={openTooltipId === "translate-empty-info"}
+                onOpenChange={(open) => setOpenTooltipId(open ? "translate-empty-info" : null)}
+              >
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenTooltipId(openTooltipId === "translate-empty-info" ? null : "translate-empty-info");
+                    }}
+                    aria-label={`Info about ${title}`}
+                  >
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[250px] z-50">
+                  <p className="text-xs">{tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
           <button
             type="button"
@@ -810,6 +862,47 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       );
     } else if (menuLevel === "tone-select") {
       title = "✏️ Improve your message";
+      const tooltip = "Make your message sound natural, polite, and professional.";
+
+      return (
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+          <div className="flex items-center gap-2 flex-1">
+            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+            {tooltip && (
+              <Tooltip
+                delayDuration={0}
+                open={openTooltipId === "tone-select-info"}
+                onOpenChange={(open) => setOpenTooltipId(open ? "tone-select-info" : null)}
+              >
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenTooltipId(openTooltipId === "tone-select-info" ? null : "tone-select-info");
+                    }}
+                    aria-label={`Info about ${title}`}
+                  >
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[250px] z-50">
+                  <p className="text-xs">{tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+      );
     } else if (menuLevel === "quick-replies-select") {
       title = "💬 Quick replies";
       const tooltip = "All replies are generated in a safe, professional tone suitable for work communication. Paste a client message or briefly describe the situation to get started.";
@@ -898,11 +991,36 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       );
     } else if (menuLevel === "translate-result") {
       title = "🌍 Translate incoming message";
+      const tooltip = "Literal translation to clearly understand meaning and tone.";
 
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
           <div className="flex items-center gap-2 flex-1">
             <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
+            {tooltip && (
+              <Tooltip
+                delayDuration={0}
+                open={openTooltipId === "translate-result-info"}
+                onOpenChange={(open) => setOpenTooltipId(open ? "translate-result-info" : null)}
+              >
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenTooltipId(openTooltipId === "translate-result-info" ? null : "translate-result-info");
+                    }}
+                    aria-label={`Info about ${title}`}
+                  >
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[250px] z-50">
+                  <p className="text-xs">{tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
           <button
             type="button"
