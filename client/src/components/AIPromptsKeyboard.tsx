@@ -809,7 +809,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "tone-select") {
-      title = "✏️ Rephrase";
+      title = "✏️ Improve your message";
     } else if (menuLevel === "quick-replies-select") {
       title = "💬 Quick replies";
       const tooltip = "All replies are generated in a safe, professional tone suitable for work communication. Paste a client message or briefly describe the situation to get started.";
