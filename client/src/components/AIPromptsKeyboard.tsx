@@ -766,7 +766,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "quick-replies-empty-preview") {
-      title = "📝 Help me write";
+      title = "📝 Message for your situation";
       const tooltip = "Describe the situation, and we'll help you write a clear, professional message.";
 
       return (
@@ -1115,6 +1115,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       {/* Large prompt message */}
       <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
         <div className="text-lg font-semibold text-center text-foreground">✏️ Improve your message</div>
+        <div className="text-sm text-center text-muted-foreground">Make your message sound natural, polite, and professional.</div>
       </div>
     </div>
   );
@@ -1170,12 +1171,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       </div>
 
-      {/* Large prompt message */}
-      <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-        <div className="text-center text-[18px] font-semibold text-[#22282a]">
-          We'll turn your situation into a clear, well-written message.
-        </div>
-      </div>
     </div>
   );
 
