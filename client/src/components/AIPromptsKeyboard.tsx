@@ -1460,117 +1460,114 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   };
 
   // Render translate result view with scrollable results
-  const renderTranslateResult = () => (
-    <div className="flex flex-col gap-3 p-1 max-h-[400px]">
-      {/* Results container with scroll */}
-      <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
-        {translateResults.map((result, index) => {
-          const isSelected = selectedTranslateResultId === result.id;
-          return (
-            <div
-              key={result.id}
-              onClick={() => setSelectedTranslateResultId(isSelected ? null : result.id)}
-              className={`
-                flex flex-col gap-2 p-4 rounded-xl cursor-pointer
-                ${isSelected
-                  ? "bg-accent/20 border border-primary/50"
-                  : "bg-accent/10 border border-accent"}
-                active:scale-[0.99] transition-all duration-75
-                touch-manipulation
-              `}
-            >
-              {/* Result text */}
-              <div className="space-y-2">
+  const renderTranslateResult = () => {
+    const selectedResult = translateResults.find(r => r.id === selectedTranslateResultId);
+    const isCopied = selectedResult && copiedResultId === selectedResult.id;
+    
+    return (
+      <div className="flex flex-col gap-3 p-1 max-h-[400px]">
+        {/* Results container with scroll */}
+        <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[280px]">
+          {translateResults.map((result) => {
+            const isSelected = selectedTranslateResultId === result.id;
+            return (
+              <div
+                key={result.id}
+                onClick={() => setSelectedTranslateResultId(isSelected ? null : result.id)}
+                className={`
+                  p-3 rounded-lg cursor-pointer
+                  ${isSelected
+                    ? "bg-accent/20 border border-primary/50"
+                    : "bg-accent/10 border border-transparent hover:border-accent/50"}
+                  active:scale-[0.99] transition-all duration-75
+                  touch-manipulation
+                `}
+              >
                 <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                   {result.text}
                 </div>
               </div>
-              {/* Action buttons for this result - only show when selected */}
-              {isSelected && (
-                <div className="flex gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopyResult(result.id);
-                    }}
-                    className={`
-                      flex-1 flex items-center justify-center gap-2
-                      min-h-[40px] px-3
-                      rounded-lg border-2
-                      ${copiedResultId === result.id
-                        ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
-                        : "bg-secondary border-border"}
-                      active:scale-[0.98]
-                      transition-all duration-75
-                      touch-manipulation select-none
-                    `}
-                    data-testid={`button-copy-translate-${result.id}`}
-                  >
-                    {copiedResultId === result.id ? (
-                      <>
-                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        <span className="text-xs font-medium">Скопировано</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-4 w-4" />
-                        <span className="text-xs font-medium">Копировать</span>
-                      </>
-                    )}
-                  </button>
+            );
+          })}
+        </div>
 
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleApplyTranslateResult(result.id);
-                    }}
-                    className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 border-[#0b9786] active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none bg-[#0b9786] text-[#ffffff]"
-                    data-testid={`button-apply-translate-${result.id}`}
-                  >
-                    <Check className="h-4 w-4" />
-                    <span className="text-xs font-semibold">Применить</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+        {/* Compact control panel - all 4 elements on one line */}
+        <div className="flex items-center gap-2 pt-1">
+          {/* Language selector (compact) */}
+          <Select value={translateLanguage} onValueChange={setTranslateLanguage}>
+            <SelectTrigger
+              className="w-[120px] h-9 rounded-md border text-sm"
+              data-testid="select-translate-language"
+            >
+              <SelectValue placeholder="Язык" />
+            </SelectTrigger>
+            <SelectContent>
+              {LANGUAGES.map((lang) => (
+                <SelectItem key={lang.code} value={lang.code} data-testid={`option-translate-lang-${lang.code}`}>
+                  {lang.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-      {/* Control panel */}
-      <div className="flex gap-2 pt-2">
-        {/* Language selector (compact) */}
-        <Select value={translateLanguage} onValueChange={setTranslateLanguage}>
-          <SelectTrigger
-            className="flex-1 min-h-[40px] rounded-lg border-2 text-sm"
-            data-testid="select-translate-language"
+          {/* New variant button (icon only) */}
+          <button
+            type="button"
+            onClick={handleRetranslate}
+            className="flex items-center justify-center h-9 w-9 rounded-md border bg-secondary hover:bg-accent/50 active:scale-[0.97] transition-all duration-75 touch-manipulation"
+            data-testid="button-retranslate"
+            aria-label="Новый вариант"
+            title="Новый вариант"
           >
-            <SelectValue placeholder="Язык" />
-          </SelectTrigger>
-          <SelectContent>
-            {LANGUAGES.map((lang) => (
-              <SelectItem key={lang.code} value={lang.code} data-testid={`option-translate-lang-${lang.code}`}>
-                {lang.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            <RefreshCw className="h-4 w-4" />
+          </button>
 
-        {/* Create new variant button (icon only) */}
-        <button
-          type="button"
-          onClick={handleRetranslate}
-          className="flex items-center justify-center min-h-[40px] min-w-[40px] rounded-lg border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
-          data-testid="button-retranslate"
-          aria-label="Создать новый вариант перевода"
-        >
-          <RefreshCw className="h-5 w-5" />
-        </button>
+          <div className="flex-1" />
+
+          {/* Copy button (icon only) */}
+          <button
+            type="button"
+            onClick={() => selectedResult && handleCopyResult(selectedResult.id)}
+            disabled={!selectedResult}
+            className={`
+              flex items-center justify-center h-9 w-9 rounded-md border
+              ${isCopied
+                ? "bg-green-100 dark:bg-green-950/50 border-green-300 dark:border-green-700"
+                : "bg-secondary hover:bg-accent/50"}
+              ${!selectedResult ? "opacity-40 cursor-not-allowed" : "active:scale-[0.97]"}
+              transition-all duration-75 touch-manipulation
+            `}
+            data-testid="button-copy-translate"
+            aria-label="Копировать"
+            title="Копировать"
+          >
+            {isCopied ? (
+              <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+          </button>
+
+          {/* Apply button */}
+          <button
+            type="button"
+            onClick={() => selectedResult && handleApplyTranslateResult(selectedResult.id)}
+            disabled={!selectedResult}
+            className={`
+              flex items-center justify-center gap-1.5 h-9 px-3 rounded-md
+              bg-[#0b9786] text-white font-medium text-sm
+              ${!selectedResult ? "opacity-40 cursor-not-allowed" : "hover:bg-[#0a8a7a] active:scale-[0.97]"}
+              transition-all duration-75 touch-manipulation
+            `}
+            data-testid="button-apply-translate"
+          >
+            <Check className="h-4 w-4" />
+            <span>Применить</span>
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Render quick replies selection menu
   const renderQuickRepliesSelect = () => (
