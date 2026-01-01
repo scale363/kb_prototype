@@ -1462,20 +1462,20 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render translate result view with scrollable results
   const renderTranslateResult = () => {
     const selectedResult = translateResults.find(r => r.id === selectedTranslateResultId);
-
+    const isCopied = selectedResult && copiedResultId === selectedResult.id;
+    
     return (
       <div className="flex flex-col gap-3 p-1 max-h-[400px]">
         {/* Results container with scroll */}
         <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[280px]">
           {translateResults.map((result) => {
             const isSelected = selectedTranslateResultId === result.id;
-            const isCopied = copiedResultId === result.id;
             return (
               <div
                 key={result.id}
                 onClick={() => setSelectedTranslateResultId(isSelected ? null : result.id)}
                 className={`
-                  flex flex-col gap-2 p-3 rounded-lg cursor-pointer
+                  p-3 rounded-lg cursor-pointer
                   ${isSelected
                     ? "bg-accent/20 border border-primary/50"
                     : "bg-accent/10 border border-transparent hover:border-accent/50"}
@@ -1486,85 +1486,69 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                 <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                   {result.text}
                 </div>
-
-                {/* Copy button - only show when selected */}
-                {isSelected && (
-                  <div className="flex gap-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCopyResult(result.id);
-                      }}
-                      className={`
-                        flex-1 flex items-center justify-center gap-2
-                        min-h-[40px] px-3
-                        rounded-lg border-2
-                        ${isCopied
-                          ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
-                          : "bg-secondary border-border"}
-                        active:scale-[0.98]
-                        transition-all duration-75
-                        touch-manipulation select-none
-                      `}
-                      data-testid="button-copy-translate"
-                    >
-                      {isCopied ? (
-                        <>
-                          <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-                          <span className="text-xs font-medium">Скопировано</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-4 w-4" />
-                          <span className="text-xs font-medium">Копировать</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
               </div>
             );
           })}
         </div>
 
-        {/* Control panel */}
+        {/* Compact control panel - all 4 elements on one line */}
         <div className="flex items-center gap-2 pt-1">
-          {/* Language and refresh group */}
-          <div className="flex items-center gap-2 border rounded-md p-1 bg-accent/10">
-            {/* Language selector (compact) */}
-            <Select value={translateLanguage} onValueChange={setTranslateLanguage}>
-              <SelectTrigger
-                className="w-[110px] h-8 rounded-md border-0 text-sm bg-transparent"
-                data-testid="select-translate-language"
-              >
-                <SelectValue placeholder="Язык" />
-              </SelectTrigger>
-              <SelectContent>
-                {LANGUAGES.map((lang) => (
-                  <SelectItem key={lang.code} value={lang.code} data-testid={`option-translate-lang-${lang.code}`}>
-                    {lang.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* New variant button (icon only) */}
-            <button
-              type="button"
-              onClick={handleRetranslate}
-              className="flex items-center justify-center h-8 w-8 rounded-md bg-secondary hover:bg-accent/50 active:scale-[0.97] transition-all duration-75 touch-manipulation"
-              data-testid="button-retranslate"
-              aria-label="Новый вариант"
-              title="Новый вариант"
+          {/* Language selector (compact) */}
+          <Select value={translateLanguage} onValueChange={setTranslateLanguage}>
+            <SelectTrigger
+              className="w-[120px] h-9 rounded-md border text-sm"
+              data-testid="select-translate-language"
             >
-              <RefreshCw className="h-4 w-4" />
-            </button>
-          </div>
+              <SelectValue placeholder="Язык" />
+            </SelectTrigger>
+            <SelectContent>
+              {LANGUAGES.map((lang) => (
+                <SelectItem key={lang.code} value={lang.code} data-testid={`option-translate-lang-${lang.code}`}>
+                  {lang.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* New variant button (icon only) */}
+          <button
+            type="button"
+            onClick={handleRetranslate}
+            className="flex items-center justify-center h-9 w-9 rounded-md border bg-secondary hover:bg-accent/50 active:scale-[0.97] transition-all duration-75 touch-manipulation"
+            data-testid="button-retranslate"
+            aria-label="Новый вариант"
+            title="Новый вариант"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
 
           <div className="flex-1" />
 
-          {/* Apply button - minimal width */}
+          {/* Copy button (icon only) */}
+          <button
+            type="button"
+            onClick={() => selectedResult && handleCopyResult(selectedResult.id)}
+            disabled={!selectedResult}
+            className={`
+              flex items-center justify-center h-9 w-9 rounded-md border
+              ${isCopied
+                ? "bg-green-100 dark:bg-green-950/50 border-green-300 dark:border-green-700"
+                : "bg-secondary hover:bg-accent/50"}
+              ${!selectedResult ? "opacity-40 cursor-not-allowed" : "active:scale-[0.97]"}
+              transition-all duration-75 touch-manipulation
+            `}
+            data-testid="button-copy-translate"
+            aria-label="Копировать"
+            title="Копировать"
+          >
+            {isCopied ? (
+              <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+          </button>
+
+          {/* Apply button */}
           <button
             type="button"
             onClick={() => selectedResult && handleApplyTranslateResult(selectedResult.id)}
@@ -1578,7 +1562,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             data-testid="button-apply-translate"
           >
             <Check className="h-4 w-4" />
-            <span>Apply</span>
+            <span>Применить</span>
           </button>
         </div>
       </div>
