@@ -450,7 +450,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   };
 
   const handleCopyResult = async (resultId: string) => {
-    const result = rephraseResults.find(r => r.id === resultId);
+    const result = rephraseResults.find(r => r.id === resultId) 
+      || translateResults.find(r => r.id === resultId)
+      || quickReplyResults.find(r => r.id === resultId);
     if (!result) return;
 
     try {
