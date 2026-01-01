@@ -1470,12 +1470,13 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[280px]">
           {translateResults.map((result) => {
             const isSelected = selectedTranslateResultId === result.id;
+            const isResultCopied = copiedResultId === result.id;
             return (
               <div
                 key={result.id}
                 onClick={() => setSelectedTranslateResultId(isSelected ? null : result.id)}
                 className={`
-                  p-3 rounded-lg cursor-pointer
+                  relative p-3 rounded-lg cursor-pointer
                   ${isSelected
                     ? "bg-accent/20 border border-primary/50"
                     : "bg-accent/10 border border-transparent hover:border-accent/50"}
@@ -1483,9 +1484,36 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                   touch-manipulation
                 `}
               >
-                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
                   {result.text}
                 </div>
+                {/* Copy button inside variant */}
+                {isSelected && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopyResult(result.id);
+                    }}
+                    className={`
+                      absolute top-2 right-2
+                      flex items-center justify-center h-7 w-7 rounded-md
+                      ${isResultCopied
+                        ? "bg-green-100 dark:bg-green-950/50"
+                        : "bg-background/80 hover:bg-accent/50"}
+                      active:scale-[0.95] transition-all duration-75 touch-manipulation
+                    `}
+                    data-testid={`button-copy-translate-${result.id}`}
+                    aria-label="Copy"
+                    title="Copy"
+                  >
+                    {isResultCopied ? (
+                      <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                  </button>
+                )}
               </div>
             );
           })}
@@ -1524,30 +1552,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
           <div className="flex-1" />
 
-          {/* Copy button (icon only) */}
-          <button
-            type="button"
-            onClick={() => selectedResult && handleCopyResult(selectedResult.id)}
-            disabled={!selectedResult}
-            className={`
-              flex items-center justify-center h-9 w-9 rounded-md border
-              ${isCopied
-                ? "bg-green-100 dark:bg-green-950/50 border-green-300 dark:border-green-700"
-                : "bg-secondary hover:bg-accent/50"}
-              ${!selectedResult ? "opacity-40 cursor-not-allowed" : "active:scale-[0.97]"}
-              transition-all duration-75 touch-manipulation
-            `}
-            data-testid="button-copy-translate"
-            aria-label="Копировать"
-            title="Копировать"
-          >
-            {isCopied ? (
-              <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-            ) : (
-              <Copy className="h-4 w-4" />
-            )}
-          </button>
-
           {/* Apply button */}
           <button
             type="button"
@@ -1562,7 +1566,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             data-testid="button-apply-translate"
           >
             <Check className="h-4 w-4" />
-            <span>Применить</span>
+            <span>Apply</span>
           </button>
         </div>
       </div>
