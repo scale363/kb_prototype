@@ -992,7 +992,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "translate-result") {
-      title = "🌍 Translate incoming message";
+      title = "🌍 Translated message";
       const tooltip = "Literal translation to clearly understand meaning and tone.";
 
       return (
