@@ -1786,7 +1786,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     <div className="flex flex-col gap-2 w-full">
       {renderHeader()}
       {renderPreviewField()}
-
       {menuLevel === "main" && renderMainMenu()}
       {menuLevel === "rephrase-empty-preview" && renderRephraseEmptyPreview()}
       {menuLevel === "translate-empty-preview" && renderTranslateEmptyPreview()}
@@ -1797,10 +1796,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       {menuLevel === "quick-replies-select" && renderQuickRepliesSelect()}
       {menuLevel === "quick-replies-result" && renderQuickRepliesResult()}
       {menuLevel === "saved-text" && renderSavedText()}
-
       {/* Globe button at bottom left - iOS style */}
       {onSwitchKeyboard && (
-        <div className="px-1 py-2">
+        <div className="px-1 py-2 bg-[#f4f6f6]">
           <button
             type="button"
             onClick={onSwitchKeyboard}
