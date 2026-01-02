@@ -1722,20 +1722,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         {menuLevel === "saved-text" && renderSavedText()}
       </div>
 
-      {/* Fixed footer - Globe button */}
-      {onSwitchKeyboard && (
-        <div className="flex-shrink-0 px-1 py-2 bg-[#f4f6f6]">
-          <button
-            type="button"
-            onClick={onSwitchKeyboard}
-            className="flex items-center justify-center min-h-[44px] min-w-[44px] px-4 bg-muted rounded-lg touch-manipulation active:scale-[0.97] transition-transform duration-75"
-            data-testid="key-switch-keyboard-ai"
-            aria-label="Switch keyboard"
-          >
-            <Globe className="h-5 w-5" />
-          </button>
-        </div>
-      )}
-    </div>
+      </div>
   );
 }
