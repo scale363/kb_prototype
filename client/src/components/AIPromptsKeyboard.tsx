@@ -1146,41 +1146,38 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     return (
       <div className="px-1">
-        <div className="flex items-start gap-2">
-          {/* Preview field */}
-          <div className="flex-1 flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
-            {hasContent ? (
-              <div className="text-sm text-foreground font-medium leading-relaxed pr-8">
-                {displayText}
-              </div>
-            ) : (
-              <div className="text-sm text-muted-foreground/60 pr-8">Paste a message or situation here</div>
-            )}
-            <div className="absolute top-2 right-2 flex gap-1">
-              <button
-                type="button"
-                onClick={handlePasteFromClipboard}
-                className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
-                data-testid="button-paste-empty"
-                aria-label="Paste from clipboard"
-              >
-                <Clipboard className="h-4 w-4 text-muted-foreground" />
-              </button>
+        {/* Preview field */}
+        <div className="flex-1 flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
+          {hasContent ? (
+            <div className="text-sm text-foreground font-medium leading-relaxed pr-16">
+              {displayText}
             </div>
-          </div>
-
-          {/* Close button */}
-          {onSwitchKeyboard && (
+          ) : (
+            <div className="text-sm text-muted-foreground/60 pr-16">Paste a message or situation here</div>
+          )}
+          <div className="absolute top-2 right-2 flex gap-1">
             <button
               type="button"
-              onClick={onSwitchKeyboard}
-              className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
-              aria-label="Close menu"
-              data-testid="button-close-main-menu"
+              onClick={handlePasteFromClipboard}
+              className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
+              data-testid="button-paste-empty"
+              aria-label="Paste from clipboard"
             >
-              <X className="h-5 w-5 text-muted-foreground" />
+              <Clipboard className="h-4 w-4 text-muted-foreground" />
             </button>
-          )}
+            {/* Close button */}
+            {onSwitchKeyboard && (
+              <button
+                type="button"
+                onClick={onSwitchKeyboard}
+                className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+                aria-label="Close menu"
+                data-testid="button-close-main-menu"
+              >
+                <X className="h-5 w-5 text-muted-foreground" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -1195,8 +1192,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           type="button"
           onClick={() => handlePromptClick(button.id)}
           className={`
-            flex flex-col items-center justify-center gap-2
-            min-h-[72px] p-4
+            flex flex-row items-center justify-start gap-3
+            min-h-[56px] px-4 py-3
             rounded-xl border
             ${button.colorClass}
             ${button.borderClass}
