@@ -1147,7 +1147,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     return (
       <div className="px-1">
         {/* Preview field */}
-        <div className="flex-1 flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
+        <div className="flex-1 flex flex-col gap-2 p-3 border-2 border-accent rounded-lg relative bg-[#eaf6f400]">
           {hasContent ? (
             <div className="text-sm text-foreground font-medium leading-relaxed pr-16">
               {displayText}
