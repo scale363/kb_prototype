@@ -1477,14 +1477,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               <div
                 key={result.id}
                 onClick={() => setSelectedTranslateResultId(isSelected ? null : result.id)}
-                className={`
-                  relative p-3 rounded-lg cursor-pointer
-                  ${isSelected
-                    ? "bg-accent/20 border border-primary/50"
-                    : "bg-accent/10 border border-transparent hover:border-accent/50"}
-                  active:scale-[0.99] transition-all duration-75
-                  touch-manipulation
-                `}
+                className="relative p-3 rounded-lg cursor-pointer border border-primary/50 active:scale-[0.99] transition-all duration-75 touch-manipulation bg-[#fdfdfd]"
               >
                 <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
                   {result.text}
@@ -1520,7 +1513,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             );
           })}
         </div>
-
         {/* Compact control panel - all 4 elements on one line */}
         <div className="flex items-center gap-2 pt-1">
           {/* Language selector (compact) */}
