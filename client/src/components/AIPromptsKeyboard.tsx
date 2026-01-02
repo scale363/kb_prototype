@@ -1146,25 +1146,41 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     return (
       <div className="px-1">
-        <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
-          {hasContent ? (
-            <div className="text-sm text-foreground font-medium leading-relaxed pr-8">
-              {displayText}
+        <div className="flex items-start gap-2">
+          {/* Preview field */}
+          <div className="flex-1 flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
+            {hasContent ? (
+              <div className="text-sm text-foreground font-medium leading-relaxed pr-8">
+                {displayText}
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground/60 pr-8">Paste a message or situation here</div>
+            )}
+            <div className="absolute top-2 right-2 flex gap-1">
+              <button
+                type="button"
+                onClick={handlePasteFromClipboard}
+                className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
+                data-testid="button-paste-empty"
+                aria-label="Paste from clipboard"
+              >
+                <Clipboard className="h-4 w-4 text-muted-foreground" />
+              </button>
             </div>
-          ) : (
-            <div className="text-sm text-muted-foreground/60 pr-8">Paste a message or situation here</div>
-          )}
-          <div className="absolute top-2 right-2 flex gap-1">
+          </div>
+
+          {/* Close button */}
+          {onSwitchKeyboard && (
             <button
               type="button"
-              onClick={handlePasteFromClipboard}
-              className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
-              data-testid="button-paste-empty"
-              aria-label="Paste from clipboard"
+              onClick={onSwitchKeyboard}
+              className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+              aria-label="Close menu"
+              data-testid="button-close-main-menu"
             >
-              <Clipboard className="h-4 w-4 text-muted-foreground" />
+              <X className="h-5 w-5 text-muted-foreground" />
             </button>
-          </div>
+          )}
         </div>
       </div>
     );
