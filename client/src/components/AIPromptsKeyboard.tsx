@@ -715,22 +715,20 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     let onClose = handleBackToMain;
 
     if (menuLevel === "main") {
-      // On main menu, show title and X button that switches keyboard
+      // On main menu, only show X button if onSwitchKeyboard exists
+      if (!onSwitchKeyboard) {
+        return null;
+      }
       return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
-          <div className="flex-1">
-            <div className="text-sm font-semibold text-[#6c7180]">Sound professional at work</div>
-          </div>
-          {onSwitchKeyboard && (
-            <button
-              type="button"
-              onClick={onSwitchKeyboard}
-              className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
-              aria-label="Switch keyboard"
-            >
-              <X className="h-5 w-5 text-muted-foreground" />
-            </button>
-          )}
+        <div className="px-1 py-2 flex items-center justify-end min-h-[44px]">
+          <button
+            type="button"
+            onClick={onSwitchKeyboard}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Switch keyboard"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
         </div>
       );
     } else if (menuLevel === "rephrase-empty-preview") {
