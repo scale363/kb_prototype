@@ -64,7 +64,7 @@ export function KeyboardContainer({
 
   return (
     <div className="flex flex-col bg-card border-t border-border rounded-t-2xl shadow-lg">
-      <div className="p-3 pt-4">
+      <div className="p-3 pt-4 bg-[#f4f6f6]">
         {mode === "russian" ? (
           <RussianKeyboard
             onKeyPress={handleKeyPress}
@@ -83,7 +83,6 @@ export function KeyboardContainer({
           />
         )}
       </div>
-
       <div className="h-safe-area-inset-bottom bg-card" />
     </div>
   );
