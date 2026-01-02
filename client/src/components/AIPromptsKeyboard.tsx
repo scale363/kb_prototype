@@ -717,48 +717,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     if (menuLevel === "main") {
       return null;
     } else if (menuLevel === "rephrase-empty-preview") {
-      title = "✏️ Rephrase";
-      const tooltip = "Make your message sound natural, polite, and professional.";
-
-      return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
-          <div className="flex items-center gap-2 flex-1">
-            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
-            {tooltip && (
-              <Tooltip
-                delayDuration={0}
-                open={openTooltipId === "rephrase-empty-info"}
-                onOpenChange={(open) => setOpenTooltipId(open ? "rephrase-empty-info" : null)}
-              >
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenTooltipId(openTooltipId === "rephrase-empty-info" ? null : "rephrase-empty-info");
-                    }}
-                    aria-label={`Info about ${title}`}
-                  >
-                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[250px] z-50">
-                  <p className="text-xs">{tooltip}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
-            aria-label="Close and return to main menu"
-          >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
-        </div>
-      );
+      // No header for rephrase-empty-preview
+      return null;
     } else if (menuLevel === "translate-empty-preview") {
       title = "🌍 Translate";
       const tooltip = "Literal translation to clearly understand meaning and tone.";
@@ -846,48 +806,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "tone-select") {
-      title = "✏️ Improve your message";
-      const tooltip = "Make your message sound natural, polite, and professional.";
-
-      return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
-          <div className="flex items-center gap-2 flex-1">
-            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
-            {tooltip && (
-              <Tooltip
-                delayDuration={0}
-                open={openTooltipId === "tone-select-info"}
-                onOpenChange={(open) => setOpenTooltipId(open ? "tone-select-info" : null)}
-              >
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenTooltipId(openTooltipId === "tone-select-info" ? null : "tone-select-info");
-                    }}
-                    aria-label={`Info about ${title}`}
-                  >
-                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[250px] z-50">
-                  <p className="text-xs">{tooltip}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
-            aria-label="Close and return to main menu"
-          >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
-        </div>
-      );
+      // No header for tone-select
+      return null;
     } else if (menuLevel === "quick-replies-select") {
       title = "💬 Quick replies";
       const tooltip = "All replies are generated in a safe, professional tone suitable for work communication. Paste a client message or briefly describe the situation to get started.";
@@ -1067,56 +987,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "result" && selectedTone) {
-      const tone = TONE_OPTIONS.find(t => t.id === selectedTone);
-      // Custom titles for each tone
-      const titleMap: Record<string, string> = {
-        "grammar-check": "✍️ Grammar corrected",
-        "work-safe": `${tone?.emoji || ''} Safe to send at work`,
-        "informal": "💬 Informal version",
-        "short-clear": `${tone?.emoji || ''} Shorter and clearer`,
-      };
-      title = titleMap[selectedTone] || `${tone?.emoji || ''} Optimized for ${(tone?.label || selectedTone).toLowerCase()} tone`;
-      const tooltip = tone?.tooltip;
-
-      return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
-          <div className="flex items-center gap-2 flex-1">
-            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
-            {tooltip && (
-              <Tooltip
-                delayDuration={0}
-                open={openTooltipId === "header-info"}
-                onOpenChange={(open) => setOpenTooltipId(open ? "header-info" : null)}
-              >
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenTooltipId(openTooltipId === "header-info" ? null : "header-info");
-                    }}
-                    aria-label={`Info about ${title}`}
-                  >
-                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[250px] z-50">
-                  <p className="text-xs">{tooltip}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
-            aria-label="Close and return to main menu"
-          >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
-        </div>
-      );
+      // No header for result
+      return null;
     }
 
     return (
@@ -1149,7 +1021,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         {/* Preview field */}
         <div className="flex-1 flex flex-col gap-2 p-3 border-2 border-accent rounded-lg relative bg-[#eaf6f400]">
           {/* Title */}
-          <div className="text-sm font-semibold text-[#6c7180]">✏️ Input text</div>
+          <div className="text-base font-semibold text-[#9ba0ad]">✏️ Input text</div>
           {hasContent ? (
             <div className="text-sm text-foreground font-medium leading-relaxed pr-16">
               {displayText}
@@ -1221,7 +1093,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     <div className="flex flex-col gap-4 p-1">
       {/* Preview field */}
       <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
-        <div className="text-sm text-muted-foreground/60 pr-8">Paste your message here</div>
+        <div className="text-sm text-muted-foreground/60 pr-16">Paste your message here</div>
         <div className="absolute top-2 right-2 flex gap-1">
           <button
             type="button"
@@ -1231,6 +1103,16 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             aria-label="Paste from clipboard"
           >
             <Clipboard className="h-4 w-4 text-muted-foreground" />
+          </button>
+          {/* Close button - closes form */}
+          <button
+            type="button"
+            onClick={handleBackToMain}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close form"
+            data-testid="button-close-rephrase-empty"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
           </button>
         </div>
       </div>
@@ -1309,7 +1191,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         {/* Preview field */}
         <div className="flex-1 flex flex-col gap-2 p-3 border-2 border-accent rounded-lg relative bg-[#eaf6f400]">
           {/* Title */}
-          <div className="text-sm font-semibold text-[#6c7180]">✏️ Improve your message</div>
+          <div className="text-base font-semibold text-[#9ba0ad]">✏️ Improve your message</div>
           {hasContent ? (
             <div className="text-sm text-foreground font-medium leading-relaxed pr-16">
               {displayText}
@@ -1327,18 +1209,16 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             >
               <Clipboard className="h-4 w-4 text-muted-foreground" />
             </button>
-            {/* Close button */}
-            {onSwitchKeyboard && (
-              <button
-                type="button"
-                onClick={onSwitchKeyboard}
-                className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
-                aria-label="Close menu"
-                data-testid="button-close-tone-select"
-              >
-                <X className="h-5 w-5 text-muted-foreground" />
-              </button>
-            )}
+            {/* Close button - closes form instead of toggling keyboard */}
+            <button
+              type="button"
+              onClick={handleBackToMain}
+              className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+              aria-label="Close form"
+              data-testid="button-close-tone-select"
+            >
+              <X className="h-5 w-5 text-muted-foreground" />
+            </button>
           </div>
         </div>
 
