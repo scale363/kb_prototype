@@ -1002,7 +1002,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     return (
       <div className="px-1">
         {/* Top separator line */}
-        <div className="h-[1px] bg-border -mx-1 mb-2" />
+        <div className="h-[1px] bg-border mb-2" />
 
         {/* Preview field without border and background */}
         <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
@@ -1025,7 +1025,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
 
         {/* Bottom separator line */}
-        <div className="h-[1px] bg-border -mx-1 mt-2" />
+        <div className="h-[1px] bg-border mt-2" />
       </div>
     );
   };
