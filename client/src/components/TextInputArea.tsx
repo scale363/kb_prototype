@@ -120,7 +120,7 @@ export function TextInputArea({
   };
 
   return (
-    <div className="flex-1 flex flex-col relative bg-[#f4f6f600]">
+    <div className="flex-1 flex flex-col relative bg-muted">
       <div className="absolute top-3 right-3 flex gap-2 z-10">
         <Button
           size="icon"
@@ -132,6 +132,7 @@ export function TextInputArea({
           <Clipboard className="h-5 w-5" />
         </Button>
       </div>
+
       <div
         ref={textareaRef}
         contentEditable
@@ -155,6 +156,7 @@ export function TextInputArea({
       >
         {value}
       </div>
+
       {value.length > 0 && (
         <div className="absolute bottom-2 left-4 text-xs text-muted-foreground" data-testid="text-character-count">
           {value.length} символов
