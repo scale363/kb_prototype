@@ -1148,6 +1148,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       <div className="px-1">
         {/* Preview field */}
         <div className="flex-1 flex flex-col gap-2 p-3 border-2 border-accent rounded-lg relative bg-[#eaf6f400]">
+          {/* Title */}
+          <div className="text-sm font-semibold text-[#6c7180]">✏️ Input text</div>
           {hasContent ? (
             <div className="text-sm text-foreground font-medium leading-relaxed pr-16">
               {displayText}
@@ -1299,19 +1301,58 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   );
 
   // Render tone selection menu
-  const renderToneSelect = () => (
-    <div className="flex flex-col gap-3 p-1">
-      {/* Tone options */}
-      <div className="grid grid-cols-2 gap-3">
-        {TONE_OPTIONS.map((tone) => (
-          <div key={tone.id} className="relative">
+  const renderToneSelect = () => {
+    const hasContent = displayPreviewText.trim();
+
+    return (
+      <div className="flex flex-col gap-3 p-1">
+        {/* Preview field */}
+        <div className="flex-1 flex flex-col gap-2 p-3 border-2 border-accent rounded-lg relative bg-[#eaf6f400]">
+          {/* Title */}
+          <div className="text-sm font-semibold text-[#6c7180]">✏️ Improve your message</div>
+          {hasContent ? (
+            <div className="text-sm text-foreground font-medium leading-relaxed pr-16">
+              {displayText}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground/60 pr-16">Paste a message or situation here</div>
+          )}
+          <div className="absolute top-2 right-2 flex gap-1">
             <button
+              type="button"
+              onClick={handlePasteFromClipboard}
+              className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
+              data-testid="button-paste-tone-select"
+              aria-label="Paste from clipboard"
+            >
+              <Clipboard className="h-4 w-4 text-muted-foreground" />
+            </button>
+            {/* Close button */}
+            {onSwitchKeyboard && (
+              <button
+                type="button"
+                onClick={onSwitchKeyboard}
+                className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+                aria-label="Close menu"
+                data-testid="button-close-tone-select"
+              >
+                <X className="h-5 w-5 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Tone options */}
+        <div className="flex flex-wrap gap-2 justify-center">
+          {TONE_OPTIONS.map((tone) => (
+            <button
+              key={tone.id}
               type="button"
               onClick={() => handleToneSelect(tone.id)}
               className={`
-                w-full flex items-center justify-center gap-2
-                min-h-[56px] p-3
-                rounded-xl border
+                inline-flex items-center justify-center gap-2
+                min-h-[44px] px-4 py-2
+                rounded-full border
                 ${tone.colorClass}
                 ${tone.borderClass}
                 hover-elevate active-elevate-2
@@ -1322,16 +1363,16 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               data-testid={`button-tone-${tone.id}`}
               aria-label={tone.label}
             >
-              <span className="text-lg">{tone.emoji}</span>
-              <span className="text-sm font-medium text-foreground">
+              <span className="text-base">{tone.emoji}</span>
+              <span className="text-sm font-medium text-foreground whitespace-nowrap">
                 {tone.label}
               </span>
             </button>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Render result view with scrollable results
   const renderResult = () => {
