@@ -723,7 +723,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <div className="text-base font-semibold text-foreground">No changes</div>
+            <div className="text-base font-semibold text-foreground">What you want to say?</div>
           </div>
           {onSwitchKeyboard && (
             <button
