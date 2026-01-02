@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { Globe, Mic } from "lucide-react";
 import { RussianKeyboard } from "./RussianKeyboard";
 import { AIPromptsKeyboard } from "./AIPromptsKeyboard";
 
@@ -63,14 +64,14 @@ export function KeyboardContainer({
   }, [onPreviewTextChange]);
 
   return (
-    <div className="flex flex-col bg-card border-t border-border rounded-t-2xl shadow-lg">
-      <div className="p-3 pt-4 bg-[#f4f6f6]">
+    <div className="flex flex-col bg-[#f4f6f6] border-t border-border rounded-t-2xl shadow-lg">
+      {/* Белая скругленная область для клавиатуры */}
+      <div className="p-3 pt-4 bg-white rounded-t-2xl m-2 mb-0">
         {mode === "russian" ? (
           <RussianKeyboard
             onKeyPress={handleKeyPress}
             onBackspace={handleBackspace}
             onEnter={handleEnter}
-            onSwitchKeyboard={handleSwitchKeyboard}
           />
         ) : (
           <AIPromptsKeyboard
@@ -79,9 +80,26 @@ export function KeyboardContainer({
             previewText={previewText}
             onPreviewTextChange={onPreviewTextChange}
             onTextChange={handleAITextChange}
-            onSwitchKeyboard={handleSwitchKeyboard}
           />
         )}
+      </div>
+      {/* Серая панель с иконками глобуса и микрофона */}
+      <div className="flex items-center justify-between px-3 pb-3 pt-2 bg-[#f4f6f6]">
+        <button
+          type="button"
+          onClick={handleSwitchKeyboard}
+          className="flex items-center justify-center min-h-[44px] min-w-[44px] bg-transparent touch-manipulation active:scale-95 transition-transform duration-75"
+          aria-label="Switch keyboard"
+        >
+          <Globe className="h-6 w-6 text-foreground/70" />
+        </button>
+        <button
+          type="button"
+          className="flex items-center justify-center min-h-[44px] min-w-[44px] bg-transparent touch-manipulation active:scale-95 transition-transform duration-75"
+          aria-label="Voice input"
+        >
+          <Mic className="h-6 w-6 text-foreground/70" />
+        </button>
       </div>
       <div className="h-safe-area-inset-bottom bg-card" />
     </div>
