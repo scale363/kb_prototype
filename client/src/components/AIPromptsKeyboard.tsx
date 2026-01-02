@@ -1002,7 +1002,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     return (
       <div className="px-1">
         {/* Top separator line */}
-        <div className="h-[0.5px] bg-border/40 mb-2" />
+        <div className="h-[1px] bg-border -mx-1 mb-2" />
 
         {/* Preview field without border and background */}
         <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
@@ -1013,21 +1013,19 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           ) : (
             <div className="text-sm text-muted-foreground/60 flex-1">Paste a message or situation here</div>
           )}
-          {hasContent && (
-            <button
-              type="button"
-              onClick={handleCopyPreviewText}
-              className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
-              data-testid="button-copy-preview"
-              aria-label="Copy text"
-            >
-              <Copy className="h-4 w-4 text-muted-foreground" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handlePasteFromClipboard}
+            className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
+            data-testid="button-paste-preview"
+            aria-label="Paste text"
+          >
+            <Clipboard className="h-4 w-4 text-muted-foreground" />
+          </button>
         </div>
 
         {/* Bottom separator line */}
-        <div className="h-[0.5px] bg-border/40 mt-2" />
+        <div className="h-[1px] bg-border -mx-1 mt-2" />
       </div>
     );
   };
@@ -1237,9 +1235,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     const shouldHideNewVariantButton = selectedTone === "grammar-check";
 
     return (
-      <div className="flex flex-col gap-3 p-1 max-h-[400px]">
+      <div className="flex flex-col gap-3 p-1 flex-1 min-h-0">
         {/* Results container with scroll */}
-        <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
+        <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-3 pr-1 min-h-0">
           {rephraseResults.map((result, index) => {
             const isSelected = selectedResultId === result.id;
             return (
@@ -1315,8 +1313,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           })}
         </div>
 
-        {/* Control panel */}
-        <div className="flex gap-2 pt-2">
+        {/* Fixed control panel */}
+        <div className="flex-shrink-0 flex gap-2 pt-2">
           {/* Language selector (compact) - hide for grammar-check */}
           {!shouldHideLanguageSelector && (
             <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
@@ -1357,11 +1355,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const renderTranslateResult = () => {
     const selectedResult = translateResults.find(r => r.id === selectedTranslateResultId);
     const isCopied = selectedResult && copiedResultId === selectedResult.id;
-    
+
     return (
-      <div className="flex flex-col gap-3 p-1 max-h-[400px]">
+      <div className="flex flex-col gap-3 p-1 flex-1 min-h-0">
         {/* Results container with scroll */}
-        <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[280px]">
+        <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-0">
           {translateResults.map((result) => {
             const isSelected = selectedTranslateResultId === result.id;
             const isResultCopied = copiedResultId === result.id;
@@ -1405,8 +1403,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             );
           })}
         </div>
-        {/* Compact control panel - all 4 elements on one line */}
-        <div className="flex items-center gap-2 pt-1">
+        {/* Fixed compact control panel */}
+        <div className="flex-shrink-0 flex items-center gap-2 pt-1">
           {/* Language selector (compact) */}
           <Select value={translateLanguage} onValueChange={setTranslateLanguage}>
             <SelectTrigger
@@ -1504,9 +1502,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     const hasContent = displayPreviewText.trim();
 
     return (
-      <div className="flex flex-col gap-3 p-1 max-h-[400px]">
+      <div className="flex flex-col gap-3 p-1 flex-1 min-h-0">
         {/* Preview field */}
-        <div className="flex-1 flex flex-col gap-2 p-3 border-2 border-accent rounded-lg relative bg-[#eaf6f400]">
+        <div className="flex-shrink-0 flex flex-col gap-2 p-3 border-2 border-accent rounded-lg relative bg-[#eaf6f400]">
           {/* Title */}
           <div className="text-sm font-semibold text-[#9ba0ad]">📝 Your situation</div>
           {hasContent ? (
@@ -1540,7 +1538,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
 
         {/* Results container with scroll */}
-      <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
+      <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-3 pr-1 min-h-0">
         {quickReplyResults.map((result, index) => {
           const isSelected = selectedQuickReplyResultId === result.id;
           return (
@@ -1616,8 +1614,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         })}
       </div>
 
-      {/* Control panel */}
-      <div className="flex gap-2 pt-2">
+      {/* Fixed control panel */}
+      <div className="flex-shrink-0 flex gap-2 pt-2">
         {/* Language selector (compact) */}
         <Select value={quickRepliesLanguage} onValueChange={setQuickRepliesLanguage}>
           <SelectTrigger
@@ -1652,9 +1650,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render saved text view
   const renderSavedText = () => (
-    <div className="flex flex-col gap-3 p-1 max-h-[400px]">
+    <div className="flex flex-col gap-3 p-1 flex-1 min-h-0">
       {/* Save from clipboard button */}
-      <div className="flex flex-col gap-2">
+      <div className="flex-shrink-0 flex flex-col gap-2">
         <button
           type="button"
           onClick={handleSaveFromClipboard}
@@ -1667,7 +1665,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       </div>
 
       {/* Saved text items list */}
-      <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[250px]">
+      <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-0">
         {savedTextItems.length === 0 ? (
           <div className="text-muted-foreground py-8 text-center text-[15px] pl-[5px] pr-[5px] font-medium">No saved texts yet.
 
@@ -1703,22 +1701,30 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   );
 
   return (
-    <div className="flex flex-col gap-2 w-full">
-      {renderHeader()}
-      {renderPreviewField()}
-      {menuLevel === "main" && renderMainMenu()}
-      {menuLevel === "rephrase-empty-preview" && renderRephraseEmptyPreview()}
-      {menuLevel === "translate-empty-preview" && renderTranslateEmptyPreview()}
-      {menuLevel === "quick-replies-empty-preview" && renderQuickRepliesEmptyPreview()}
-      {menuLevel === "tone-select" && renderToneSelect()}
-      {menuLevel === "result" && renderResult()}
-      {menuLevel === "translate-result" && renderTranslateResult()}
-      {menuLevel === "quick-replies-select" && renderQuickRepliesSelect()}
-      {menuLevel === "quick-replies-result" && renderQuickRepliesResult()}
-      {menuLevel === "saved-text" && renderSavedText()}
-      {/* Globe button at bottom left - iOS style */}
+    <div className="flex flex-col w-full max-h-[500px]">
+      {/* Fixed header */}
+      <div className="flex-shrink-0">
+        {renderHeader()}
+      </div>
+
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto flex flex-col gap-2">
+        {renderPreviewField()}
+        {menuLevel === "main" && renderMainMenu()}
+        {menuLevel === "rephrase-empty-preview" && renderRephraseEmptyPreview()}
+        {menuLevel === "translate-empty-preview" && renderTranslateEmptyPreview()}
+        {menuLevel === "quick-replies-empty-preview" && renderQuickRepliesEmptyPreview()}
+        {menuLevel === "tone-select" && renderToneSelect()}
+        {menuLevel === "result" && renderResult()}
+        {menuLevel === "translate-result" && renderTranslateResult()}
+        {menuLevel === "quick-replies-select" && renderQuickRepliesSelect()}
+        {menuLevel === "quick-replies-result" && renderQuickRepliesResult()}
+        {menuLevel === "saved-text" && renderSavedText()}
+      </div>
+
+      {/* Fixed footer - Globe button */}
       {onSwitchKeyboard && (
-        <div className="px-1 py-2 bg-[#f4f6f6]">
+        <div className="flex-shrink-0 px-1 py-2 bg-[#f4f6f6]">
           <button
             type="button"
             onClick={onSwitchKeyboard}
