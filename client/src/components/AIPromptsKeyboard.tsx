@@ -715,7 +715,28 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     let onClose = handleBackToMain;
 
     if (menuLevel === "main") {
-      return null;
+      return (
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-[#0a7c6c] flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div className="text-base font-semibold text-foreground">No changes</div>
+          </div>
+          {onSwitchKeyboard && (
+            <button
+              type="button"
+              onClick={onSwitchKeyboard}
+              className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+              aria-label="Close and return to main menu"
+            >
+              <X className="h-5 w-5 text-muted-foreground" />
+            </button>
+          )}
+        </div>
+      );
     } else if (menuLevel === "rephrase-empty-preview") {
       // No header for rephrase-empty-preview
       return null;
@@ -970,43 +991,43 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     const hasContent = displayPreviewText.trim();
 
+    const handleCopyPreviewText = async () => {
+      try {
+        await navigator.clipboard.writeText(displayPreviewText);
+      } catch {
+        // Ignore copy errors silently
+      }
+    };
+
     return (
       <div className="px-1">
-        {/* Preview field */}
-        <div className="flex-1 flex flex-col gap-2 p-3 border-2 border-accent rounded-lg relative bg-[#eaf6f400]">
-          {/* Title */}
-          <div className="text-sm font-semibold text-[#9ba0ad]">✏️ Input text</div>
+        {/* Top separator line */}
+        <div className="h-[0.5px] bg-border/40 mb-2" />
+
+        {/* Preview field without border and background */}
+        <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
           {hasContent ? (
-            <div className="text-sm text-foreground font-medium leading-relaxed pr-16">
-              {displayText}
+            <div className="text-sm text-foreground leading-relaxed flex-1">
+              {displayPreviewText}
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground/60 pr-16">Paste a message or situation here</div>
+            <div className="text-sm text-muted-foreground/60 flex-1">Paste a message or situation here</div>
           )}
-          <div className="absolute top-2 right-2 flex gap-1">
+          {hasContent && (
             <button
               type="button"
-              onClick={handlePasteFromClipboard}
-              className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
-              data-testid="button-paste-empty"
-              aria-label="Paste from clipboard"
+              onClick={handleCopyPreviewText}
+              className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
+              data-testid="button-copy-preview"
+              aria-label="Copy text"
             >
-              <Clipboard className="h-4 w-4 text-muted-foreground" />
+              <Copy className="h-4 w-4 text-muted-foreground" />
             </button>
-            {/* Close button */}
-            {onSwitchKeyboard && (
-              <button
-                type="button"
-                onClick={onSwitchKeyboard}
-                className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
-                aria-label="Close menu"
-                data-testid="button-close-main-menu"
-              >
-                <X className="h-5 w-5 text-muted-foreground" />
-              </button>
-            )}
-          </div>
+          )}
         </div>
+
+        {/* Bottom separator line */}
+        <div className="h-[0.5px] bg-border/40 mt-2" />
       </div>
     );
   };
@@ -1022,7 +1043,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           className={`
             flex flex-row items-center justify-start gap-3
             min-h-[56px] px-4 py-3
-            rounded-xl border
+            rounded-[13px] border
             ${button.colorClass}
             ${button.borderClass}
             hover-elevate active-elevate-2
