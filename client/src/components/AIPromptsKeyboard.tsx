@@ -1143,7 +1143,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     return (
       <div className="flex flex-col gap-3 p-1">
         {/* Preview field */}
-        <div className="flex-1 flex flex-col gap-2 p-3 border-2 border-accent rounded-lg relative bg-[#eaf6f400]">
+        <div className="flex-1 flex flex-col gap-2 p-3 border-2 border-accent rounded-lg relative bg-[#eaf6f433]">
           {/* Title */}
           <div className="text-sm font-semibold text-[#9ba0ad]">✏️ Improve your message</div>
           {hasContent ? (
@@ -1175,7 +1175,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             </button>
           </div>
         </div>
-
         {/* Tone options */}
         <div className="flex flex-wrap gap-2 justify-center">
           {TONE_OPTIONS.map((tone) => (
