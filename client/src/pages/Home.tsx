@@ -38,7 +38,7 @@ export default function Home() {
       className="flex flex-col h-screen bg-background overflow-hidden"
       style={{ touchAction: "manipulation" }}
     >
-      <header className="flex items-center justify-center p-3 border-b border-border bg-[#f4f6f6]">
+      <header className="flex items-center justify-center p-3 border-b border-border bg-[#f4f6f600]">
         <h1 className="text-lg font-semibold text-foreground" data-testid="text-app-title">
           AI Keyboard
         </h1>
