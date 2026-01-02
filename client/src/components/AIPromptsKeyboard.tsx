@@ -1518,7 +1518,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           {/* Language selector (compact) */}
           <Select value={translateLanguage} onValueChange={setTranslateLanguage}>
             <SelectTrigger
-              className="w-[120px] h-9 rounded-md border text-sm bg-[#ffffff00]"
+              className="w-[120px] h-9 rounded-md border text-sm"
               data-testid="select-translate-language"
             >
               <SelectValue placeholder="Язык" />
