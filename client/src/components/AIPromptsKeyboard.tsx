@@ -938,54 +938,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "quick-replies-result" && selectedQuickReplyAction) {
-      const action = QUICK_REPLY_ACTIONS.find(a => a.id === selectedQuickReplyAction);
-      // Special title for help-me-write action
-      if (selectedQuickReplyAction === "help-me-write") {
-        title = "📝 Message for your situation";
-      } else {
-        title = `${action?.emoji || ''} ${action?.label || selectedQuickReplyAction}`;
-      }
-      const tooltip = action?.tooltip;
-
-      return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
-          <div className="flex items-center gap-2 flex-1">
-            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
-            {tooltip && (
-              <Tooltip
-                delayDuration={0}
-                open={openTooltipId === "header-info"}
-                onOpenChange={(open) => setOpenTooltipId(open ? "header-info" : null)}
-              >
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenTooltipId(openTooltipId === "header-info" ? null : "header-info");
-                    }}
-                    aria-label={`Info about ${title}`}
-                  >
-                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[250px] z-50">
-                  <p className="text-xs">{tooltip}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
-            aria-label="Close and return to main menu"
-          >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
-        </div>
-      );
+      // No header for quick-replies-result
+      return null;
     } else if (menuLevel === "result" && selectedTone) {
       // No header for result
       return null;
@@ -1526,8 +1480,44 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       ? QUICK_REPLY_SUBTEXTS[selectedQuickReplyAction] || ""
       : "";
 
+    const hasContent = displayPreviewText.trim();
+
     return (
       <div className="flex flex-col gap-3 p-1 max-h-[400px]">
+        {/* Preview field */}
+        <div className="flex-1 flex flex-col gap-2 p-3 border-2 border-accent rounded-lg relative bg-[#eaf6f400]">
+          {/* Title */}
+          <div className="text-base font-semibold text-[#9ba0ad]">📝 Your situation</div>
+          {hasContent ? (
+            <div className="text-sm text-foreground font-medium leading-relaxed pr-16">
+              {displayText}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground/60 pr-16">Paste a message or situation here</div>
+          )}
+          <div className="absolute top-2 right-2 flex gap-1">
+            <button
+              type="button"
+              onClick={handlePasteFromClipboard}
+              className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
+              data-testid="button-paste-quick-replies-result"
+              aria-label="Paste from clipboard"
+            >
+              <Clipboard className="h-4 w-4 text-muted-foreground" />
+            </button>
+            {/* Close button - closes form */}
+            <button
+              type="button"
+              onClick={handleBackToMain}
+              className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+              aria-label="Close form"
+              data-testid="button-close-quick-replies-result"
+            >
+              <X className="h-5 w-5 text-muted-foreground" />
+            </button>
+          </div>
+        </div>
+
         {/* Results container with scroll */}
       <div ref={resultsContainerRef} className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[250px]">
         {quickReplyResults.map((result, index) => {
