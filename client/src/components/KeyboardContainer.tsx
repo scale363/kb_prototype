@@ -64,9 +64,9 @@ export function KeyboardContainer({
   }, [onPreviewTextChange]);
 
   return (
-    <div className="flex flex-col bg-[#f4f6f6] border-t border-border rounded-t-2xl shadow-lg">
+    <div className="flex flex-col bg-[#f4f6f6] border-t border-border rounded-t-[2rem] shadow-lg">
       {/* Белая скругленная область для клавиатуры */}
-      <div className="p-3 pt-4 bg-white rounded-t-2xl m-2 mb-0">
+      <div className="p-3 pt-4 bg-white rounded-[2rem] m-1 mb-0">
         {mode === "russian" ? (
           <RussianKeyboard
             onKeyPress={handleKeyPress}
@@ -84,7 +84,7 @@ export function KeyboardContainer({
         )}
       </div>
       {/* Серая панель с иконками глобуса и микрофона */}
-      <div className="flex items-center justify-between px-3 pb-3 pt-2 bg-[#f4f6f6]">
+      <div className="flex items-center justify-between px-3 pb-3 pt-4 bg-[#f4f6f6]">
         <button
           type="button"
           onClick={handleSwitchKeyboard}
