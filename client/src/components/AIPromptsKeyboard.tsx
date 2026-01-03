@@ -1692,13 +1692,13 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render saved text view
   const renderSavedText = () => (
-    <div className="flex flex-col gap-3 p-1 flex-1 min-h-0">
+    <div className="flex flex-col gap-3 p-1 flex-1 min-h-0 pt-[6px] pb-[6px]">
       {/* Save from clipboard button */}
       <div className="flex-shrink-0 flex flex-col gap-2">
         <button
           type="button"
           onClick={handleSaveFromClipboard}
-          className="flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-lg border bg-transparent text-primary border-primary hover:bg-accent/50 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
+          className="flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-lg border-2 bg-transparent text-primary border-primary hover:bg-accent/50 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none mt-[0px] mb-[0px]"
           data-testid="button-save-from-clipboard"
         >
           <Clipboard className="h-4 w-4" />
