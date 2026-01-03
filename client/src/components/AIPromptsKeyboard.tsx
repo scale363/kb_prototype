@@ -1056,7 +1056,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render main menu buttons
   const renderMainMenu = () => (
-    <div className="grid grid-cols-2 gap-3 p-3">
+    <div className="grid grid-cols-2 gap-3 p-3 pt-[15px] pb-[15px]">
       {PROMPT_BUTTONS.map((button) => (
         <button
           key={button.id}
