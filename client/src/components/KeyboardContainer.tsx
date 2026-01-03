@@ -66,7 +66,7 @@ export function KeyboardContainer({
   return (
     <div className="flex flex-col bg-[#f4f6f6] rounded-t-[1.333rem] shadow-lg">
       {/* Белая скругленная область для клавиатуры */}
-      <div className="p-3 pt-4 bg-white rounded-[1.333rem] m-2 mb-0 border border-[#d1d5db]">
+      <div className="p-3 pt-4 bg-white rounded-[1.333rem] m-2 mb-0">
         {mode === "russian" ? (
           <RussianKeyboard
             onKeyPress={handleKeyPress}

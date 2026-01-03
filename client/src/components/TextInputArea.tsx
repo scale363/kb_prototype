@@ -120,8 +120,8 @@ export function TextInputArea({
   };
 
   return (
-    <div className="flex-1 flex flex-col relative bg-[#f4f6f600]">
-      <div className="absolute top-3 right-3 flex gap-2 z-10">
+    <div className="flex flex-col relative bg-[#f4f6f600] p-3">
+      <div className="absolute top-6 right-6 flex gap-2 z-10">
         <Button
           size="icon"
           variant="ghost"
@@ -136,7 +136,7 @@ export function TextInputArea({
         ref={textareaRef}
         contentEditable
         suppressContentEditableWarning
-        className="h-[120px] max-h-[120px] min-h-[120px] px-4 py-3 pt-4 m-3 text-base leading-relaxed outline-none border-2 border-border rounded-xl overflow-y-auto touch-manipulation select-text"
+        className="min-h-[200px] px-4 py-3 pt-4 text-base leading-relaxed outline-none border-2 border-border rounded-xl overflow-y-auto touch-manipulation select-text"
         style={{
           WebkitUserSelect: "text",
           userSelect: "text",
@@ -156,7 +156,7 @@ export function TextInputArea({
         {value}
       </div>
       {value.length > 0 && (
-        <div className="absolute bottom-2 left-4 text-xs text-muted-foreground" data-testid="text-character-count">
+        <div className="absolute bottom-5 left-7 text-xs text-muted-foreground" data-testid="text-character-count">
           {value.length} символов
         </div>
       )}
