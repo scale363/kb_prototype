@@ -792,40 +792,32 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "rephrase-empty-preview") {
-      // No header for rephrase-empty-preview
-      return null;
-    } else if (menuLevel === "translate-empty-preview") {
-      title = "🌍 Translate";
-      const tooltip = "Literal translation to clearly understand meaning and tone.";
-
       return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px] -mt-1">
-          <div className="flex items-center gap-2 flex-1">
-            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
-            {tooltip && (
-              <Tooltip
-                delayDuration={0}
-                open={openTooltipId === "translate-empty-info"}
-                onOpenChange={(open) => setOpenTooltipId(open ? "translate-empty-info" : null)}
-              >
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenTooltipId(openTooltipId === "translate-empty-info" ? null : "translate-empty-info");
-                    }}
-                    aria-label={`Info about ${title}`}
-                  >
-                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[250px] z-50">
-                  <p className="text-xs">{tooltip}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
+              <RefreshCw className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-base font-semibold text-foreground">Rephrase</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+      );
+    } else if (menuLevel === "translate-empty-preview") {
+      return (
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
+              <Languages className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-base font-semibold text-foreground">Translate</div>
           </div>
           <button
             type="button"
@@ -838,37 +830,13 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "quick-replies-empty-preview") {
-      title = "📝 Help me write. ";
-      const tooltip = "Describe the situation, and we'll help you write a clear, professional message.";
-
       return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px] -mt-1">
-          <div className="flex items-center gap-2 flex-1">
-            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
-            {tooltip && (
-              <Tooltip
-                delayDuration={0}
-                open={openTooltipId === "quick-replies-empty-info"}
-                onOpenChange={(open) => setOpenTooltipId(open ? "quick-replies-empty-info" : null)}
-              >
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenTooltipId(openTooltipId === "quick-replies-empty-info" ? null : "quick-replies-empty-info");
-                    }}
-                    aria-label={`Info about ${title}`}
-                  >
-                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[250px] z-50">
-                  <p className="text-xs">{tooltip}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
+              <MessageSquare className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-base font-semibold text-foreground">Help me write</div>
           </div>
           <button
             type="button"
@@ -1112,98 +1080,108 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   );
 
   // Render empty preview prompt for rephrase
-  const renderRephraseEmptyPreview = () => (
-    <div className="flex flex-col gap-4 p-1">
-      {/* Preview field */}
-      <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
-        <div className="text-sm text-muted-foreground/60 pr-16">Paste your message here</div>
-        <div className="absolute top-2 right-2 flex gap-1">
+  const renderRephraseEmptyPreview = () => {
+    const hasContent = displayPreviewText.trim();
+
+    return (
+      <div className="flex flex-col gap-4 p-1">
+        {/* Preview field - main page style */}
+        <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
+          {hasContent ? (
+            <div className="text-sm text-foreground leading-relaxed flex-1 mt-[5px] mb-[5px]">
+              {displayPreviewText}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground/60 flex-1 mt-[4px] mb-[4px]">Paste your message here</div>
+          )}
           <button
             type="button"
             onClick={handlePasteFromClipboard}
-            className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
+            className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
             data-testid="button-paste-rephrase-empty"
-            aria-label="Paste from clipboard"
+            aria-label="Paste text"
           >
             <Clipboard className="h-4 w-4 text-muted-foreground" />
           </button>
-          {/* Close button - closes form */}
-          <button
-            type="button"
-            onClick={handleBackToMain}
-            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
-            aria-label="Close form"
-            data-testid="button-close-rephrase-empty"
-          >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
+        </div>
+
+        {/* Large prompt message */}
+        <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
+          <div className="text-center text-[18px] font-semibold text-[#22282a]">Make your message sound natural, polite, and professional.</div>
         </div>
       </div>
-
-      {/* Large prompt message */}
-      <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-        <div className="text-center text-[18px] font-semibold text-[#22282a]">Make your message sound natural, polite, and professional.</div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   // Render empty preview prompt for translate
-  const renderTranslateEmptyPreview = () => (
-    <div className="flex flex-col gap-4 p-1">
-      {/* Preview field */}
-      <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
-        <div className="text-sm text-muted-foreground/60 pr-8">
-          Paste the message you received
-        </div>
-        <div className="absolute top-2 right-2 flex gap-1">
+  const renderTranslateEmptyPreview = () => {
+    const hasContent = displayPreviewText.trim();
+
+    return (
+      <div className="flex flex-col gap-4 p-1">
+        {/* Preview field - main page style */}
+        <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
+          {hasContent ? (
+            <div className="text-sm text-foreground leading-relaxed flex-1 mt-[5px] mb-[5px]">
+              {displayPreviewText}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground/60 flex-1 mt-[4px] mb-[4px]">Paste the message you received</div>
+          )}
           <button
             type="button"
             onClick={handlePasteFromClipboard}
-            className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
+            className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
             data-testid="button-paste-translate-empty"
-            aria-label="Paste from clipboard"
+            aria-label="Paste text"
           >
             <Clipboard className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
-      </div>
 
-      {/* Large prompt message */}
-      <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-        <div className="text-center text-[18px] font-semibold text-[#22282a]">
-          Understand the message clearly in your language.
+        {/* Large prompt message */}
+        <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
+          <div className="text-center text-[18px] font-semibold text-[#22282a]">
+            Understand the message clearly in your language.
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Render empty preview prompt for quick replies
-  const renderQuickRepliesEmptyPreview = () => (
-    <div className="flex flex-col gap-4 p-1">
-      {/* Preview field */}
-      <div className="flex flex-col gap-2 p-3 bg-accent/30 border-2 border-accent rounded-lg relative">
-        <div className="text-sm text-muted-foreground/60 pr-8">
-          Briefly describe the situation…
-        </div>
-        <div className="absolute top-2 right-2 flex gap-1">
+  const renderQuickRepliesEmptyPreview = () => {
+    const hasContent = displayPreviewText.trim();
+
+    return (
+      <div className="flex flex-col gap-4 p-1">
+        {/* Preview field - main page style */}
+        <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
+          {hasContent ? (
+            <div className="text-sm text-foreground leading-relaxed flex-1 mt-[5px] mb-[5px]">
+              {displayPreviewText}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground/60 flex-1 mt-[4px] mb-[4px]">Briefly describe the situation…</div>
+          )}
           <button
             type="button"
             onClick={handlePasteFromClipboard}
-            className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
+            className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
             data-testid="button-paste-quick-replies-empty"
-            aria-label="Paste from clipboard"
+            aria-label="Paste text"
           >
             <Clipboard className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
-      </div>
 
-      {/* Large prompt message */}
-      <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-        <div className="text-center text-[18px] font-semibold text-[#22282a]">We'll turn your situation into a clear, well-written message.</div>
+        {/* Large prompt message */}
+        <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
+          <div className="text-center text-[18px] font-semibold text-[#22282a]">We'll turn your situation into a clear, well-written message.</div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Render tone selection menu
   const renderToneSelect = () => {
@@ -1319,7 +1297,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                 className="w-auto h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
                 data-testid="select-language"
               >
-                <RefreshCw className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                <Languages className="h-5 w-5 text-purple-500 flex-shrink-0" />
                 <SelectValue placeholder="Язык">
                   {selectedLangLabel}
                 </SelectValue>
@@ -1599,7 +1577,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               className="w-auto h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
               data-testid="select-quick-replies-language"
             >
-              <MessageSquare className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+              <Languages className="h-5 w-5 text-purple-500 flex-shrink-0" />
               <SelectValue placeholder="Язык">
                 {selectedLangLabel}
               </SelectValue>
