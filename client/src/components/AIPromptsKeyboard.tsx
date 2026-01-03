@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Умная функция для усечения текста, которая не режет слова и показывает начало и конец
 function truncateText(text: string, maxLength: number = 100): string {
@@ -308,6 +309,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   const [translateResults, setTranslateResults] = useState<TranslateResult[]>([]);
   const [selectedTranslateResultId, setSelectedTranslateResultId] = useState<string | null>(null);
+  const [isTranslating, setIsTranslating] = useState<boolean>(false);
 
   // Load saved quick replies language from localStorage or default to "en"
   const [quickRepliesLanguage, setQuickRepliesLanguage] = useState<string>(() => {
@@ -603,39 +605,119 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setSelectedResultId(null);
   };
 
-  const handleTranslate = () => {
+  const handleTranslate = async () => {
     const originalText = selectedText || previewText || text;
-    const langName = LANGUAGES.find(l => l.code === translateLanguage)?.label || translateLanguage;
 
-    const newResult: TranslateResult = {
-      id: `translate-result-${Date.now()}`,
-      text: `[Translated to ${langName}] This is a translation placeholder. The original message "${truncateText(originalText, 50)}" has been translated to ${langName}. This is temporary mock content that will be replaced with actual AI-generated translation.`,
-      language: translateLanguage,
-      timestamp: Date.now(),
-    };
-
-    setTranslateResults([newResult]);
+    // Show loading skeleton
+    setIsTranslating(true);
     setMenuLevel("translate-result");
-    setCopiedResultId(null);
-    setSelectedTranslateResultId(newResult.id);
+    setTranslateResults([]);
+
+    try {
+      const response = await fetch("/api/ai/translate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: originalText,
+          targetLanguage: translateLanguage,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.translated) {
+        const newResult: TranslateResult = {
+          id: `translate-result-${Date.now()}`,
+          text: data.translated,
+          language: translateLanguage,
+          timestamp: Date.now(),
+        };
+
+        setTranslateResults([newResult]);
+        setSelectedTranslateResultId(newResult.id);
+      } else {
+        // Fallback to placeholder if API fails
+        const langName = LANGUAGES.find(l => l.code === translateLanguage)?.label || translateLanguage;
+        const newResult: TranslateResult = {
+          id: `translate-result-${Date.now()}`,
+          text: `Error: ${data.error || "Translation failed"}`,
+          language: translateLanguage,
+          timestamp: Date.now(),
+        };
+        setTranslateResults([newResult]);
+        setSelectedTranslateResultId(newResult.id);
+      }
+    } catch (error) {
+      console.error("Translation error:", error);
+      const newResult: TranslateResult = {
+        id: `translate-result-${Date.now()}`,
+        text: "Error: Failed to connect to translation service",
+        language: translateLanguage,
+        timestamp: Date.now(),
+      };
+      setTranslateResults([newResult]);
+      setSelectedTranslateResultId(newResult.id);
+    } finally {
+      setIsTranslating(false);
+    }
   };
 
-  const handleRetranslate = () => {
+  const handleRetranslate = async () => {
     const originalText = selectedText || previewText || text;
-    const langName = LANGUAGES.find(l => l.code === translateLanguage)?.label || translateLanguage;
 
-    const newResult: TranslateResult = {
-      id: `translate-result-${Date.now()}`,
-      text: `[Translated to ${langName}] Retranslated placeholder text #${translateResults.length + 1}. The message "${truncateText(originalText, 50)}" has been translated to ${langName}. This is mock content.`,
-      language: translateLanguage,
-      timestamp: Date.now(),
-    };
+    // Show loading state
+    setIsTranslating(true);
 
-    // Add new result to the end of the array
-    setTranslateResults([...translateResults, newResult]);
-    setCopiedResultId(null);
-    // Automatically select the new variant
-    setSelectedTranslateResultId(newResult.id);
+    try {
+      const response = await fetch("/api/ai/translate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: originalText,
+          targetLanguage: translateLanguage,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.translated) {
+        const newResult: TranslateResult = {
+          id: `translate-result-${Date.now()}`,
+          text: data.translated,
+          language: translateLanguage,
+          timestamp: Date.now(),
+        };
+
+        setTranslateResults([...translateResults, newResult]);
+        setSelectedTranslateResultId(newResult.id);
+      } else {
+        const newResult: TranslateResult = {
+          id: `translate-result-${Date.now()}`,
+          text: `Error: ${data.error || "Translation failed"}`,
+          language: translateLanguage,
+          timestamp: Date.now(),
+        };
+        setTranslateResults([...translateResults, newResult]);
+        setSelectedTranslateResultId(newResult.id);
+      }
+    } catch (error) {
+      console.error("Retranslation error:", error);
+      const newResult: TranslateResult = {
+        id: `translate-result-${Date.now()}`,
+        text: "Error: Failed to connect to translation service",
+        language: translateLanguage,
+        timestamp: Date.now(),
+      };
+      setTranslateResults([...translateResults, newResult]);
+      setSelectedTranslateResultId(newResult.id);
+    } finally {
+      setIsTranslating(false);
+      setCopiedResultId(null);
+    }
   };
 
   // Auto-generate new translation when language changes in translate-result mode
@@ -1251,35 +1333,60 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render tone selection menu
   const renderToneSelect = () => {
+    const hasContent = displayPreviewText.trim();
+
     return (
-      <div className="flex flex-col gap-3 p-1 pt-[17px] pb-[17px]">
-        {/* Tone options */}
-        <div className="flex flex-wrap gap-2 justify-center">
-          {TONE_OPTIONS.map((tone) => (
-            <button
-              key={tone.id}
-              type="button"
-              onClick={() => handleToneSelect(tone.id)}
-              className={`
-                inline-flex items-center justify-center gap-2
-                min-h-[44px] px-4 py-2
-                rounded-full border
-                ${tone.colorClass}
-                ${tone.borderClass}
-                hover-elevate active-elevate-2
-                active:scale-[0.98]
-                transition-transform duration-75
-                touch-manipulation select-none
-              `}
-              data-testid={`button-tone-${tone.id}`}
-              aria-label={tone.label}
-            >
-              <span className="text-base">{tone.emoji}</span>
-              <span className="text-sm font-medium text-foreground whitespace-nowrap">
-                {tone.label}
-              </span>
-            </button>
-          ))}
+      <div className="flex flex-col gap-3 p-1">
+        {/* Preview field - same style as main page */}
+        <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
+          {hasContent ? (
+            <div className="text-sm text-foreground leading-relaxed flex-1 mt-[5px] mb-[5px]">
+              {displayPreviewText}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground/60 flex-1 mt-[4px] mb-[4px]">Paste your message here</div>
+          )}
+          <button
+            type="button"
+            onClick={handlePasteFromClipboard}
+            className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
+            data-testid="button-paste-rephrase"
+            aria-label="Paste text"
+          >
+            <Clipboard className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* Tone options in a single scrollable row */}
+        <div className="overflow-x-auto pb-2">
+          <div className="flex gap-2 px-1">
+            {TONE_OPTIONS.map((tone) => (
+              <button
+                key={tone.id}
+                type="button"
+                onClick={() => handleToneSelect(tone.id)}
+                className={`
+                  inline-flex items-center justify-center gap-2
+                  min-h-[44px] px-4 py-2
+                  rounded-full border
+                  ${tone.colorClass}
+                  ${tone.borderClass}
+                  hover-elevate active-elevate-2
+                  active:scale-[0.98]
+                  transition-transform duration-75
+                  touch-manipulation select-none
+                  flex-shrink-0
+                `}
+                data-testid={`button-tone-${tone.id}`}
+                aria-label={tone.label}
+              >
+                <span className="text-base">{tone.emoji}</span>
+                <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                  {tone.label}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -1416,6 +1523,19 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render translate result view with scrollable results
   const renderTranslateResult = () => {
+    // Show skeleton while translating
+    if (isTranslating) {
+      return (
+        <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
+          <div className="py-4 px-3">
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-5/6 mb-2" />
+            <Skeleton className="h-4 w-4/6" />
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
         {translateResults.map((result, index) => {
