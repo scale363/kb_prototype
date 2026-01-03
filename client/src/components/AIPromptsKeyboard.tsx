@@ -324,6 +324,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Ref for auto-scrolling to the bottom when new variant is generated
   const resultsContainerRef = useRef<HTMLDivElement>(null);
 
+  // Ref for tracking translate language changes
+  const prevTranslateLanguageRef = useRef<string>(translateLanguage);
+
   // Save language selection to localStorage
   useEffect(() => {
     try {
@@ -563,6 +566,21 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setSelectedTranslateResultId(newResult.id);
   };
 
+  // Auto-generate new translation when language changes in translate-result mode
+  useEffect(() => {
+    if (menuLevel === "translate-result" &&
+        translateLanguage !== prevTranslateLanguageRef.current &&
+        translateResults.length > 0) {
+      handleRetranslate();
+      // Blur the select to remove focus
+      const selectElement = document.querySelector('[data-testid="select-translate-language"]');
+      if (selectElement instanceof HTMLElement) {
+        selectElement.blur();
+      }
+    }
+    prevTranslateLanguageRef.current = translateLanguage;
+  }, [translateLanguage]);
+
   const handleApplyTranslateResult = (resultId: string) => {
     const result = translateResults.find(r => r.id === resultId);
     if (!result) return;
@@ -718,7 +736,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-[#0a7c6c] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
@@ -919,7 +937,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-[#0a7c6c] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <Languages className="w-4 h-4 text-white" />
             </div>
             <div className="text-base font-semibold text-foreground">Translated message</div>
@@ -1327,24 +1345,24 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render translate result view with scrollable results
   const renderTranslateResult = () => {
     return (
-      <div className="p-3">
-        <div
-          ref={resultsContainerRef}
-          className="min-h-[200px] px-4 py-3 border-2 border-border rounded-xl overflow-y-auto space-y-2"
-        >
-          {translateResults.map((result) => {
-            const isSelected = selectedTranslateResultId === result.id;
-            const isResultCopied = copiedResultId === result.id;
-            return (
+      <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
+        {translateResults.map((result, index) => {
+          const isSelected = selectedTranslateResultId === result.id;
+          const isResultCopied = copiedResultId === result.id;
+          return (
+            <div key={result.id}>
               <div
-                key={result.id}
-                onClick={() => setSelectedTranslateResultId(isSelected ? null : result.id)}
-                className="relative p-3 rounded-lg cursor-pointer border border-primary/50 active:scale-[0.99] transition-all duration-75 touch-manipulation bg-[#fdfdfd]"
+                onClick={() => setSelectedTranslateResultId(result.id)}
+                className={`
+                  relative py-4 px-3 cursor-pointer
+                  ${isSelected ? "opacity-100" : "opacity-50"}
+                  active:scale-[0.99] transition-all duration-75 touch-manipulation
+                `}
               >
                 <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
                   {result.text}
                 </div>
-                {/* Copy button inside variant */}
+                {/* Copy button - only show when selected */}
                 {isSelected && (
                   <button
                     type="button"
@@ -1353,7 +1371,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                       handleCopyResult(result.id);
                     }}
                     className={`
-                      absolute top-2 right-2
+                      absolute top-3 right-2
                       flex items-center justify-center h-7 w-7 rounded-md
                       ${isResultCopied
                         ? "bg-green-100 dark:bg-green-950/50"
@@ -1372,9 +1390,13 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                   </button>
                 )}
               </div>
-            );
-          })}
-        </div>
+              {/* Divider between variants */}
+              {index < translateResults.length - 1 && (
+                <div className="border-b border-border" />
+              )}
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -1387,13 +1409,12 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     return (
       <div className="flex-shrink-0 border-t border-border bg-white p-3">
         <div className="flex items-center gap-2">
-          {/* Language selector with icon */}
+          {/* Language selector - compact */}
           <Select value={translateLanguage} onValueChange={setTranslateLanguage}>
             <SelectTrigger
-              className="flex-1 h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
+              className="w-auto h-11 rounded-full border-2 border-border text-sm px-4"
               data-testid="select-translate-language"
             >
-              <Languages className="h-5 w-5 text-purple-500 flex-shrink-0" />
               <SelectValue placeholder="Язык">
                 {selectedLangLabel}
               </SelectValue>
@@ -1418,6 +1439,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           >
             <RotateCcw className="h-5 w-5" />
           </button>
+
+          <div className="flex-1"></div>
 
           {/* Apply button */}
           <button
