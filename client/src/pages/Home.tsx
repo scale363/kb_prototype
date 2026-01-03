@@ -38,19 +38,26 @@ export default function Home() {
       className="flex flex-col h-screen bg-background overflow-hidden"
       style={{ touchAction: "manipulation" }}
     >
-      <header className="flex items-center justify-center p-3 border-b border-border bg-[#f4f6f600]">
+      {/* Зафиксированный заголовок с разделительной линией */}
+      <header className="flex-shrink-0 flex items-center justify-center p-3 border-b border-border bg-[#f4f6f600]">
         <h1 className="text-lg font-semibold text-foreground" data-testid="text-app-title">
           AI Keyboard
         </h1>
       </header>
-      <TextInputArea
-        value={text}
-        onChange={setText}
-        cursorPosition={cursorPosition}
-        onCursorChange={setCursorPosition}
-        onSelectionChange={setSelectedText}
-      />
-      <div className="fixed bottom-0 left-0 right-0 z-50">
+
+      {/* Скролящаяся область текста */}
+      <div className="flex-1 overflow-y-auto">
+        <TextInputArea
+          value={text}
+          onChange={setText}
+          cursorPosition={cursorPosition}
+          onCursorChange={setCursorPosition}
+          onSelectionChange={setSelectedText}
+        />
+      </div>
+
+      {/* Зафиксированная панель кнопок внизу */}
+      <div className="flex-shrink-0 border-t border-border">
         <KeyboardContainer
           text={text}
           onTextChange={setText}
