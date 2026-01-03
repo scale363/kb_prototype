@@ -916,37 +916,13 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "translate-result") {
-      title = "🌍 Translated message";
-      const tooltip = "Literal translation to clearly understand meaning and tone.";
-
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
-          <div className="flex items-center gap-2 flex-1">
-            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
-            {tooltip && (
-              <Tooltip
-                delayDuration={0}
-                open={openTooltipId === "translate-result-info"}
-                onOpenChange={(open) => setOpenTooltipId(open ? "translate-result-info" : null)}
-              >
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenTooltipId(openTooltipId === "translate-result-info" ? null : "translate-result-info");
-                    }}
-                    aria-label={`Info about ${title}`}
-                  >
-                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[250px] z-50">
-                  <p className="text-xs">{tooltip}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-[#0a7c6c] flex items-center justify-center">
+              <Languages className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-base font-semibold text-foreground">Translated message</div>
           </div>
           <button
             type="button"
@@ -1351,49 +1327,54 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render translate result view with scrollable results
   const renderTranslateResult = () => {
     return (
-      <div ref={resultsContainerRef} className="p-1 space-y-2">
-        {translateResults.map((result) => {
-          const isSelected = selectedTranslateResultId === result.id;
-          const isResultCopied = copiedResultId === result.id;
-          return (
-            <div
-              key={result.id}
-              onClick={() => setSelectedTranslateResultId(isSelected ? null : result.id)}
-              className="relative p-3 rounded-lg cursor-pointer border border-primary/50 active:scale-[0.99] transition-all duration-75 touch-manipulation bg-[#fdfdfd]"
-            >
-              <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
-                {result.text}
+      <div className="p-3">
+        <div
+          ref={resultsContainerRef}
+          className="min-h-[200px] px-4 py-3 border-2 border-border rounded-xl overflow-y-auto space-y-2"
+        >
+          {translateResults.map((result) => {
+            const isSelected = selectedTranslateResultId === result.id;
+            const isResultCopied = copiedResultId === result.id;
+            return (
+              <div
+                key={result.id}
+                onClick={() => setSelectedTranslateResultId(isSelected ? null : result.id)}
+                className="relative p-3 rounded-lg cursor-pointer border border-primary/50 active:scale-[0.99] transition-all duration-75 touch-manipulation bg-[#fdfdfd]"
+              >
+                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
+                  {result.text}
+                </div>
+                {/* Copy button inside variant */}
+                {isSelected && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopyResult(result.id);
+                    }}
+                    className={`
+                      absolute top-2 right-2
+                      flex items-center justify-center h-7 w-7 rounded-md
+                      ${isResultCopied
+                        ? "bg-green-100 dark:bg-green-950/50"
+                        : "bg-background/80 hover:bg-accent/50"}
+                      active:scale-[0.95] transition-all duration-75 touch-manipulation
+                    `}
+                    data-testid={`button-copy-translate-${result.id}`}
+                    aria-label="Copy"
+                    title="Copy"
+                  >
+                    {isResultCopied ? (
+                      <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                  </button>
+                )}
               </div>
-              {/* Copy button inside variant */}
-              {isSelected && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleCopyResult(result.id);
-                  }}
-                  className={`
-                    absolute top-2 right-2
-                    flex items-center justify-center h-7 w-7 rounded-md
-                    ${isResultCopied
-                      ? "bg-green-100 dark:bg-green-950/50"
-                      : "bg-background/80 hover:bg-accent/50"}
-                    active:scale-[0.95] transition-all duration-75 touch-manipulation
-                  `}
-                  data-testid={`button-copy-translate-${result.id}`}
-                  aria-label="Copy"
-                  title="Copy"
-                >
-                  {isResultCopied ? (
-                    <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                  ) : (
-                    <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                  )}
-                </button>
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     );
   };
@@ -1401,17 +1382,21 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render translate result footer with control panel
   const renderTranslateResultFooter = () => {
     const selectedResult = translateResults.find(r => r.id === selectedTranslateResultId);
+    const selectedLangLabel = LANGUAGES.find(l => l.code === translateLanguage)?.label || translateLanguage;
 
     return (
       <div className="flex-shrink-0 border-t border-border bg-white p-3">
         <div className="flex items-center gap-2">
-          {/* Language selector (compact) */}
+          {/* Language selector with icon */}
           <Select value={translateLanguage} onValueChange={setTranslateLanguage}>
             <SelectTrigger
-              className="w-[120px] h-9 rounded-md border text-sm"
+              className="flex-1 h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
               data-testid="select-translate-language"
             >
-              <SelectValue placeholder="Язык" />
+              <Languages className="h-5 w-5 text-purple-500 flex-shrink-0" />
+              <SelectValue placeholder="Язык">
+                {selectedLangLabel}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {LANGUAGES.map((lang) => (
@@ -1426,15 +1411,13 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           <button
             type="button"
             onClick={handleRetranslate}
-            className="flex items-center justify-center h-9 w-9 rounded-md border bg-secondary hover:bg-accent/50 active:scale-[0.97] transition-all duration-75 touch-manipulation"
+            className="flex items-center justify-center h-11 w-11 rounded-full border-2 border-border bg-white hover:bg-accent/50 active:scale-[0.95] transition-all duration-75 touch-manipulation flex-shrink-0"
             data-testid="button-retranslate"
             aria-label="Новый вариант"
             title="Новый вариант"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RotateCcw className="h-5 w-5" />
           </button>
-
-          <div className="flex-1" />
 
           {/* Apply button */}
           <button
@@ -1442,15 +1425,14 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             onClick={() => selectedResult && handleApplyTranslateResult(selectedResult.id)}
             disabled={!selectedResult}
             className={`
-              flex items-center justify-center gap-1.5 h-9 px-3 rounded-md
-              bg-[#0b9786] text-white font-medium text-sm
-              ${!selectedResult ? "opacity-40 cursor-not-allowed" : "hover:bg-[#0a8a7a] active:scale-[0.97]"}
-              transition-all duration-75 touch-manipulation
+              flex items-center justify-center gap-1.5 h-11 w-11 rounded-full
+              bg-[#0b9786] text-white font-medium
+              ${!selectedResult ? "opacity-40 cursor-not-allowed" : "hover:bg-[#0a8a7a] active:scale-[0.95]"}
+              transition-all duration-75 touch-manipulation flex-shrink-0
             `}
             data-testid="button-apply-translate"
           >
-            <Check className="h-4 w-4" />
-            <span>Apply</span>
+            <Check className="h-5 w-5" />
           </button>
         </div>
       </div>
