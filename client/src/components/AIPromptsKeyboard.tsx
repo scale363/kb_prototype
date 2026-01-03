@@ -734,7 +734,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     if (menuLevel === "main") {
       return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px] -mt-1">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -763,7 +763,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       const tooltip = "Literal translation to clearly understand meaning and tone.";
 
       return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px] -mt-1">
           <div className="flex items-center gap-2 flex-1">
             <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
             {tooltip && (
@@ -806,7 +806,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       const tooltip = "Describe the situation, and we'll help you write a clear, professional message.";
 
       return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px] -mt-1">
           <div className="flex items-center gap-2 flex-1">
             <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
             {tooltip && (
@@ -846,7 +846,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       );
     } else if (menuLevel === "tone-select") {
       return (
-        <div className="px-1 py-3 flex items-center justify-between min-h-[44px]">
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <RefreshCw className="w-4 h-4 text-white" />
@@ -868,7 +868,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       const tooltip = "All replies are generated in a safe, professional tone suitable for work communication. Paste a client message or briefly describe the situation to get started.";
 
       return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+        <div className="px-1 py-2 flex items-center justify-between min-h-[44px] -mt-1">
           <div className="flex items-center gap-2 flex-1">
             <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
             {tooltip && (
@@ -908,7 +908,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       );
     } else if (menuLevel === "saved-text") {
       return (
-        <div className="px-1 py-3 flex items-center justify-between min-h-[44px]">
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <Bookmark className="w-4 h-4 text-white" />
@@ -927,7 +927,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       );
     } else if (menuLevel === "translate-result") {
       return (
-        <div className="px-1 py-3 flex items-center justify-between min-h-[44px]">
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <Languages className="w-4 h-4 text-white" />
@@ -946,7 +946,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       );
     } else if (menuLevel === "quick-replies-result" && selectedQuickReplyAction) {
       return (
-        <div className="px-1 py-3 flex items-center justify-between min-h-[44px]">
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <MessageSquare className="w-4 h-4 text-white" />
@@ -964,13 +964,25 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "result" && selectedTone) {
+      // Determine the title based on selected tone
+      let resultTitle = "How should it sound?";
+      if (selectedTone === "work-safe") {
+        resultTitle = "Safe to send at work";
+      } else if (selectedTone === "grammar-check") {
+        resultTitle = "Grammar corrected";
+      } else if (selectedTone === "informal") {
+        resultTitle = "Informal version";
+      } else if (selectedTone === "short-clear") {
+        resultTitle = "Shorter and clearer";
+      }
+
       return (
-        <div className="px-1 py-3 flex items-center justify-between min-h-[44px]">
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <RefreshCw className="w-4 h-4 text-white" />
             </div>
-            <div className="text-base font-semibold text-foreground">How should it sound?</div>
+            <div className="text-base font-semibold text-foreground">{resultTitle}</div>
           </div>
           <button
             type="button"
@@ -985,7 +997,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
 
     return (
-      <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+      <div className="px-1 py-2 flex items-center justify-between min-h-[44px] -mt-1">
         <div className="flex-1">
           {title && <div className="text-sm font-semibold text-[#6c7180]">{title}</div>}
         </div>
@@ -1169,44 +1181,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render tone selection menu
   const renderToneSelect = () => {
-    const hasContent = displayPreviewText.trim();
-
     return (
       <div className="flex flex-col gap-3 p-1">
-        {/* Preview field */}
-        <div className="flex-1 flex flex-col gap-2 p-3 border-2 border-accent rounded-lg relative bg-[#eaf6f400]">
-          {/* Title */}
-          <div className="text-sm font-semibold text-[#9ba0ad]">✏️ Improve your message</div>
-          {hasContent ? (
-            <div className="text-sm text-foreground font-medium leading-relaxed pr-16">
-              {displayText}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground/60 pr-16">Paste a message or situation here</div>
-          )}
-          <div className="absolute top-2 right-2 flex gap-1">
-            <button
-              type="button"
-              onClick={handlePasteFromClipboard}
-              className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
-              data-testid="button-paste-tone-select"
-              aria-label="Paste from clipboard"
-            >
-              <Clipboard className="h-4 w-4 text-muted-foreground" />
-            </button>
-            {/* Close button - closes form instead of toggling keyboard */}
-            <button
-              type="button"
-              onClick={handleBackToMain}
-              className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
-              aria-label="Close form"
-              data-testid="button-close-tone-select"
-            >
-              <X className="h-5 w-5 text-muted-foreground" />
-            </button>
-          </div>
-        </div>
-
         {/* Tone options */}
         <div className="flex flex-wrap gap-2 justify-center">
           {TONE_OPTIONS.map((tone) => (
@@ -1432,7 +1408,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     return (
       <div className="flex-shrink-0 border-t border-border bg-white p-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mt-1">
           {/* Language selector - compact */}
           <Select value={translateLanguage} onValueChange={setTranslateLanguage}>
             <SelectTrigger
