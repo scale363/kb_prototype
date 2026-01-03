@@ -1660,7 +1660,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         <button
           type="button"
           onClick={handleSaveFromClipboard}
-          className="flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-lg border-2 bg-transparent text-primary border-primary hover:bg-accent/50 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
+          className="flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-lg border-2 bg-transparent text-primary border-primary hover:bg-accent/50 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none mt-[8px] mb-[8px]"
           data-testid="button-save-from-clipboard"
         >
           <Clipboard className="h-4 w-4" />
