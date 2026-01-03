@@ -1182,7 +1182,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render tone selection menu
   const renderToneSelect = () => {
     return (
-      <div className="flex flex-col gap-3 p-1">
+      <div className="flex flex-col gap-3 p-1 pt-[10px] pb-[10px]">
         {/* Tone options */}
         <div className="flex flex-wrap gap-2 justify-center">
           {TONE_OPTIONS.map((tone) => (
