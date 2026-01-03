@@ -1692,7 +1692,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render saved text view
   const renderSavedText = () => (
-    <div className="flex flex-col gap-3 p-1 flex-1 min-h-0 pt-[6px] pb-[6px]">
+    <div className="flex flex-col gap-3 p-1 flex-1 min-h-0 pt-[8px] pb-[8px]">
       {/* Save from clipboard button */}
       <div className="flex-shrink-0 flex flex-col gap-2">
         <button
