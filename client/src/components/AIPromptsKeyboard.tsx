@@ -327,6 +327,12 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Ref for tracking translate language changes
   const prevTranslateLanguageRef = useRef<string>(translateLanguage);
 
+  // Ref for tracking rephrase language changes
+  const prevRephraseLanguageRef = useRef<string>(selectedLanguage);
+
+  // Ref for tracking quick replies language changes
+  const prevQuickRepliesLanguageRef = useRef<string>(quickRepliesLanguage);
+
   // Save language selection to localStorage
   useEffect(() => {
     try {
@@ -580,6 +586,36 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
     prevTranslateLanguageRef.current = translateLanguage;
   }, [translateLanguage]);
+
+  // Auto-generate new rephrase variant when language changes in result mode
+  useEffect(() => {
+    if (menuLevel === "result" &&
+        selectedLanguage !== prevRephraseLanguageRef.current &&
+        rephraseResults.length > 0) {
+      handleReprocess();
+      // Blur the select to remove focus
+      const selectElement = document.querySelector('[data-testid="select-language"]');
+      if (selectElement instanceof HTMLElement) {
+        selectElement.blur();
+      }
+    }
+    prevRephraseLanguageRef.current = selectedLanguage;
+  }, [selectedLanguage]);
+
+  // Auto-generate new quick reply variant when language changes in quick-replies-result mode
+  useEffect(() => {
+    if (menuLevel === "quick-replies-result" &&
+        quickRepliesLanguage !== prevQuickRepliesLanguageRef.current &&
+        quickReplyResults.length > 0) {
+      handleRegenerateQuickReply();
+      // Blur the select to remove focus
+      const selectElement = document.querySelector('[data-testid="select-quick-replies-language"]');
+      if (selectElement instanceof HTMLElement) {
+        selectElement.blur();
+      }
+    }
+    prevQuickRepliesLanguageRef.current = quickRepliesLanguage;
+  }, [quickRepliesLanguage]);
 
   const handleApplyTranslateResult = (resultId: string) => {
     const result = translateResults.find(r => r.id === resultId);
@@ -1218,31 +1254,25 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render result view with scrollable results
   const renderResult = () => {
     return (
-      <div ref={resultsContainerRef} className="p-1 space-y-3">
+      <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
         {rephraseResults.map((result, index) => {
           const isSelected = selectedResultId === result.id;
+          const isResultCopied = copiedResultId === result.id;
           return (
-            <div
-              key={result.id}
-              onClick={() => setSelectedResultId(isSelected ? null : result.id)}
-              className={`
-                flex flex-col gap-2 p-4 rounded-xl cursor-pointer
-                ${isSelected
-                  ? "bg-accent/20 border border-primary/50"
-                  : "bg-accent/10 border border-accent"}
-                active:scale-[0.99] transition-all duration-75
-                touch-manipulation
-              `}
-            >
-              {/* Result text */}
-              <div className="space-y-2">
-                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+            <div key={result.id}>
+              <div
+                onClick={() => setSelectedResultId(result.id)}
+                className={`
+                  relative py-4 px-3 cursor-pointer
+                  ${isSelected ? "opacity-100" : "opacity-50"}
+                  active:scale-[0.99] transition-all duration-75 touch-manipulation
+                `}
+              >
+                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
                   {result.text}
                 </div>
-              </div>
-              {/* Action buttons for this result - only show when selected */}
-              {isSelected && (
-                <div className="flex gap-2 pt-2">
+                {/* Copy button - only show when selected */}
+                {isSelected && (
                   <button
                     type="button"
                     onClick={(e) => {
@@ -1250,44 +1280,28 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                       handleCopyResult(result.id);
                     }}
                     className={`
-                      flex-1 flex items-center justify-center gap-2
-                      min-h-[40px] px-3
-                      rounded-lg border-2
-                      ${copiedResultId === result.id
-                        ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
-                        : "bg-secondary border-border"}
-                      active:scale-[0.98]
-                      transition-all duration-75
-                      touch-manipulation select-none
+                      absolute top-3 right-2
+                      flex items-center justify-center h-7 w-7 rounded-md
+                      ${isResultCopied
+                        ? "bg-green-100 dark:bg-green-950/50"
+                        : "bg-background/80 hover:bg-accent/50"}
+                      active:scale-[0.95] transition-all duration-75 touch-manipulation
                     `}
                     data-testid={`button-copy-${result.id}`}
+                    aria-label="Copy"
+                    title="Copy"
                   >
-                    {copiedResultId === result.id ? (
-                      <>
-                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        <span className="text-xs font-medium">Скопировано</span>
-                      </>
+                    {isResultCopied ? (
+                      <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
                     ) : (
-                      <>
-                        <Copy className="h-4 w-4" />
-                        <span className="text-xs font-medium">Копировать</span>
-                      </>
+                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
                     )}
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleApplyResult(result.id);
-                    }}
-                    className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 border-[#0b9786] active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none bg-[#0b9786] text-[#ffffff]"
-                    data-testid={`button-apply-${result.id}`}
-                  >
-                    <Check className="h-4 w-4" />
-                    <span className="text-xs font-semibold">Применить</span>
-                  </button>
-                </div>
+                )}
+              </div>
+              {/* Divider between variants */}
+              {index < rephraseResults.length - 1 && (
+                <div className="border-b border-border" />
               )}
             </div>
           );
@@ -1302,18 +1316,23 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     const shouldHideLanguageSelector = selectedTone === "grammar-check";
     // Check if current tone should hide new variant button
     const shouldHideNewVariantButton = selectedTone === "grammar-check";
+    const selectedResult = rephraseResults.find(r => r.id === selectedResultId);
+    const selectedLangLabel = LANGUAGES.find(l => l.code === selectedLanguage)?.label || selectedLanguage;
 
     return (
       <div className="flex-shrink-0 border-t border-border bg-white p-3">
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 mt-1">
           {/* Language selector (compact) - hide for grammar-check */}
           {!shouldHideLanguageSelector && (
             <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
               <SelectTrigger
-                className="flex-1 min-h-[40px] rounded-lg border-2 text-sm"
+                className="w-auto h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
                 data-testid="select-language"
               >
-                <SelectValue placeholder="Язык" />
+                <RefreshCw className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                <SelectValue placeholder="Язык">
+                  {selectedLangLabel}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {LANGUAGES.map((lang) => (
@@ -1330,13 +1349,32 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             <button
               type="button"
               onClick={handleReprocess}
-              className={`flex items-center justify-center min-h-[40px] min-w-[40px] rounded-lg border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none ${shouldHideLanguageSelector ? 'ml-auto' : ''}`}
+              className="flex items-center justify-center h-11 w-11 rounded-full border-2 border-border bg-white hover:bg-accent/50 active:scale-[0.95] transition-all duration-75 touch-manipulation flex-shrink-0"
               data-testid="button-reprocess"
-              aria-label="Создать новый вариант"
+              aria-label="Новый вариант"
+              title="Новый вариант"
             >
-              <RefreshCw className="h-5 w-5" />
+              <RotateCcw className="h-5 w-5" />
             </button>
           )}
+
+          <div className="flex-1"></div>
+
+          {/* Apply button */}
+          <button
+            type="button"
+            onClick={() => selectedResult && handleApplyResult(selectedResult.id)}
+            disabled={!selectedResult}
+            className={`
+              flex items-center justify-center gap-1.5 h-11 w-11 rounded-full
+              bg-[#0b9786] text-white font-medium
+              ${!selectedResult ? "opacity-40 cursor-not-allowed" : "hover:bg-[#0a8a7a] active:scale-[0.95]"}
+              transition-all duration-75 touch-manipulation flex-shrink-0
+            `}
+            data-testid="button-apply"
+          >
+            <Check className="h-5 w-5" />
+          </button>
         </div>
       </div>
     );
@@ -1500,136 +1538,81 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render quick replies result view with scrollable results
   const renderQuickRepliesResult = () => {
-    const hasContent = displayPreviewText.trim();
-
     return (
-      <div className="p-1 space-y-3">
-        {/* Preview field */}
-        <div className="flex-shrink-0 flex flex-col gap-2 p-3 border-2 border-accent rounded-lg relative bg-[#eaf6f400]">
-          {/* Title */}
-          <div className="text-sm font-semibold text-[#9ba0ad]">📝 Your situation</div>
-          {hasContent ? (
-            <div className="text-sm text-foreground font-medium leading-relaxed pr-16">
-              {displayText}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground/60 pr-16">Paste a message or situation here</div>
-          )}
-          <div className="absolute top-2 right-2 flex gap-1">
-            <button
-              type="button"
-              onClick={handlePasteFromClipboard}
-              className="p-1.5 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation"
-              data-testid="button-paste-quick-replies-result"
-              aria-label="Paste from clipboard"
-            >
-              <Clipboard className="h-4 w-4 text-muted-foreground" />
-            </button>
-            {/* Close button - closes form */}
-            <button
-              type="button"
-              onClick={handleBackToMain}
-              className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
-              aria-label="Close form"
-              data-testid="button-close-quick-replies-result"
-            >
-              <X className="h-5 w-5 text-muted-foreground" />
-            </button>
-          </div>
-        </div>
-
-        {/* Results container with scroll */}
-        <div ref={resultsContainerRef} className="space-y-3">
-          {quickReplyResults.map((result, index) => {
-            const isSelected = selectedQuickReplyResultId === result.id;
-            return (
+      <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
+        {quickReplyResults.map((result, index) => {
+          const isSelected = selectedQuickReplyResultId === result.id;
+          const isResultCopied = copiedResultId === result.id;
+          return (
+            <div key={result.id}>
               <div
-                key={result.id}
-                onClick={() => setSelectedQuickReplyResultId(isSelected ? null : result.id)}
+                onClick={() => setSelectedQuickReplyResultId(result.id)}
                 className={`
-                  flex flex-col gap-2 p-4 rounded-xl cursor-pointer
-                  ${isSelected
-                    ? "bg-accent/20 border border-primary/50"
-                    : "bg-accent/10 border border-accent"}
-                  active:scale-[0.99] transition-all duration-75
-                  touch-manipulation
+                  relative py-4 px-3 cursor-pointer
+                  ${isSelected ? "opacity-100" : "opacity-50"}
+                  active:scale-[0.99] transition-all duration-75 touch-manipulation
                 `}
               >
-                {/* Result text */}
-                <div className="space-y-2">
-                  <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                    {result.text}
-                  </div>
+                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
+                  {result.text}
                 </div>
-                {/* Action buttons for this result - only show when selected */}
+                {/* Copy button - only show when selected */}
                 {isSelected && (
-                  <div className="flex gap-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCopyResult(result.id);
-                      }}
-                      className={`
-                        flex-1 flex items-center justify-center gap-2
-                        min-h-[40px] px-3
-                        rounded-lg border-2
-                        ${copiedResultId === result.id
-                          ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
-                          : "bg-secondary border-border"}
-                        active:scale-[0.98]
-                        transition-all duration-75
-                        touch-manipulation select-none
-                      `}
-                      data-testid={`button-copy-quick-reply-${result.id}`}
-                    >
-                      {copiedResultId === result.id ? (
-                        <>
-                          <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-                          <span className="text-xs font-medium">Скопировано</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-4 w-4" />
-                          <span className="text-xs font-medium">Копировать</span>
-                        </>
-                      )}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleApplyQuickReplyResult(result.id);
-                      }}
-                      className="flex-1 flex items-center justify-center gap-2 min-h-[40px] px-3 rounded-lg border-2 border-[#0b9786] active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none bg-[#0b9786] text-[#ffffff]"
-                      data-testid={`button-apply-quick-reply-${result.id}`}
-                    >
-                      <Check className="h-4 w-4" />
-                      <span className="text-xs font-semibold">Применить</span>
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopyResult(result.id);
+                    }}
+                    className={`
+                      absolute top-3 right-2
+                      flex items-center justify-center h-7 w-7 rounded-md
+                      ${isResultCopied
+                        ? "bg-green-100 dark:bg-green-950/50"
+                        : "bg-background/80 hover:bg-accent/50"}
+                      active:scale-[0.95] transition-all duration-75 touch-manipulation
+                    `}
+                    data-testid={`button-copy-quick-reply-${result.id}`}
+                    aria-label="Copy"
+                    title="Copy"
+                  >
+                    {isResultCopied ? (
+                      <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                  </button>
                 )}
               </div>
-            );
-          })}
-        </div>
+              {/* Divider between variants */}
+              {index < quickReplyResults.length - 1 && (
+                <div className="border-b border-border" />
+              )}
+            </div>
+          );
+        })}
       </div>
     );
   };
 
   // Render quick replies result footer with control panel
   const renderQuickRepliesResultFooter = () => {
+    const selectedResult = quickReplyResults.find(r => r.id === selectedQuickReplyResultId);
+    const selectedLangLabel = LANGUAGES.find(l => l.code === quickRepliesLanguage)?.label || quickRepliesLanguage;
+
     return (
       <div className="flex-shrink-0 border-t border-border bg-white p-3">
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 mt-1">
           {/* Language selector (compact) */}
           <Select value={quickRepliesLanguage} onValueChange={setQuickRepliesLanguage}>
             <SelectTrigger
-              className="flex-1 min-h-[40px] rounded-lg border-2 text-sm"
+              className="w-auto h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
               data-testid="select-quick-replies-language"
             >
-              <SelectValue placeholder="Язык" />
+              <MessageSquare className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+              <SelectValue placeholder="Язык">
+                {selectedLangLabel}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {LANGUAGES.map((lang) => (
@@ -1644,11 +1627,30 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           <button
             type="button"
             onClick={handleRegenerateQuickReply}
-            className="flex items-center justify-center min-h-[40px] min-w-[40px] rounded-lg border-2 bg-secondary border-border active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
+            className="flex items-center justify-center h-11 w-11 rounded-full border-2 border-border bg-white hover:bg-accent/50 active:scale-[0.95] transition-all duration-75 touch-manipulation flex-shrink-0"
             data-testid="button-regenerate-quick-reply"
-            aria-label="Создать новый вариант"
+            aria-label="Новый вариант"
+            title="Новый вариант"
           >
-            <RefreshCw className="h-5 w-5" />
+            <RotateCcw className="h-5 w-5" />
+          </button>
+
+          <div className="flex-1"></div>
+
+          {/* Apply button */}
+          <button
+            type="button"
+            onClick={() => selectedResult && handleApplyQuickReplyResult(selectedResult.id)}
+            disabled={!selectedResult}
+            className={`
+              flex items-center justify-center gap-1.5 h-11 w-11 rounded-full
+              bg-[#0b9786] text-white font-medium
+              ${!selectedResult ? "opacity-40 cursor-not-allowed" : "hover:bg-[#0a8a7a] active:scale-[0.95]"}
+              transition-all duration-75 touch-manipulation flex-shrink-0
+            `}
+            data-testid="button-apply-quick-reply"
+          >
+            <Check className="h-5 w-5" />
           </button>
         </div>
       </div>
