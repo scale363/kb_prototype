@@ -56,7 +56,7 @@ export async function registerRoutes(
 
       // Call ChatGPT API with gpt-4.1-mini model and temperature 0
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4.1-mini",
         temperature: 0,
         messages: [
           {
