@@ -1026,7 +1026,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render main menu buttons
   const renderMainMenu = () => (
-    <div className="grid grid-cols-2 gap-3 p-1">
+    <div className="grid grid-cols-2 gap-3 p-3">
       {PROMPT_BUTTONS.map((button) => (
         <button
           key={button.id}
@@ -1709,21 +1709,34 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {renderPreviewField()}
-        {menuLevel === "main" && renderMainMenu()}
-        {menuLevel === "rephrase-empty-preview" && renderRephraseEmptyPreview()}
-        {menuLevel === "translate-empty-preview" && renderTranslateEmptyPreview()}
-        {menuLevel === "quick-replies-empty-preview" && renderQuickRepliesEmptyPreview()}
-        {menuLevel === "tone-select" && renderToneSelect()}
-        {menuLevel === "result" && renderResult()}
-        {menuLevel === "translate-result" && renderTranslateResult()}
-        {menuLevel === "quick-replies-select" && renderQuickRepliesSelect()}
-        {menuLevel === "quick-replies-result" && renderQuickRepliesResult()}
-        {menuLevel === "saved-text" && renderSavedText()}
+        {menuLevel === "main" && (
+          <div className="pb-3">
+            {/* Preview field area - will scroll if needed */}
+          </div>
+        )}
+        {menuLevel !== "main" && (
+          <>
+            {menuLevel === "rephrase-empty-preview" && renderRephraseEmptyPreview()}
+            {menuLevel === "translate-empty-preview" && renderTranslateEmptyPreview()}
+            {menuLevel === "quick-replies-empty-preview" && renderQuickRepliesEmptyPreview()}
+            {menuLevel === "tone-select" && renderToneSelect()}
+            {menuLevel === "result" && renderResult()}
+            {menuLevel === "translate-result" && renderTranslateResult()}
+            {menuLevel === "quick-replies-select" && renderQuickRepliesSelect()}
+            {menuLevel === "quick-replies-result" && renderQuickRepliesResult()}
+            {menuLevel === "saved-text" && renderSavedText()}
+          </>
+        )}
       </div>
 
-      {/* Fixed footer with border */}
+      {/* Fixed footer with border - for main menu buttons or result controls */}
+      {menuLevel === "main" && (
+        <div className="flex-shrink-0 border-t border-border bg-white">
+          {renderMainMenu()}
+        </div>
+      )}
       {menuLevel === "result" && renderResultFooter()}
       {menuLevel === "translate-result" && renderTranslateResultFooter()}
       {menuLevel === "quick-replies-result" && renderQuickRepliesResultFooter()}
