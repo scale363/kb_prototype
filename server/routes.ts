@@ -1,6 +1,21 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import OpenAI from "openai";
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// Language name mapping for better prompts
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: "English",
+  ru: "Russian",
+  es: "Spanish",
+  de: "German",
+  zh: "Chinese",
+};
 
 export async function registerRoutes(
   httpServer: Server,
@@ -8,7 +23,7 @@ export async function registerRoutes(
 ): Promise<Server> {
   app.post("/api/ai/rephrase", async (req, res) => {
     const { text } = req.body;
-    
+
     if (!text || typeof text !== "string") {
       return res.status(400).json({ error: "Text is required" });
     }
@@ -23,18 +38,53 @@ export async function registerRoutes(
 
   app.post("/api/ai/translate", async (req, res) => {
     const { text, targetLanguage } = req.body;
-    
+
     if (!text || typeof text !== "string") {
       return res.status(400).json({ error: "Text is required" });
     }
 
-    res.json({
-      success: true,
-      original: text,
-      translated: null,
-      targetLanguage: targetLanguage || "en",
-      message: "AI translation will be available in the next version",
-    });
+    // Check if OpenAI API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: "OpenAI API key is not configured",
+      });
+    }
+
+    try {
+      const languageName = LANGUAGE_NAMES[targetLanguage] || targetLanguage;
+
+      // Call ChatGPT API with gpt-4.1-mini model and temperature 0
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0,
+        messages: [
+          {
+            role: "system",
+            content: `You are a professional translator. Translate the provided text to ${languageName}. Only provide the translation, no explanations or additional text.`,
+          },
+          {
+            role: "user",
+            content: text,
+          },
+        ],
+      });
+
+      const translatedText = completion.choices[0]?.message?.content || "";
+
+      res.json({
+        success: true,
+        original: text,
+        translated: translatedText,
+        targetLanguage: targetLanguage || "en",
+      });
+    } catch (error: any) {
+      console.error("Translation error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message || "Translation failed",
+      });
+    }
   });
 
   app.get("/api/snippets", async (_req, res) => {
