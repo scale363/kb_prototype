@@ -1098,7 +1098,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           key={button.id}
           type="button"
           onClick={() => handlePromptClick(button.id)}
-          className="flex flex-row items-center justify-start gap-3 min-h-[56px] px-4 py-3 rounded-[13px] border bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none ml-[-5px] mr-[-5px] pl-[14px] pr-[14px]"
+          className="flex flex-row items-center justify-start gap-3 min-h-[56px] px-4 py-3 rounded-[13px] border bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none pl-[9px] pr-[9px]"
           data-testid={`button-prompt-${button.id}`}
           aria-label={button.label}
         >
