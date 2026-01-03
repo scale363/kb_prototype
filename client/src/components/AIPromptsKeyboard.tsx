@@ -194,6 +194,16 @@ const LANGUAGES = [
   { code: "zh", label: "Chinese" },
 ];
 
+// Rotating placeholder texts for Help me write empty state
+const HELP_ME_WRITE_PLACEHOLDERS = [
+  "Briefly describe the situation…",
+  "apologize for missing the deadline and explain I need two more days",
+  "politely decline the project because I'm fully booked",
+  "ask for clearer requirements",
+  "ask for payment before starting the work",
+  "politely decline the project because I'm fully booked",
+];
+
 type MenuLevel = "main" | "tone-select" | "result" | "translate-result" | "quick-replies-select" | "quick-replies-result" | "saved-text" | "rephrase-empty-preview" | "translate-empty-preview" | "quick-replies-empty-preview";
 
 interface RephraseResult {
@@ -333,6 +343,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Ref for tracking quick replies language changes
   const prevQuickRepliesLanguageRef = useRef<string>(quickRepliesLanguage);
 
+  // State for rotating placeholder in Help me write empty state
+  const [placeholderIndex, setPlaceholderIndex] = useState<number>(0);
+
   // Save language selection to localStorage
   useEffect(() => {
     try {
@@ -413,6 +426,19 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   useEffect(() => {
     if (menuLevel === "quick-replies-empty-preview" && (previewText.trim() || text.trim())) {
       handleQuickReplyActionSelect("help-me-write");
+    }
+  }, [menuLevel, previewText, text]);
+
+  // Rotate placeholder text in Help me write empty state
+  useEffect(() => {
+    if (menuLevel === "quick-replies-empty-preview" && !previewText.trim() && !text.trim()) {
+      const interval = setInterval(() => {
+        setPlaceholderIndex((prevIndex) =>
+          (prevIndex + 1) % HELP_ME_WRITE_PLACEHOLDERS.length
+        );
+      }, 3000); // Change every 3 seconds
+
+      return () => clearInterval(interval);
     }
   }, [menuLevel, previewText, text]);
 
@@ -1152,6 +1178,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render empty preview prompt for quick replies
   const renderQuickRepliesEmptyPreview = () => {
     const hasContent = displayPreviewText.trim();
+    const currentPlaceholder = HELP_ME_WRITE_PLACEHOLDERS[placeholderIndex];
 
     return (
       <div className="flex flex-col gap-4 p-1">
@@ -1162,7 +1189,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               {displayPreviewText}
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground/60 flex-1 mt-[4px] mb-[4px]">Briefly describe the situation…</div>
+            <div className="text-sm text-muted-foreground/60 flex-1 mt-[4px] mb-[4px]">{currentPlaceholder}</div>
           )}
           <button
             type="button"
@@ -1633,7 +1660,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         <button
           type="button"
           onClick={handleSaveFromClipboard}
-          className="flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-lg border-2 bg-primary text-primary-foreground border-primary active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
+          className="flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-lg border-2 bg-transparent text-primary border-primary hover:bg-accent/50 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
           data-testid="button-save-from-clipboard"
         >
           <Clipboard className="h-4 w-4" />
