@@ -1034,7 +1034,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         {/* Preview field without border and background */}
         <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
           {hasContent ? (
-            <div className="text-sm text-foreground leading-relaxed flex-1">
+            <div className="text-sm text-foreground leading-relaxed flex-1 mt-[5px] mb-[5px]">
               {displayPreviewText}
             </div>
           ) : (
