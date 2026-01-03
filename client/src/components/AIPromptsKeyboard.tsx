@@ -345,6 +345,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // State for rotating placeholder in Help me write empty state
   const [placeholderIndex, setPlaceholderIndex] = useState<number>(0);
+  const [animatedPlaceholder, setAnimatedPlaceholder] = useState<string>("");
+  const [isFirstChange, setIsFirstChange] = useState<boolean>(true);
 
   // Save language selection to localStorage
   useEffect(() => {
@@ -429,18 +431,55 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
   }, [menuLevel, previewText, text]);
 
-  // Rotate placeholder text in Help me write empty state
+  // Rotate placeholder text in Help me write empty state with animation
   useEffect(() => {
     if (menuLevel === "quick-replies-empty-preview" && !previewText.trim() && !text.trim()) {
-      const interval = setInterval(() => {
-        setPlaceholderIndex((prevIndex) =>
-          (prevIndex + 1) % HELP_ME_WRITE_PLACEHOLDERS.length
-        );
-      }, 3000); // Change every 3 seconds
+      const currentPhrase = HELP_ME_WRITE_PLACEHOLDERS[placeholderIndex];
+      let currentCharIndex = 0;
+      let timeoutId: NodeJS.Timeout;
+      let intervalId: NodeJS.Timeout;
 
-      return () => clearInterval(interval);
+      const startNextPhrase = () => {
+        // Move to next phrase
+        setPlaceholderIndex((prevIndex) => (prevIndex + 1) % HELP_ME_WRITE_PLACEHOLDERS.length);
+        setIsFirstChange(false);
+      };
+
+      if (isFirstChange && placeholderIndex === 0) {
+        // For the very first placeholder, show it immediately
+        setAnimatedPlaceholder(currentPhrase);
+        // After 2 seconds, move to the next phrase
+        timeoutId = setTimeout(() => {
+          startNextPhrase();
+        }, 2000);
+      } else {
+        // Animate character by character
+        setAnimatedPlaceholder("");
+        intervalId = setInterval(() => {
+          if (currentCharIndex < currentPhrase.length) {
+            setAnimatedPlaceholder(currentPhrase.substring(0, currentCharIndex + 1));
+            currentCharIndex++;
+          } else {
+            clearInterval(intervalId);
+            // Wait a bit before starting the next phrase
+            timeoutId = setTimeout(() => {
+              startNextPhrase();
+            }, 2000);
+          }
+        }, 30); // Fast character animation - 30ms per character
+      }
+
+      return () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        if (intervalId) clearInterval(intervalId);
+      };
+    } else {
+      // Reset state when leaving empty preview
+      setPlaceholderIndex(0);
+      setAnimatedPlaceholder("");
+      setIsFirstChange(true);
     }
-  }, [menuLevel, previewText, text]);
+  }, [menuLevel, previewText, text, placeholderIndex, isFirstChange]);
 
   // Определяем текст для предпросмотра: приоритет за полем ввода кроме одного случая:
   // мы вставили текст из буфера (previewText), при этом он еще не синхронизировался с основным полем
@@ -1178,7 +1217,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render empty preview prompt for quick replies
   const renderQuickRepliesEmptyPreview = () => {
     const hasContent = displayPreviewText.trim();
-    const currentPlaceholder = HELP_ME_WRITE_PLACEHOLDERS[placeholderIndex];
 
     return (
       <div className="flex flex-col gap-4 p-1">
@@ -1189,7 +1227,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               {displayPreviewText}
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground/60 flex-1 mt-[4px] mb-[4px]">{currentPlaceholder}</div>
+            <div className="text-sm text-muted-foreground/60 flex-1 mt-[4px] mb-[4px]">{animatedPlaceholder}</div>
           )}
           <button
             type="button"
