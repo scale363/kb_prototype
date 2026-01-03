@@ -197,11 +197,12 @@ const LANGUAGES = [
 // Rotating placeholder texts for Help me write empty state
 const HELP_ME_WRITE_PLACEHOLDERS = [
   "Briefly describe the situation…",
-  "apologize for missing the deadline and explain I need two more days",
-  "politely decline the project because I'm fully booked",
-  "ask for clearer requirements",
-  "ask for payment before starting the work",
-  "politely decline the project because I'm fully booked",
+  'E.g. "write a congratulatory message to a friend"',
+  'E.g. "ask the consulate about appointment rules and opening hours"',
+  'E.g. "ask the client for payment before starting work"',
+  'E.g. "politely decline the project because I\'m fully booked"',
+  'E.g. "apologize for missing the deadline and ask for 2 more days"',
+  'E.g. "ask for clearer requirements"',
 ];
 
 type MenuLevel = "main" | "tone-select" | "result" | "translate-result" | "quick-replies-select" | "quick-replies-result" | "saved-text" | "rephrase-empty-preview" | "translate-empty-preview" | "quick-replies-empty-preview";
