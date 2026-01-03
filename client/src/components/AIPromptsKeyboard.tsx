@@ -845,8 +845,24 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "tone-select") {
-      // No header for tone-select
-      return null;
+      return (
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px]">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
+              <RefreshCw className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-base font-semibold text-foreground">How should it sound?</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+      );
     } else if (menuLevel === "quick-replies-select") {
       title = "💬 Quick replies";
       const tooltip = "All replies are generated in a safe, professional tone suitable for work communication. Paste a client message or briefly describe the situation to get started.";
@@ -891,37 +907,13 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "saved-text") {
-      title = "🔖 Saved text";
-      const tooltip = "Addresses, replies, and common phrases — always at hand";
-
       return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
-          <div className="flex items-center gap-2 flex-1">
-            <div className="text-sm font-semibold text-[#6c7180]">{title}</div>
-            {tooltip && (
-              <Tooltip
-                delayDuration={0}
-                open={openTooltipId === "saved-text-info"}
-                onOpenChange={(open) => setOpenTooltipId(open ? "saved-text-info" : null)}
-              >
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenTooltipId(openTooltipId === "saved-text-info" ? null : "saved-text-info");
-                    }}
-                    aria-label={`Info about ${title}`}
-                  >
-                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[250px] z-50">
-                  <p className="text-xs">{tooltip}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px]">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
+              <Bookmark className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-base font-semibold text-foreground">Saved text</div>
           </div>
           <button
             type="button"
@@ -935,7 +927,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       );
     } else if (menuLevel === "translate-result") {
       return (
-        <div className="px-1 py-2 flex items-center justify-between min-h-[44px]">
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px]">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <Languages className="w-4 h-4 text-white" />
@@ -953,11 +945,43 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "quick-replies-result" && selectedQuickReplyAction) {
-      // No header for quick-replies-result
-      return null;
+      return (
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px]">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
+              <MessageSquare className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-base font-semibold text-foreground">Message for your situation</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+      );
     } else if (menuLevel === "result" && selectedTone) {
-      // No header for result
-      return null;
+      return (
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px]">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
+              <RefreshCw className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-base font-semibold text-foreground">How should it sound?</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+      );
     }
 
     return (
