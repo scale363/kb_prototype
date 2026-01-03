@@ -1074,7 +1074,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               {displayPreviewText}
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground/60 flex-1">Paste a message or situation here</div>
+            <div className="text-sm text-muted-foreground/60 flex-1 mt-[4px] mb-[4px]">Paste a message or situation here</div>
           )}
           <button
             type="button"
