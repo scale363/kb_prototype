@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import { Clipboard } from "lucide-react";
+import { Clipboard, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TextInputAreaProps {
@@ -66,6 +66,18 @@ export function TextInputArea({
     }
   };
 
+  const handleClear = () => {
+    onChange("");
+    onCursorChange(0);
+    setSelectionRange(null);
+    if (onSelectionChange) {
+      onSelectionChange("");
+    }
+    // Также сбрасываем предпросмотр
+    const event = new CustomEvent("resetPreviewText");
+    window.dispatchEvent(event);
+  };
+
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     e.preventDefault();
   };
@@ -122,6 +134,18 @@ export function TextInputArea({
   return (
     <div className="flex flex-col relative bg-[#f4f6f600] p-3">
       <div className="absolute top-6 right-6 flex gap-2 z-10">
+        {value.length > 0 && (
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={handleClear}
+            data-testid="button-clear"
+            aria-label="Clear text"
+            className="text-muted-foreground hover:text-destructive"
+          >
+            <Trash2 className="h-5 w-5" />
+          </Button>
+        )}
         <Button
           size="icon"
           variant="ghost"
