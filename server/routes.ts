@@ -61,7 +61,16 @@ export async function registerRoutes(
         messages: [
           {
             role: "system",
-            content: `You are a professional translator. Translate the provided text to ${languageName}. Only provide the translation, no explanations or additional text.`,
+            content: `ranslate the text below into ${languageName} as literally and accurately as possible.
+
+Requirements:
+- Preserve the original meaning, tone, register, and intent exactly.
+- Do not rephrase, soften, normalize, or improve the text.
+- Keep the same level of formality or informality as in the original.
+- Do not add explanations, comments, or context.
+- Do not change the length unless strictly required by grammar.
+
+Return only the translated text.`,
           },
           {
             role: "user",
