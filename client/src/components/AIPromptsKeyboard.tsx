@@ -1,4 +1,4 @@
-import { RefreshCw, Languages, FileText, Clipboard, Globe, ArrowLeft, Copy, Check, RotateCcw, ChevronRight, X, HelpCircle, Plus, MessageSquare, Bookmark, Trash2 } from "lucide-react";
+import { RefreshCw, Languages, FileText, Clipboard, Globe, ArrowLeft, Copy, Check, RotateCcw, ChevronRight, X, HelpCircle, Plus, MessageSquare, Bookmark, Trash2, CheckCircle2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import {
   Tooltip,
@@ -197,9 +197,9 @@ const LANGUAGES = [
 
 // Response types for Help me write feature
 const RESPONSE_TYPES = [
-  { code: "chat", label: "💬 Chat message" },
-  { code: "email", label: "✉️ Email" },
-  { code: "official", label: "🏛️ Official message" },
+  { code: "chat", label: "Chat message", emoji: "💬" },
+  { code: "email", label: "Email", emoji: "📧" },
+  { code: "official", label: "Official message", emoji: "📄" },
 ];
 
 // Rotating placeholder texts for Help me write empty state
@@ -266,6 +266,14 @@ const PROMPT_BUTTONS: PromptButton[] = [
     label: "Translate",
     icon: <Languages className="h-6 w-6 text-purple-500" />,
     description: "Translate to another language",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
+  },
+  {
+    id: "grammar-check",
+    label: "Grammar check",
+    icon: <CheckCircle2 className="h-6 w-6 text-pink-500" />,
+    description: "Check grammar and spelling",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
   },
@@ -1102,6 +1110,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         handleTranslate();
         break;
 
+      case "grammar-check":
+        // Stub - functionality to be implemented later
+        console.log("Grammar check clicked - feature coming soon");
+        break;
+
       case "quick-replies":
         if (!text.trim() && !previewText.trim()) {
           // Show empty preview state with prompt to paste text
@@ -1415,18 +1428,18 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render main menu buttons
   const renderMainMenu = () => (
-    <div className="grid grid-cols-2 gap-3 p-3 pt-[15px] pb-[15px]">
+    <div className="flex flex-wrap gap-2 p-3 pt-[15px] pb-[15px]">
       {PROMPT_BUTTONS.map((button) => (
         <button
           key={button.id}
           type="button"
           onClick={() => handlePromptClick(button.id)}
-          className="flex flex-row items-center justify-start gap-3 min-h-[56px] px-4 py-3 rounded-[13px] border bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none pl-[9px] pr-[9px]"
+          className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
           data-testid={`button-prompt-${button.id}`}
           aria-label={button.label}
         >
           {button.icon}
-          <span className="text-sm font-medium text-foreground">
+          <span className="text-sm font-medium text-foreground whitespace-nowrap">
             {button.label}
           </span>
         </button>
@@ -1952,7 +1965,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render quick replies result footer with control panel
   const renderQuickRepliesResultFooter = () => {
     const selectedResult = quickReplyResults.find(r => r.id === selectedQuickReplyResultId);
-    const selectedResponseTypeLabel = RESPONSE_TYPES.find(t => t.code === responseType)?.label || responseType;
+    const selectedResponseType = RESPONSE_TYPES.find(t => t.code === responseType);
+    const selectedResponseTypeLabel = selectedResponseType?.label || responseType;
+    const selectedResponseTypeEmoji = selectedResponseType?.emoji || "💬";
 
     return (
       <div className="flex-shrink-0 border-t border-border bg-white p-3">
@@ -1963,7 +1978,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               className="w-auto h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
               data-testid="select-response-type"
             >
-              <MessageSquare className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+              <span className="text-lg flex-shrink-0">{selectedResponseTypeEmoji}</span>
               <SelectValue placeholder="Response type">
                 {selectedResponseTypeLabel}
               </SelectValue>
@@ -1971,7 +1986,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             <SelectContent>
               {RESPONSE_TYPES.map((type) => (
                 <SelectItem key={type.code} value={type.code} data-testid={`option-response-type-${type.code}`}>
-                  {type.label}
+                  {type.emoji} {type.label}
                 </SelectItem>
               ))}
             </SelectContent>
