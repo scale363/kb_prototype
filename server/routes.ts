@@ -62,7 +62,7 @@ export async function registerRoutes(
         messages: [
           {
             role: "system",
-            content: `ranslate the text below into ${languageName} as literally and accurately as possible.
+            content: `Translate the text below into ${languageName} as literally and accurately as possible.
 
 Requirements:
 - Preserve the original meaning, tone, register, and intent exactly.
