@@ -323,6 +323,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const [selectedQuickReplyAction, setSelectedQuickReplyAction] = useState<string | null>(null);
   const [quickReplyResults, setQuickReplyResults] = useState<QuickReplyResult[]>([]);
   const [selectedQuickReplyResultId, setSelectedQuickReplyResultId] = useState<string | null>(null);
+  const [isGeneratingQuickReply, setIsGeneratingQuickReply] = useState<boolean>(false);
 
   // Load saved text items from localStorage
   const [savedTextItems, setSavedTextItems] = useState<SavedTextItem[]>(() => {
@@ -787,42 +788,121 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setTranslateResults([]);
   };
 
-  const handleQuickReplyActionSelect = (actionId: string) => {
+  const handleQuickReplyActionSelect = async (actionId: string) => {
     setSelectedQuickReplyAction(actionId);
-    const actionName = QUICK_REPLY_ACTIONS.find(a => a.id === actionId)?.label || actionId;
-    const langName = LANGUAGES.find(l => l.code === quickRepliesLanguage)?.label || quickRepliesLanguage;
     const originalText = selectedText || previewText || text;
 
-    const newResult: QuickReplyResult = {
-      id: `quick-reply-${Date.now()}`,
-      text: `[${actionName} - ${langName}] This is a placeholder for your ${actionName.toLowerCase()} message. Context: "${truncateText(originalText, 50)}". This is temporary mock content that will be replaced with actual AI-generated text in ${langName}.`,
-      action: actionId,
-      timestamp: Date.now(),
-    };
-
-    setQuickReplyResults([newResult]);
+    // Show loading skeleton
+    setIsGeneratingQuickReply(true);
     setMenuLevel("quick-replies-result");
-    setCopiedResultId(null);
-    setSelectedQuickReplyResultId(newResult.id);
+    setQuickReplyResults([]);
+
+    try {
+      const response = await fetch("/api/ai/help-write", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          situation: originalText,
+          language: quickRepliesLanguage,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.generatedText) {
+        const newResult: QuickReplyResult = {
+          id: `quick-reply-${Date.now()}`,
+          text: data.generatedText,
+          action: actionId,
+          timestamp: Date.now(),
+        };
+
+        setQuickReplyResults([newResult]);
+        setSelectedQuickReplyResultId(newResult.id);
+      } else {
+        // Fallback to error message if API fails
+        const newResult: QuickReplyResult = {
+          id: `quick-reply-${Date.now()}`,
+          text: `Error: ${data.error || "Failed to generate message"}`,
+          action: actionId,
+          timestamp: Date.now(),
+        };
+        setQuickReplyResults([newResult]);
+        setSelectedQuickReplyResultId(newResult.id);
+      }
+    } catch (error) {
+      console.error("Help write error:", error);
+      const newResult: QuickReplyResult = {
+        id: `quick-reply-${Date.now()}`,
+        text: "Error: Failed to connect to AI service",
+        action: actionId,
+        timestamp: Date.now(),
+      };
+      setQuickReplyResults([newResult]);
+      setSelectedQuickReplyResultId(newResult.id);
+    } finally {
+      setIsGeneratingQuickReply(false);
+    }
   };
 
-  const handleRegenerateQuickReply = () => {
+  const handleRegenerateQuickReply = async () => {
     if (!selectedQuickReplyAction) return;
 
-    const actionName = QUICK_REPLY_ACTIONS.find(a => a.id === selectedQuickReplyAction)?.label || selectedQuickReplyAction;
-    const langName = LANGUAGES.find(l => l.code === quickRepliesLanguage)?.label || quickRepliesLanguage;
     const originalText = selectedText || previewText || text;
 
-    const newResult: QuickReplyResult = {
-      id: `quick-reply-${Date.now()}`,
-      text: `[${actionName} - ${langName}] Regenerated placeholder #${quickReplyResults.length + 1} for ${actionName.toLowerCase()}. Context: "${truncateText(originalText, 50)}". This is mock content in ${langName}.`,
-      action: selectedQuickReplyAction,
-      timestamp: Date.now(),
-    };
+    // Show loading state
+    setIsGeneratingQuickReply(true);
 
-    setQuickReplyResults([...quickReplyResults, newResult]);
-    setCopiedResultId(null);
-    setSelectedQuickReplyResultId(newResult.id);
+    try {
+      const response = await fetch("/api/ai/help-write", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          situation: originalText,
+          language: quickRepliesLanguage,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.generatedText) {
+        const newResult: QuickReplyResult = {
+          id: `quick-reply-${Date.now()}`,
+          text: data.generatedText,
+          action: selectedQuickReplyAction,
+          timestamp: Date.now(),
+        };
+
+        setQuickReplyResults([...quickReplyResults, newResult]);
+        setSelectedQuickReplyResultId(newResult.id);
+      } else {
+        const newResult: QuickReplyResult = {
+          id: `quick-reply-${Date.now()}`,
+          text: `Error: ${data.error || "Failed to generate message"}`,
+          action: selectedQuickReplyAction,
+          timestamp: Date.now(),
+        };
+        setQuickReplyResults([...quickReplyResults, newResult]);
+        setSelectedQuickReplyResultId(newResult.id);
+      }
+    } catch (error) {
+      console.error("Regenerate quick reply error:", error);
+      const newResult: QuickReplyResult = {
+        id: `quick-reply-${Date.now()}`,
+        text: "Error: Failed to connect to AI service",
+        action: selectedQuickReplyAction,
+        timestamp: Date.now(),
+      };
+      setQuickReplyResults([...quickReplyResults, newResult]);
+      setSelectedQuickReplyResultId(newResult.id);
+    } finally {
+      setIsGeneratingQuickReply(false);
+      setCopiedResultId(null);
+    }
   };
 
   const handleApplyQuickReplyResult = (resultId: string) => {
@@ -1692,6 +1772,19 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render quick replies result view with scrollable results
   const renderQuickRepliesResult = () => {
+    // Show skeleton while generating
+    if (isGeneratingQuickReply) {
+      return (
+        <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
+          <div className="py-4 px-3">
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-5/6 mb-2" />
+            <Skeleton className="h-4 w-4/6" />
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
         {quickReplyResults.map((result, index) => {
