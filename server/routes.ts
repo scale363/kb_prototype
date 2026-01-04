@@ -38,6 +38,7 @@ export async function registerRoutes(
 
   app.post("/api/ai/translate", async (req, res) => {
     const { text, targetLanguage } = req.body;
+    console.log("[TRANSLATE] Request received:", { textLength: text?.length, targetLanguage });
 
     if (!text || typeof text !== "string") {
       return res.status(400).json({ error: "Text is required" });
@@ -45,6 +46,7 @@ export async function registerRoutes(
 
     // Check if OpenAI API key is configured
     if (!process.env.OPENAI_API_KEY) {
+      console.log("[TRANSLATE] Error: OpenAI API key is not configured");
       return res.status(500).json({
         success: false,
         error: "OpenAI API key is not configured",
@@ -52,16 +54,17 @@ export async function registerRoutes(
     }
 
     try {
+      console.log("[TRANSLATE] Calling OpenAI API...");
       const languageName = LANGUAGE_NAMES[targetLanguage] || targetLanguage;
 
-      // Call ChatGPT API with gpt-4.1-mini model and temperature 0
+      // Call ChatGPT API with gpt-4o-mini model and temperature 0
       const completion = await openai.chat.completions.create({
-        model: "gpt-4.1-mini",
+        model: "gpt-4o-mini",
         temperature: 0,
         messages: [
           {
             role: "system",
-            content: `ranslate the text below into ${languageName} as literally and accurately as possible.
+            content: `Translate the text below into ${languageName} as literally and accurately as possible.
 
 Requirements:
 - Preserve the original meaning, tone, register, and intent exactly.
@@ -80,6 +83,7 @@ Return only the translated text.`,
       });
 
       const translatedText = completion.choices[0]?.message?.content || "";
+      console.log("[TRANSLATE] Success:", { translatedLength: translatedText.length });
 
       res.json({
         success: true,
@@ -88,7 +92,7 @@ Return only the translated text.`,
         targetLanguage: targetLanguage || "en",
       });
     } catch (error: any) {
-      console.error("Translation error:", error);
+      console.error("[TRANSLATE] Error:", error);
       res.status(500).json({
         success: false,
         error: error.message || "Translation failed",
@@ -98,13 +102,16 @@ Return only the translated text.`,
 
   app.post("/api/ai/help-write", async (req, res) => {
     const { situation, language } = req.body;
+    console.log("[HELP-WRITE] Request received:", { situationLength: situation?.length, language });
 
     if (!situation || typeof situation !== "string") {
+      console.log("[HELP-WRITE] Error: Situation is required");
       return res.status(400).json({ error: "Situation description is required" });
     }
 
     // Check if OpenAI API key is configured
     if (!process.env.OPENAI_API_KEY) {
+      console.log("[HELP-WRITE] Error: OpenAI API key is not configured");
       return res.status(500).json({
         success: false,
         error: "OpenAI API key is not configured",
@@ -112,11 +119,12 @@ Return only the translated text.`,
     }
 
     try {
+      console.log("[HELP-WRITE] Calling OpenAI API...");
       const languageName = LANGUAGE_NAMES[language] || "English";
 
-      // Call ChatGPT API with gpt-4.1-mini model and temperature 0.7 for more creative responses
+      // Call ChatGPT API with gpt-4o-mini model and temperature 0
       const completion = await openai.chat.completions.create({
-        model: "gpt-4.1-mini",
+        model: "gpt-4o-mini",
         temperature: 0.0,
         messages: [
           {
@@ -147,6 +155,7 @@ Situation:`,
       });
 
       const generatedText = completion.choices[0]?.message?.content || "";
+      console.log("[HELP-WRITE] Success:", { generatedLength: generatedText.length });
 
       res.json({
         success: true,
@@ -155,7 +164,7 @@ Situation:`,
         language: language || "en",
       });
     } catch (error: any) {
-      console.error("Help write error:", error);
+      console.error("[HELP-WRITE] Error:", error);
       res.status(500).json({
         success: false,
         error: error.message || "Failed to generate message",

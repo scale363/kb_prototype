@@ -609,12 +609,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const handleTranslate = async () => {
     const originalText = selectedText || previewText || text;
 
+    console.log("[TRANSLATE CLIENT] Starting request:", { textLength: originalText.length, targetLanguage: translateLanguage });
+
     // Show loading skeleton
     setIsTranslating(true);
     setMenuLevel("translate-result");
     setTranslateResults([]);
 
     try {
+      console.log("[TRANSLATE CLIENT] Fetching /api/ai/translate...");
       const response = await fetch("/api/ai/translate", {
         method: "POST",
         headers: {
@@ -626,7 +629,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         }),
       });
 
+      console.log("[TRANSLATE CLIENT] Response status:", response.status);
       const data = await response.json();
+      console.log("[TRANSLATE CLIENT] Response data:", data);
 
       if (data.success && data.translated) {
         const newResult: TranslateResult = {
@@ -792,12 +797,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setSelectedQuickReplyAction(actionId);
     const originalText = selectedText || previewText || text;
 
+    console.log("[HELP-WRITE CLIENT] Starting request:", { actionId, textLength: originalText.length, language: quickRepliesLanguage });
+
     // Show loading skeleton
     setIsGeneratingQuickReply(true);
     setMenuLevel("quick-replies-result");
     setQuickReplyResults([]);
 
     try {
+      console.log("[HELP-WRITE CLIENT] Fetching /api/ai/help-write...");
       const response = await fetch("/api/ai/help-write", {
         method: "POST",
         headers: {
@@ -809,7 +817,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         }),
       });
 
+      console.log("[HELP-WRITE CLIENT] Response status:", response.status);
       const data = await response.json();
+      console.log("[HELP-WRITE CLIENT] Response data:", data);
 
       if (data.success && data.generatedText) {
         const newResult: QuickReplyResult = {
