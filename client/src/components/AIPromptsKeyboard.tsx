@@ -284,15 +284,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const [menuLevel, setMenuLevel] = useState<MenuLevel>("main");
   const [selectedTone, setSelectedTone] = useState<string | null>(null);
 
-  // Load saved language from localStorage or default to "en"
-  const [selectedLanguage, setSelectedLanguage] = useState<string>(() => {
-    try {
-      return localStorage.getItem("rephrase-language") || "en";
-    } catch {
-      return "en";
-    }
-  });
-
   const [rephraseResults, setRephraseResults] = useState<RephraseResult[]>([]);
   const [copiedResultId, setCopiedResultId] = useState<string | null>(null);
   const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
@@ -342,9 +333,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Ref for tracking translate language changes
   const prevTranslateLanguageRef = useRef<string>(translateLanguage);
 
-  // Ref for tracking rephrase language changes
-  const prevRephraseLanguageRef = useRef<string>(selectedLanguage);
-
   // Ref for tracking quick replies language changes
   const prevQuickRepliesLanguageRef = useRef<string>(quickRepliesLanguage);
 
@@ -352,15 +340,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const [placeholderIndex, setPlaceholderIndex] = useState<number>(0);
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState<string>("");
   const [isFirstChange, setIsFirstChange] = useState<boolean>(true);
-
-  // Save language selection to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem("rephrase-language", selectedLanguage);
-    } catch {
-      // localStorage might not be available
-    }
-  }, [selectedLanguage]);
 
   // Save translation language selection to localStorage
   useEffect(() => {
@@ -525,7 +504,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         body: JSON.stringify({
           text: originalText,
           tone: toneId,
-          language: selectedLanguage,
         }),
       });
 
@@ -536,7 +514,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           id: `result-${Date.now()}`,
           text: data.rephrased,
           tone: toneId,
-          language: selectedLanguage,
+          language: "",
           timestamp: Date.now(),
         };
 
@@ -548,7 +526,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           id: `result-${Date.now()}`,
           text: `Error: ${data.error || "Rephrasing failed"}`,
           tone: toneId,
-          language: selectedLanguage,
+          language: "",
           timestamp: Date.now(),
         };
         setRephraseResults([newResult]);
@@ -560,7 +538,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         id: `result-${Date.now()}`,
         text: "Error: Failed to connect to AI service",
         tone: toneId,
-        language: selectedLanguage,
+        language: "",
         timestamp: Date.now(),
       };
       setRephraseResults([newResult]);
@@ -626,7 +604,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         body: JSON.stringify({
           text: originalText,
           tone: selectedTone,
-          language: selectedLanguage,
         }),
       });
 
@@ -637,7 +614,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           id: `result-${Date.now()}`,
           text: data.rephrased,
           tone: selectedTone,
-          language: selectedLanguage,
+          language: "",
           timestamp: Date.now(),
         };
 
@@ -648,7 +625,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           id: `result-${Date.now()}`,
           text: `Error: ${data.error || "Rephrasing failed"}`,
           tone: selectedTone,
-          language: selectedLanguage,
+          language: "",
           timestamp: Date.now(),
         };
         setRephraseResults([...rephraseResults, newResult]);
@@ -660,7 +637,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         id: `result-${Date.now()}`,
         text: "Error: Failed to connect to AI service",
         tone: selectedTone,
-        language: selectedLanguage,
+        language: "",
         timestamp: Date.now(),
       };
       setRephraseResults([...rephraseResults, newResult]);
@@ -819,21 +796,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
     prevTranslateLanguageRef.current = translateLanguage;
   }, [translateLanguage]);
-
-  // Auto-generate new rephrase variant when language changes in result mode
-  useEffect(() => {
-    if (menuLevel === "result" &&
-        selectedLanguage !== prevRephraseLanguageRef.current &&
-        rephraseResults.length > 0) {
-      handleReprocess();
-      // Blur the select to remove focus
-      const selectElement = document.querySelector('[data-testid="select-language"]');
-      if (selectElement instanceof HTMLElement) {
-        selectElement.blur();
-      }
-    }
-    prevRephraseLanguageRef.current = selectedLanguage;
-  }, [selectedLanguage]);
 
   // Auto-generate new quick reply variant when language changes in quick-replies-result mode
   useEffect(() => {
@@ -1521,36 +1483,33 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           </button>
         </div>
 
-        {/* Tone options in a single scrollable row */}
-        <div className="overflow-x-auto pb-2">
-          <div className="flex gap-2 px-1">
-            {TONE_OPTIONS.map((tone) => (
-              <button
-                key={tone.id}
-                type="button"
-                onClick={() => handleToneSelect(tone.id)}
-                className={`
-                  inline-flex items-center justify-center gap-2
-                  min-h-[44px] px-4 py-2
-                  rounded-full border
-                  ${tone.colorClass}
-                  ${tone.borderClass}
-                  hover-elevate active-elevate-2
-                  active:scale-[0.98]
-                  transition-transform duration-75
-                  touch-manipulation select-none
-                  flex-shrink-0
-                `}
-                data-testid={`button-tone-${tone.id}`}
-                aria-label={tone.label}
-              >
-                <span className="text-base">{tone.emoji}</span>
-                <span className="text-sm font-medium text-foreground whitespace-nowrap">
-                  {tone.label}
-                </span>
-              </button>
-            ))}
-          </div>
+        {/* Tone options in a 2-column grid - similar to Help me write */}
+        <div className="grid grid-cols-2 gap-3">
+          {TONE_OPTIONS.map((tone) => (
+            <button
+              key={tone.id}
+              type="button"
+              onClick={() => handleToneSelect(tone.id)}
+              className={`
+                flex items-center justify-center gap-2
+                min-h-[56px] p-3
+                rounded-xl border
+                ${tone.colorClass}
+                ${tone.borderClass}
+                hover-elevate active-elevate-2
+                active:scale-[0.98]
+                transition-transform duration-75
+                touch-manipulation select-none
+              `}
+              data-testid={`button-tone-${tone.id}`}
+              aria-label={tone.label}
+            >
+              <span className="text-lg">{tone.emoji}</span>
+              <span className="text-sm font-medium text-foreground">
+                {tone.label}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
     );
@@ -1630,52 +1589,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render result footer with control panel
   const renderResultFooter = () => {
-    // Check if current tone should hide language selector
-    const shouldHideLanguageSelector = selectedTone === "grammar-check";
-    // Check if current tone should hide new variant button
-    const shouldHideNewVariantButton = true; // Always hide new variant button
     const selectedResult = rephraseResults.find(r => r.id === selectedResultId);
-    const selectedLangLabel = LANGUAGES.find(l => l.code === selectedLanguage)?.label || selectedLanguage;
 
     return (
       <div className="flex-shrink-0 border-t border-border bg-white p-3">
         <div className="flex items-center gap-2 mt-1">
-          {/* Language selector (compact) - hide for grammar-check */}
-          {!shouldHideLanguageSelector && (
-            <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-              <SelectTrigger
-                className="w-auto h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
-                data-testid="select-language"
-              >
-                <Languages className="h-5 w-5 text-purple-500 flex-shrink-0" />
-                <SelectValue placeholder="Язык">
-                  {selectedLangLabel}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {LANGUAGES.map((lang) => (
-                  <SelectItem key={lang.code} value={lang.code} data-testid={`option-lang-${lang.code}`}>
-                    {lang.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-
-          {/* Create new variant button (icon only) - hide for grammar-check */}
-          {!shouldHideNewVariantButton && (
-            <button
-              type="button"
-              onClick={handleReprocess}
-              className="flex items-center justify-center h-11 w-11 rounded-full border-2 border-border bg-white hover:bg-accent/50 active:scale-[0.95] transition-all duration-75 touch-manipulation flex-shrink-0"
-              data-testid="button-reprocess"
-              aria-label="Новый вариант"
-              title="Новый вариант"
-            >
-              <RotateCcw className="h-5 w-5" />
-            </button>
-          )}
-
           <div className="flex-1"></div>
 
           {/* Apply button */}
