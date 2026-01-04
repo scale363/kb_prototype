@@ -117,7 +117,7 @@ Return only the translated text.`,
       // Call ChatGPT API with gpt-4.1-mini model and temperature 0.7 for more creative responses
       const completion = await openai.chat.completions.create({
         model: "gpt-4.1-mini",
-        temperature: 0.7,
+        temperature: 0.0,
         messages: [
           {
             role: "system",
