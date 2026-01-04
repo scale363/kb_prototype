@@ -96,6 +96,73 @@ Return only the translated text.`,
     }
   });
 
+  app.post("/api/ai/help-write", async (req, res) => {
+    const { situation, language } = req.body;
+
+    if (!situation || typeof situation !== "string") {
+      return res.status(400).json({ error: "Situation description is required" });
+    }
+
+    // Check if OpenAI API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: "OpenAI API key is not configured",
+      });
+    }
+
+    try {
+      const languageName = LANGUAGE_NAMES[language] || "English";
+
+      // Call ChatGPT API with gpt-4.1-mini model and temperature 0.7 for more creative responses
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4.1-mini",
+        temperature: 0.7,
+        messages: [
+          {
+            role: "system",
+            content: `You are a writing assistant for work communication.
+Write the response in ${languageName}.
+
+Your task is to write a clear, concise, professional, work-safe message based on the situation described by the user.
+
+Requirements:
+- Keep the message concise and clear.
+- Write the message from the user's perspective.
+- Use a neutral, professional, and socially appropriate tone.
+- Use the respectful form of address appropriate in this language.
+- Do not escalate conflicts or introduce emotional language.
+- Do not take on commitments unless they are explicitly stated in the description.
+- Do not add unnecessary details or assumptions.
+- Do not explain your reasoning or add meta comments.
+- Output only the final message text in ${languageName}.
+
+Situation:`,
+          },
+          {
+            role: "user",
+            content: situation,
+          },
+        ],
+      });
+
+      const generatedText = completion.choices[0]?.message?.content || "";
+
+      res.json({
+        success: true,
+        situation: situation,
+        generatedText: generatedText,
+        language: language || "en",
+      });
+    } catch (error: any) {
+      console.error("Help write error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message || "Failed to generate message",
+      });
+    }
+  });
+
   app.get("/api/snippets", async (_req, res) => {
     res.json({
       success: true,
