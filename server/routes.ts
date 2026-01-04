@@ -45,6 +45,7 @@ export async function registerRoutes(
 
     // Check if OpenAI API key is configured
     if (!process.env.OPENAI_API_KEY) {
+      console.error("OpenAI API key missing");
       return res.status(500).json({
         success: false,
         error: "OpenAI API key is not configured",
@@ -52,11 +53,11 @@ export async function registerRoutes(
     }
 
     try {
-      const languageName = LANGUAGE_NAMES[targetLanguage] || targetLanguage;
+      const languageName = LANGUAGE_NAMES[targetLanguage] || targetLanguage || "English";
 
-      // Call ChatGPT API with gpt-4.1-mini model and temperature 0
+      // Call ChatGPT API with gpt-4o-mini model and temperature 0
       const completion = await openai.chat.completions.create({
-        model: "gpt-4.1-mini",
+        model: "gpt-4o-mini",
         temperature: 0,
         messages: [
           {
@@ -105,6 +106,7 @@ Return only the translated text.`,
 
     // Check if OpenAI API key is configured
     if (!process.env.OPENAI_API_KEY) {
+      console.error("OpenAI API key missing");
       return res.status(500).json({
         success: false,
         error: "OpenAI API key is not configured",
@@ -114,9 +116,9 @@ Return only the translated text.`,
     try {
       const languageName = LANGUAGE_NAMES[language] || "English";
 
-      // Call ChatGPT API with gpt-4.1-mini model and temperature 0.7 for more creative responses
+      // Call ChatGPT API with gpt-4o-mini model and temperature 0.7 for more creative responses
       const completion = await openai.chat.completions.create({
-        model: "gpt-4.1-mini",
+        model: "gpt-4o-mini",
         temperature: 0.0,
         messages: [
           {
