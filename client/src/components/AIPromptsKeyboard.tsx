@@ -282,7 +282,15 @@ const PROMPT_BUTTONS: PromptButton[] = [
 
 export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTextChange, onTextChange, onSwitchKeyboard }: AIPromptsKeyboardProps) {
   const [menuLevel, setMenuLevel] = useState<MenuLevel>("main");
-  const [selectedTone, setSelectedTone] = useState<string | null>(null);
+
+  // Load saved rephrase tone from localStorage or default to "work-safe"
+  const [selectedTone, setSelectedTone] = useState<string>(() => {
+    try {
+      return localStorage.getItem("rephrase-tone") || "work-safe";
+    } catch {
+      return "work-safe";
+    }
+  });
 
   const [rephraseResults, setRephraseResults] = useState<RephraseResult[]>([]);
   const [copiedResultId, setCopiedResultId] = useState<string | null>(null);
@@ -336,6 +344,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Ref for tracking quick replies language changes
   const prevQuickRepliesLanguageRef = useRef<string>(quickRepliesLanguage);
 
+  // Ref for tracking rephrase tone changes
+  const prevRephraseSelectedToneRef = useRef<string>(selectedTone);
+
   // State for rotating placeholder in Help me write empty state
   const [placeholderIndex, setPlaceholderIndex] = useState<number>(0);
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState<string>("");
@@ -359,6 +370,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
   }, [quickRepliesLanguage]);
 
+  // Save rephrase tone selection to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("rephrase-tone", selectedTone);
+    } catch {
+      // localStorage might not be available
+    }
+  }, [selectedTone]);
+
   // Save saved text items to localStorage
   useEffect(() => {
     try {
@@ -373,7 +393,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       onPreviewTextChange("");
       // Reset menu state when preview is reset
       setMenuLevel("main");
-      setSelectedTone(null);
+      // Don't reset selectedTone - keep it for next rephrase
       setRephraseResults([]);
       setTranslateResults([]);
       setQuickReplyResults([]);
@@ -394,10 +414,10 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
   }, [rephraseResults.length, translateResults.length, quickReplyResults.length]);
 
-  // Auto-transition from rephrase-empty-preview to tone-select when preview becomes non-empty
+  // Auto-transition from rephrase-empty-preview to generate with last tone when preview becomes non-empty
   useEffect(() => {
     if (menuLevel === "rephrase-empty-preview" && (previewText.trim() || text.trim())) {
-      setMenuLevel("tone-select");
+      handleToneSelect(selectedTone);
     }
   }, [menuLevel, previewText, text]);
 
@@ -583,7 +603,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
     // Reset to main menu
     setMenuLevel("main");
-    setSelectedTone(null);
+    // Don't reset selectedTone - keep it for next rephrase
     setRephraseResults([]);
   };
 
@@ -650,7 +670,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   const handleBackToMain = () => {
     setMenuLevel("main");
-    setSelectedTone(null);
+    // Don't reset selectedTone - keep it for next rephrase
     setRephraseResults([]);
     setSelectedResultId(null);
     setTranslateResults([]);
@@ -811,6 +831,21 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
     prevQuickRepliesLanguageRef.current = quickRepliesLanguage;
   }, [quickRepliesLanguage]);
+
+  // Auto-generate new rephrase variant when tone changes in result mode
+  useEffect(() => {
+    if (menuLevel === "result" &&
+        selectedTone !== prevRephraseSelectedToneRef.current &&
+        rephraseResults.length > 0) {
+      handleReprocess();
+      // Blur the select to remove focus
+      const selectElement = document.querySelector('[data-testid="select-rephrase-tone"]');
+      if (selectElement instanceof HTMLElement) {
+        selectElement.blur();
+      }
+    }
+    prevRephraseSelectedToneRef.current = selectedTone;
+  }, [selectedTone]);
 
   const handleApplyTranslateResult = (resultId: string) => {
     const result = translateResults.find(r => r.id === resultId);
@@ -1009,7 +1044,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           setMenuLevel("rephrase-empty-preview");
           return;
         }
-        setMenuLevel("tone-select");
+        // Directly generate with last selected tone (skip tone selection)
+        handleToneSelect(selectedTone);
         break;
 
       case "translate":
@@ -1241,7 +1277,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           </button>
         </div>
       );
-    } else if (menuLevel === "result" && selectedTone) {
+    } else if (menuLevel === "result") {
       // Determine the title based on selected tone
       let resultTitle = "How should it sound?";
       if (selectedTone === "work-safe") {
@@ -1590,10 +1626,32 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render result footer with control panel
   const renderResultFooter = () => {
     const selectedResult = rephraseResults.find(r => r.id === selectedResultId);
+    const selectedToneOption = TONE_OPTIONS.find(t => t.id === selectedTone);
+    const selectedToneLabel = selectedToneOption?.label || selectedTone;
 
     return (
       <div className="flex-shrink-0 border-t border-border bg-white p-3">
         <div className="flex items-center gap-2 mt-1">
+          {/* Tone selector (compact) */}
+          <Select value={selectedTone} onValueChange={setSelectedTone}>
+            <SelectTrigger
+              className="w-auto h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
+              data-testid="select-rephrase-tone"
+            >
+              <RefreshCw className="h-5 w-5 text-blue-500 flex-shrink-0" />
+              <SelectValue placeholder="Tone">
+                {selectedToneLabel}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {TONE_OPTIONS.map((tone) => (
+                <SelectItem key={tone.id} value={tone.id} data-testid={`option-rephrase-tone-${tone.id}`}>
+                  {tone.emoji} {tone.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <div className="flex-1"></div>
 
           {/* Apply button */}
