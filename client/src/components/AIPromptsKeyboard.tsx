@@ -198,8 +198,8 @@ const LANGUAGES = [
 // Response types for Help me write feature
 const RESPONSE_TYPES = [
   { code: "chat", label: "Chat message", emoji: "💬" },
-  { code: "email", label: "Email", emoji: "📧" },
-  { code: "official", label: "Official message", emoji: "📄" },
+  { code: "email", label: "Email", emoji: "✉️" },
+  { code: "official", label: "Official message", emoji: "🏛️" },
 ];
 
 // Rotating placeholder texts for Help me write empty state
