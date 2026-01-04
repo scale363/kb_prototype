@@ -210,7 +210,7 @@ Return only the translated text.`,
   });
 
   app.post("/api/ai/help-write", async (req, res) => {
-    const { situation, language } = req.body;
+    const { situation, language, responseType } = req.body;
 
     if (!situation || typeof situation !== "string") {
       return res.status(400).json({ error: "Situation description is required" });
@@ -227,6 +227,17 @@ Return only the translated text.`,
 
     try {
       const languageName = LANGUAGE_NAMES[language] || "English";
+
+      // Build the response type instruction
+      let responseTypeInstruction = "";
+      if (responseType === "email") {
+        responseTypeInstruction = "\n- Format the message as an email with a subject line and professional greeting/closing.";
+      } else if (responseType === "official") {
+        responseTypeInstruction = "\n- Use formal, official language suitable for formal correspondence or official documents.";
+      } else {
+        // "chat" or default
+        responseTypeInstruction = "\n- Keep the format simple and direct, suitable for chat or instant messaging.";
+      }
 
       // Call ChatGPT API with gpt-4o-mini model and temperature 0.7 for more creative responses
       const completion = await openai.chat.completions.create({
@@ -249,7 +260,7 @@ Requirements:
 - Do not take on commitments unless they are explicitly stated in the description.
 - Do not add unnecessary details or assumptions.
 - Do not explain your reasoning or add meta comments.
-- Output only the final message text in ${languageName}.
+- Output only the final message text in ${languageName}.${responseTypeInstruction}
 
 Situation:`,
           },

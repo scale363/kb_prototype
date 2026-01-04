@@ -195,6 +195,13 @@ const LANGUAGES = [
   { code: "zh", label: "Chinese" },
 ];
 
+// Response types for Help me write feature
+const RESPONSE_TYPES = [
+  { code: "chat", label: "Chat message" },
+  { code: "email", label: "Email" },
+  { code: "official", label: "Official message" },
+];
+
 // Rotating placeholder texts for Help me write empty state
 const HELP_ME_WRITE_PLACEHOLDERS = [
   "Briefly describe the situation…",
@@ -320,6 +327,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
   });
 
+  // Load saved response type from localStorage or default to "chat"
+  const [responseType, setResponseType] = useState<string>(() => {
+    try {
+      return localStorage.getItem("help-write-response-type") || "chat";
+    } catch {
+      return "chat";
+    }
+  });
+
   const [selectedQuickReplyAction, setSelectedQuickReplyAction] = useState<string | null>(null);
   const [quickReplyResults, setQuickReplyResults] = useState<QuickReplyResult[]>([]);
   const [selectedQuickReplyResultId, setSelectedQuickReplyResultId] = useState<string | null>(null);
@@ -343,6 +359,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Ref for tracking quick replies language changes
   const prevQuickRepliesLanguageRef = useRef<string>(quickRepliesLanguage);
+
+  // Ref for tracking response type changes
+  const prevResponseTypeRef = useRef<string>(responseType);
 
   // Ref for tracking rephrase tone changes
   const prevRephraseSelectedToneRef = useRef<string>(selectedTone);
@@ -369,6 +388,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       // localStorage might not be available
     }
   }, [quickRepliesLanguage]);
+
+  // Save response type selection to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("help-write-response-type", responseType);
+    } catch {
+      // localStorage might not be available
+    }
+  }, [responseType]);
 
   // Save rephrase tone selection to localStorage
   useEffect(() => {
@@ -832,6 +860,21 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     prevQuickRepliesLanguageRef.current = quickRepliesLanguage;
   }, [quickRepliesLanguage]);
 
+  // Auto-generate new quick reply variant when response type changes in quick-replies-result mode
+  useEffect(() => {
+    if (menuLevel === "quick-replies-result" &&
+        responseType !== prevResponseTypeRef.current &&
+        quickReplyResults.length > 0) {
+      handleRegenerateQuickReply();
+      // Blur the select to remove focus
+      const selectElement = document.querySelector('[data-testid="select-response-type"]');
+      if (selectElement instanceof HTMLElement) {
+        selectElement.blur();
+      }
+    }
+    prevResponseTypeRef.current = responseType;
+  }, [responseType]);
+
   // Auto-generate new rephrase variant when tone changes in result mode
   useEffect(() => {
     if (menuLevel === "result" &&
@@ -887,6 +930,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         body: JSON.stringify({
           situation: originalText,
           language: quickRepliesLanguage,
+          responseType: responseType,
         }),
       });
 
@@ -945,6 +989,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         body: JSON.stringify({
           situation: originalText,
           language: quickRepliesLanguage,
+          responseType: responseType,
         }),
       });
 
@@ -1628,6 +1673,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     const selectedResult = rephraseResults.find(r => r.id === selectedResultId);
     const selectedToneOption = TONE_OPTIONS.find(t => t.id === selectedTone);
     const selectedToneLabel = selectedToneOption?.label || selectedTone;
+    const selectedToneEmoji = selectedToneOption?.emoji || "📝";
 
     return (
       <div className="flex-shrink-0 border-t border-border bg-white p-3">
@@ -1638,7 +1684,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               className="w-auto h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
               data-testid="select-rephrase-tone"
             >
-              <RefreshCw className="h-5 w-5 text-blue-500 flex-shrink-0" />
+              <span className="text-lg flex-shrink-0">{selectedToneEmoji}</span>
               <SelectValue placeholder="Tone">
                 {selectedToneLabel}
               </SelectValue>
@@ -1906,26 +1952,26 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render quick replies result footer with control panel
   const renderQuickRepliesResultFooter = () => {
     const selectedResult = quickReplyResults.find(r => r.id === selectedQuickReplyResultId);
-    const selectedLangLabel = LANGUAGES.find(l => l.code === quickRepliesLanguage)?.label || quickRepliesLanguage;
+    const selectedResponseTypeLabel = RESPONSE_TYPES.find(t => t.code === responseType)?.label || responseType;
 
     return (
       <div className="flex-shrink-0 border-t border-border bg-white p-3">
         <div className="flex items-center gap-2 mt-1">
-          {/* Language selector (compact) */}
-          <Select value={quickRepliesLanguage} onValueChange={setQuickRepliesLanguage}>
+          {/* Response type selector (compact) */}
+          <Select value={responseType} onValueChange={setResponseType}>
             <SelectTrigger
               className="w-auto h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
-              data-testid="select-quick-replies-language"
+              data-testid="select-response-type"
             >
-              <Languages className="h-5 w-5 text-purple-500 flex-shrink-0" />
-              <SelectValue placeholder="Язык">
-                {selectedLangLabel}
+              <MessageSquare className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+              <SelectValue placeholder="Response type">
+                {selectedResponseTypeLabel}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {LANGUAGES.map((lang) => (
-                <SelectItem key={lang.code} value={lang.code} data-testid={`option-quick-replies-lang-${lang.code}`}>
-                  {lang.label}
+              {RESPONSE_TYPES.map((type) => (
+                <SelectItem key={type.code} value={type.code} data-testid={`option-response-type-${type.code}`}>
+                  {type.label}
                 </SelectItem>
               ))}
             </SelectContent>
