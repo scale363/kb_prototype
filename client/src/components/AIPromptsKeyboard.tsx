@@ -310,6 +310,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const [translateResults, setTranslateResults] = useState<TranslateResult[]>([]);
   const [selectedTranslateResultId, setSelectedTranslateResultId] = useState<string | null>(null);
   const [isTranslating, setIsTranslating] = useState<boolean>(false);
+  const [isRephrasing, setIsRephrasing] = useState<boolean>(false);
 
   // Load saved quick replies language from localStorage or default to "en"
   const [quickRepliesLanguage, setQuickRepliesLanguage] = useState<string>(() => {
@@ -506,25 +507,68 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
   };
 
-  const handleToneSelect = (toneId: string) => {
+  const handleToneSelect = async (toneId: string) => {
     setSelectedTone(toneId);
-    // Generate first result
-    const toneName = TONE_OPTIONS.find(t => t.id === toneId)?.label || toneId;
-    const langName = LANGUAGES.find(l => l.code === selectedLanguage)?.label || selectedLanguage;
     const originalText = selectedText || previewText || text;
 
-    const newResult: RephraseResult = {
-      id: `result-${Date.now()}`,
-      text: `[${toneName} - ${langName}] This is a rephrased placeholder text. The original message "${truncateText(originalText, 50)}" has been rewritten in a ${toneName.toLowerCase()} tone for ${langName} audience. This is temporary mock content that will be replaced with actual AI-generated text.`,
-      tone: toneId,
-      language: selectedLanguage,
-      timestamp: Date.now(),
-    };
-
-    setRephraseResults([newResult]);
+    // Show loading skeleton
+    setIsRephrasing(true);
     setMenuLevel("result");
-    setCopiedResultId(null);
-    setSelectedResultId(newResult.id);
+    setRephraseResults([]);
+
+    try {
+      const response = await fetch("/api/ai/rephrase", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: originalText,
+          tone: toneId,
+          language: selectedLanguage,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.rephrased) {
+        const newResult: RephraseResult = {
+          id: `result-${Date.now()}`,
+          text: data.rephrased,
+          tone: toneId,
+          language: selectedLanguage,
+          timestamp: Date.now(),
+        };
+
+        setRephraseResults([newResult]);
+        setSelectedResultId(newResult.id);
+      } else {
+        // Fallback to error message if API fails
+        const newResult: RephraseResult = {
+          id: `result-${Date.now()}`,
+          text: `Error: ${data.error || "Rephrasing failed"}`,
+          tone: toneId,
+          language: selectedLanguage,
+          timestamp: Date.now(),
+        };
+        setRephraseResults([newResult]);
+        setSelectedResultId(newResult.id);
+      }
+    } catch (error) {
+      console.error("Rephrase error:", error);
+      const newResult: RephraseResult = {
+        id: `result-${Date.now()}`,
+        text: "Error: Failed to connect to AI service",
+        tone: toneId,
+        language: selectedLanguage,
+        timestamp: Date.now(),
+      };
+      setRephraseResults([newResult]);
+      setSelectedResultId(newResult.id);
+    } finally {
+      setIsRephrasing(false);
+      setCopiedResultId(null);
+    }
   };
 
   const handleCopyResult = async (resultId: string) => {
@@ -565,26 +609,66 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setRephraseResults([]);
   };
 
-  const handleReprocess = () => {
+  const handleReprocess = async () => {
     if (!selectedTone) return;
 
-    const toneName = TONE_OPTIONS.find(t => t.id === selectedTone)?.label || selectedTone;
-    const langName = LANGUAGES.find(l => l.code === selectedLanguage)?.label || selectedLanguage;
     const originalText = selectedText || previewText || text;
 
-    const newResult: RephraseResult = {
-      id: `result-${Date.now()}`,
-      text: `[${toneName} - ${langName}] Reprocessed placeholder text #${rephraseResults.length + 1}. The message "${truncateText(originalText, 50)}" has been rewritten in ${toneName.toLowerCase()} tone for ${langName} audience. This is mock content.`,
-      tone: selectedTone,
-      language: selectedLanguage,
-      timestamp: Date.now(),
-    };
+    // Show loading state
+    setIsRephrasing(true);
 
-    // Add new result to the end of the array
-    setRephraseResults([...rephraseResults, newResult]);
-    setCopiedResultId(null);
-    // Automatically select the new variant
-    setSelectedResultId(newResult.id);
+    try {
+      const response = await fetch("/api/ai/rephrase", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: originalText,
+          tone: selectedTone,
+          language: selectedLanguage,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.rephrased) {
+        const newResult: RephraseResult = {
+          id: `result-${Date.now()}`,
+          text: data.rephrased,
+          tone: selectedTone,
+          language: selectedLanguage,
+          timestamp: Date.now(),
+        };
+
+        setRephraseResults([...rephraseResults, newResult]);
+        setSelectedResultId(newResult.id);
+      } else {
+        const newResult: RephraseResult = {
+          id: `result-${Date.now()}`,
+          text: `Error: ${data.error || "Rephrasing failed"}`,
+          tone: selectedTone,
+          language: selectedLanguage,
+          timestamp: Date.now(),
+        };
+        setRephraseResults([...rephraseResults, newResult]);
+        setSelectedResultId(newResult.id);
+      }
+    } catch (error) {
+      console.error("Reprocess error:", error);
+      const newResult: RephraseResult = {
+        id: `result-${Date.now()}`,
+        text: "Error: Failed to connect to AI service",
+        tone: selectedTone,
+        language: selectedLanguage,
+        timestamp: Date.now(),
+      };
+      setRephraseResults([...rephraseResults, newResult]);
+      setSelectedResultId(newResult.id);
+    } finally {
+      setIsRephrasing(false);
+      setCopiedResultId(null);
+    }
   };
 
   const handleBackToMain = () => {
@@ -1474,6 +1558,19 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Render result view with scrollable results
   const renderResult = () => {
+    // Show skeleton while rephrasing
+    if (isRephrasing && rephraseResults.length === 0) {
+      return (
+        <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
+          <div className="py-4 px-3">
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-5/6 mb-2" />
+            <Skeleton className="h-4 w-4/6" />
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
         {rephraseResults.map((result, index) => {
