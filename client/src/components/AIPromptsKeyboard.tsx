@@ -1633,7 +1633,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     // Check if current tone should hide language selector
     const shouldHideLanguageSelector = selectedTone === "grammar-check";
     // Check if current tone should hide new variant button
-    const shouldHideNewVariantButton = selectedTone === "grammar-check";
+    const shouldHideNewVariantButton = true; // Always hide new variant button
     const selectedResult = rephraseResults.find(r => r.id === selectedResultId);
     const selectedLangLabel = LANGUAGES.find(l => l.code === selectedLanguage)?.label || selectedLanguage;
 
@@ -1798,18 +1798,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             </SelectContent>
           </Select>
 
-          {/* New variant button (icon only) */}
-          <button
-            type="button"
-            onClick={handleRetranslate}
-            className="flex items-center justify-center h-11 w-11 rounded-full border-2 border-border bg-white hover:bg-accent/50 active:scale-[0.95] transition-all duration-75 touch-manipulation flex-shrink-0"
-            data-testid="button-retranslate"
-            aria-label="Новый вариант"
-            title="Новый вариант"
-          >
-            <RotateCcw className="h-5 w-5" />
-          </button>
-
           <div className="flex-1"></div>
 
           {/* Apply button */}
@@ -1966,18 +1954,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               ))}
             </SelectContent>
           </Select>
-
-          {/* Create new variant button (icon only) */}
-          <button
-            type="button"
-            onClick={handleRegenerateQuickReply}
-            className="flex items-center justify-center h-11 w-11 rounded-full border-2 border-border bg-white hover:bg-accent/50 active:scale-[0.95] transition-all duration-75 touch-manipulation flex-shrink-0"
-            data-testid="button-regenerate-quick-reply"
-            aria-label="Новый вариант"
-            title="Новый вариант"
-          >
-            <RotateCcw className="h-5 w-5" />
-          </button>
 
           <div className="flex-1"></div>
 
