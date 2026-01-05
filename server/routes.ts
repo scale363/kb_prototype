@@ -48,79 +48,38 @@ export async function registerRoutes(
         "informal": "pmpt_695b95e36d048190a564c246275c5b790a1baee717009f46",
         "short-clear": "pmpt_695b9bc5c4ac8195bd1513b27c0495f002ca415d305af730",
         "make-longer": "pmpt_695b9d70d8dc81969a3ed440c090c8230ce18ebed8f0e9d2",
-      };
-
-      // Keep old prompts for grammar-check since it doesn't have a stored prompt ID
-      const fallbackPrompts: Record<string, string> = {
-        "grammar-check": `You are a grammar correction assistant.
-
-Your task is to correct grammar, spelling, punctuation, and basic syntax errors ONLY.
-
-Strict rules:
-- Respond in the same language as the input text
-- Do NOT rephrase, rewrite, or improve the style
-- Do NOT change tone, formality, or level of politeness
-- Do NOT simplify or restructure sentences
-- Do NOT add or remove information
-- Do NOT add greetings, closings, or extra words
-- Preserve the original wording, structure, and meaning as much as possible
-
-Make only the minimal changes required to fix errors.
-
-If the original text is already correct, return it unchanged.
-
-Output only the corrected text.`,
+        "grammar-check": "pmpt_695bac961c6c819392bb186d2c63aeec0906203b8afe340b",
       };
 
       const promptId = promptIds[tone];
 
-      let rephrasedText = "";
-
-      if (promptId) {
-        // Use stored prompt by ID with responses.create (no variables needed)
-        const response = await (openai as any).responses.create({
-          prompt: {
-            id: promptId
-          },
-          input: [
-            {
-              role: "user",
-              content: [
-                { type: "input_text", text: text }
-              ]
-            }
-          ],
-          text: {
-            format: {
-              type: "text"
-            }
-          },
-          max_output_tokens: 2048,
-          store: true
-        });
-
-        rephrasedText = response.output_text || response.output?.[0]?.content?.[0]?.text || "";
-      } else if (fallbackPrompts[tone]) {
-        // Fallback to old approach for tones without stored prompts
-        const completion = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          temperature: 0,
-          messages: [
-            {
-              role: "system",
-              content: fallbackPrompts[tone],
-            },
-            {
-              role: "user",
-              content: text,
-            },
-          ],
-        });
-
-        rephrasedText = completion.choices[0]?.message?.content || "";
-      } else {
+      if (!promptId) {
         return res.status(400).json({ error: "Invalid tone specified" });
       }
+
+      // Use stored prompt by ID with responses.create (no variables needed)
+      const response = await (openai as any).responses.create({
+        prompt: {
+          id: promptId
+        },
+        input: [
+          {
+            role: "user",
+            content: [
+              { type: "input_text", text: text }
+            ]
+          }
+        ],
+        text: {
+          format: {
+            type: "text"
+          }
+        },
+        max_output_tokens: 2048,
+        store: true
+      });
+
+      const rephrasedText = response.output_text || response.output?.[0]?.content?.[0]?.text || "";
 
       res.json({
         success: true,
