@@ -6,6 +6,7 @@ interface TextInputAreaProps {
   cursorPosition: number;
   onCursorChange: (position: number) => void;
   onSelectionChange?: (selectedText: string) => void;
+  readOnly?: boolean;
 }
 
 export function TextInputArea({
@@ -13,7 +14,8 @@ export function TextInputArea({
   onChange,
   cursorPosition,
   onCursorChange,
-  onSelectionChange
+  onSelectionChange,
+  readOnly = false
 }: TextInputAreaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -70,6 +72,8 @@ export function TextInputArea({
         onChange={handleChange}
         onSelect={handleSelect}
         onClick={handleClick}
+        readOnly={readOnly}
+        inputMode={readOnly ? "none" : "text"}
         className="min-h-[200px] px-4 py-3 pt-4 text-base leading-relaxed outline-none border-2 border-border rounded-xl overflow-y-auto resize-none"
         style={{
           caretColor: "hsl(var(--primary))"
