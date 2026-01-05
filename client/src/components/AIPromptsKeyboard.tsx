@@ -200,7 +200,6 @@ const LANGUAGES = [
 const RESPONSE_TYPES = [
   { code: "chat", label: "Chat message", emoji: "💬" },
   { code: "email", label: "Email", emoji: "✉️" },
-  { code: "formal_reply", label: "Official message", emoji: "🏛️" },
 ];
 
 // Rotating placeholder texts for Help me write empty state
@@ -954,6 +953,14 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setSelectedQuickReplyAction(actionId);
     const originalText = selectedText || previewText || text;
 
+    // Prepend format instruction based on response type
+    let situationWithPrefix = originalText;
+    if (responseType === "chat") {
+      situationWithPrefix = "Write a message in chat format, without dividing into paragraphs and topics - " + originalText;
+    } else if (responseType === "email") {
+      situationWithPrefix = "Write a message in the format of an email - " + originalText;
+    }
+
     // Show loading skeleton
     setIsGeneratingQuickReply(true);
     setMenuLevel("quick-replies-result");
@@ -966,9 +973,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          situation: originalText,
+          situation: situationWithPrefix,
           language: quickRepliesLanguage,
-          responseType: responseType,
         }),
       });
 
