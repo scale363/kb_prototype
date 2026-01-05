@@ -973,7 +973,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          situation: originalText,
+          situation: situationWithPrefix,
           language: quickRepliesLanguage,
           responseType: responseType
         }),
@@ -1022,6 +1022,14 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     const originalText = selectedText || previewText || text;
 
+    // Prepend format instruction based on response type
+    let situationWithPrefix = originalText;
+    if (responseType === "chat") {
+      situationWithPrefix = "Write a message in chat format, without dividing into paragraphs and topics - " + originalText;
+    } else if (responseType === "email") {
+      situationWithPrefix = "Write a message in the format of an email - " + originalText;
+    }
+
     // Show loading state
     setIsGeneratingQuickReply(true);
 
@@ -1032,7 +1040,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          situation: originalText,
+          situation: situationWithPrefix,
           language: quickRepliesLanguage,
           responseType: responseType,
         }),
