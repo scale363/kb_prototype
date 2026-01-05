@@ -165,34 +165,26 @@ Rules:
     }
 
     try {
-      const languageName = LANGUAGE_NAMES[targetLanguage] || targetLanguage || "English";
+      const language = LANGUAGE_NAMES[targetLanguage] || targetLanguage || "English";
 
-      // Call ChatGPT API with gpt-4o-mini model and temperature 0
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        temperature: 0,
-        messages: [
-          {
-            role: "system",
-            content: `Translate the text below into ${languageName} as literally and accurately as possible.
-
-Requirements:
-- Preserve the original meaning, tone, register, and intent exactly.
-- Do not rephrase, soften, normalize, or improve the text.
-- Keep the same level of formality or informality as in the original.
-- Do not add explanations, comments, or context.
-- Do not change the length unless strictly required by grammar.
-
-Return only the translated text.`,
-          },
+      // Call OpenAI Responses API with prompt ID
+      const response = await openai.responses.create({
+        prompt: {
+          id: "pmpt_695b5864d7988190897405dee09f9d0e0e8bed38e3fbc0ed"
+        },
+        input: [
           {
             role: "user",
             content: text,
           },
-        ],
+          {
+            role: "user",
+            content: `language: ${language}`,
+          },
+        ]
       });
 
-      const translatedText = completion.choices[0]?.message?.content || "";
+      const translatedText = response.choices[0]?.message?.content || "";
 
       res.json({
         success: true,
