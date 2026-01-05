@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DiffText } from "@/components/DiffText";
 
 // Умная функция для усечения текста, которая не режет слова и показывает начало и конец
 function truncateText(text: string, maxLength: number = 100): string {
@@ -249,6 +250,7 @@ interface QuickReplyResult {
 interface GrammarCheckResult {
   id: string;
   text: string;
+  originalText: string;
   timestamp: number;
 }
 
@@ -1108,6 +1110,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         const newResult: GrammarCheckResult = {
           id: `grammar-check-result-${Date.now()}`,
           text: data.rephrased,
+          originalText: originalText,
           timestamp: Date.now(),
         };
 
@@ -1117,6 +1120,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         const newResult: GrammarCheckResult = {
           id: `grammar-check-result-${Date.now()}`,
           text: `Error: ${data.error || "Grammar check failed"}`,
+          originalText: originalText,
           timestamp: Date.now(),
         };
         setGrammarCheckResults([newResult]);
@@ -1127,6 +1131,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       const newResult: GrammarCheckResult = {
         id: `grammar-check-result-${Date.now()}`,
         text: "Error: Failed to connect to AI service",
+        originalText: originalText,
         timestamp: Date.now(),
       };
       setGrammarCheckResults([newResult]);
@@ -1160,6 +1165,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         const newResult: GrammarCheckResult = {
           id: `grammar-check-result-${Date.now()}`,
           text: data.rephrased,
+          originalText: originalText,
           timestamp: Date.now(),
         };
 
@@ -1169,6 +1175,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         const newResult: GrammarCheckResult = {
           id: `grammar-check-result-${Date.now()}`,
           text: `Error: ${data.error || "Grammar check failed"}`,
+          originalText: originalText,
           timestamp: Date.now(),
         };
         setGrammarCheckResults([...grammarCheckResults, newResult]);
@@ -1179,6 +1186,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       const newResult: GrammarCheckResult = {
         id: `grammar-check-result-${Date.now()}`,
         text: "Error: Failed to connect to AI service",
+        originalText: originalText,
         timestamp: Date.now(),
       };
       setGrammarCheckResults([...grammarCheckResults, newResult]);
@@ -2305,9 +2313,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                   active:scale-[0.99] transition-all duration-75 touch-manipulation
                 `}
               >
-                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
-                  {result.text}
-                </div>
+                <DiffText
+                  originalText={result.originalText}
+                  modifiedText={result.text}
+                  className="pr-8"
+                />
                 {/* Copy button - only show when selected */}
                 {isSelected && (
                   <button
