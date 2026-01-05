@@ -158,7 +158,7 @@ export async function registerRoutes(
   });
 
   app.post("/api/ai/help-write", async (req, res) => {
-    const { situation, language, responseType } = req.body;
+    const { situation, language } = req.body;
 
     if (!situation || typeof situation !== "string") {
       return res.status(400).json({ error: "Situation description is required" });
@@ -174,15 +174,10 @@ export async function registerRoutes(
     }
 
     try {
-      const responseFormat = responseType || "chat";
-
       // Call OpenAI API using stored prompt by ID with responses.create
       const response = await (openai as any).responses.create({
         prompt: {
-          id: "pmpt_695b94f8e06c8195b4ed1db41b6ad3f00a7cae49b5fbb417",
-          variables: {
-            response_format: responseFormat
-          }
+          id: "pmpt_695b94f8e06c8195b4ed1db41b6ad3f00a7cae49b5fbb417"
         },
         input: [
           {
