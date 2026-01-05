@@ -170,8 +170,7 @@ Rules:
       // Call OpenAI Responses API with prompt ID
       const response = await openai.responses.create({
         prompt: {
-          id: "pmpt_695b5864d7988190897405dee09f9d0e0e8bed38e3fbc0ed",
-          version: "1"
+          id: "pmpt_695b5864d7988190897405dee09f9d0e0e8bed38e3fbc0ed"
         },
         input: [
           {
@@ -182,16 +181,7 @@ Rules:
             role: "user",
             content: `language: ${language}`,
           },
-        ],
-        text: {
-          format: {
-            type: "text"
-          }
-        },
-        reasoning: {},
-        max_output_tokens: 2048,
-        store: true,
-        include: ["web_search_call.action.sources"]
+        ]
       });
 
       const translatedText = response.choices[0]?.message?.content || "";
