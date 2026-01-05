@@ -92,23 +92,37 @@ export function computeTextDiff(original: string, modified: string): DiffPart[] 
 }
 
 /**
- * Tokenize text into words while preserving whitespace
+ * Tokenize text into words, whitespace, and punctuation separately
+ * This allows more granular diff - e.g., if only a comma is added,
+ * we don't highlight the entire preceding word
  */
 function tokenize(text: string): string[] {
   const tokens: string[] = [];
   let current = '';
-  let isWhitespace = false;
+  let currentType: 'word' | 'whitespace' | 'punctuation' | null = null;
 
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
-    const charIsWhitespace = /\s/.test(char);
+    let charType: 'word' | 'whitespace' | 'punctuation';
 
-    if (charIsWhitespace !== isWhitespace && current.length > 0) {
+    if (/\s/.test(char)) {
+      charType = 'whitespace';
+    } else if (/[\w\u0400-\u04FF]/.test(char)) {
+      // Word characters: alphanumeric + Cyrillic characters
+      charType = 'word';
+    } else {
+      // Punctuation and other characters
+      charType = 'punctuation';
+    }
+
+    // If type changes or it's punctuation (each punctuation is separate token)
+    if (current.length > 0 && (charType !== currentType || charType === 'punctuation')) {
       tokens.push(current);
       current = char;
-      isWhitespace = charIsWhitespace;
+      currentType = charType;
     } else {
       current += char;
+      currentType = charType;
     }
   }
 
