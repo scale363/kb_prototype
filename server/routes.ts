@@ -171,7 +171,6 @@ Rules:
       const response = await (openai as any).responses.create({
         prompt: {
           id: "pmpt_695b5864d7988190897405dee09f9d0e0e8bed38e3fbc0ed",
-          version: "4",
           variables: {
             language: language
           }
