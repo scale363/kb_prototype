@@ -973,8 +973,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          situation: situationWithPrefix,
+          situation: originalText,
           language: quickRepliesLanguage,
+          responseType: responseType
         }),
       });
 
