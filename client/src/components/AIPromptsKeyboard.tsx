@@ -1630,10 +1630,10 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     );
 
     return (
-      <div className="flex flex-col gap-2 p-3 pt-[15px] pb-[15px]">
-        {/* First row - 3 buttons with horizontal scroll */}
-        <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2 min-w-min">
+      <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
+        <div className="flex flex-col gap-2 min-w-min">
+          {/* First row - 3 buttons */}
+          <div className="flex gap-2">
             {firstRowButtons.map((button) => (
               <button
                 key={button.id}
@@ -1650,11 +1650,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Second row - 2 buttons with horizontal scroll */}
-        <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2 min-w-min">
+          {/* Second row - 2 buttons */}
+          <div className="flex gap-2">
             {secondRowButtons.map((button) => (
               <button
                 key={button.id}
