@@ -167,25 +167,19 @@ Rules:
     try {
       const language = LANGUAGE_NAMES[targetLanguage] || targetLanguage || "English";
 
-      // Call ChatGPT API with gpt-4o-mini model and stored prompt
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        temperature: 0,
-        metadata: {
-          prompt_id: "pmpt_695b5864d7988190897405dee09f9d0e0e8bed38e3fbc0ed",
-          prompt_variables: {
-            language: language
+      // Call OpenAI API using stored prompt by ID
+      const response = await openai.responses.create({
+        prompt: {
+          id: "pmpt_695b5864d7988190897405dee09f9d0e0e8bed38e3fbc0ed",
+          version: "4",
+          variables: {
+            language: language,
+            text: text
           }
-        },
-        messages: [
-          {
-            role: "user",
-            content: text,
-          },
-        ],
+        }
       });
 
-      const translatedText = completion.choices[0]?.message?.content || "";
+      const translatedText = response.choices[0]?.message?.content || "";
 
       res.json({
         success: true,
