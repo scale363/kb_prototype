@@ -1,6 +1,4 @@
 import { useRef, useEffect, useState } from "react";
-import { Clipboard, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface TextInputAreaProps {
   value: string;
@@ -8,6 +6,8 @@ interface TextInputAreaProps {
   cursorPosition: number;
   onCursorChange: (position: number) => void;
   onSelectionChange?: (selectedText: string) => void;
+  onPaste?: () => void;
+  onClear?: () => void;
 }
 
 export function TextInputArea({
@@ -15,7 +15,9 @@ export function TextInputArea({
   onChange,
   cursorPosition,
   onCursorChange,
-  onSelectionChange
+  onSelectionChange,
+  onPaste,
+  onClear
 }: TextInputAreaProps) {
   const textareaRef = useRef<HTMLDivElement>(null);
   const [selectionRange, setSelectionRange] = useState<{ start: number; end: number } | null>(null);
@@ -51,32 +53,6 @@ export function TextInputArea({
     }
   }, [cursorPosition, value.length, selectionRange]);
 
-  const handlePaste = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (text) {
-        const before = value.slice(0, cursorPosition);
-        const after = value.slice(cursorPosition);
-        const newValue = before + text + after;
-        onChange(newValue);
-        onCursorChange(cursorPosition + text.length);
-      }
-    } catch (err) {
-      console.error("Failed to read clipboard:", err);
-    }
-  };
-
-  const handleClear = () => {
-    onChange("");
-    onCursorChange(0);
-    setSelectionRange(null);
-    if (onSelectionChange) {
-      onSelectionChange("");
-    }
-    // Также сбрасываем предпросмотр
-    const event = new CustomEvent("resetPreviewText");
-    window.dispatchEvent(event);
-  };
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -132,30 +108,7 @@ export function TextInputArea({
   };
 
   return (
-    <div className="flex flex-col relative bg-[#f4f6f600] p-3">
-      <div className="absolute top-6 right-6 flex gap-2 z-10">
-        {value.length > 0 && (
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={handleClear}
-            data-testid="button-clear"
-            aria-label="Clear text"
-            className="text-muted-foreground hover:text-destructive"
-          >
-            <Trash2 className="h-5 w-5" />
-          </Button>
-        )}
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={handlePaste}
-          data-testid="button-paste"
-          aria-label="Paste from clipboard"
-        >
-          <Clipboard className="h-5 w-5" />
-        </Button>
-      </div>
+    <div className="flex flex-col bg-[#f4f6f600] p-3">
       <div
         ref={textareaRef}
         contentEditable
@@ -179,11 +132,6 @@ export function TextInputArea({
       >
         {value}
       </div>
-      {value.length > 0 && (
-        <div className="absolute bottom-5 left-7 text-xs text-muted-foreground" data-testid="text-character-count">
-          {value.length} символов
-        </div>
-      )}
     </div>
   );
 }

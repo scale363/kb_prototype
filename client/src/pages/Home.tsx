@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Clipboard, Trash2, Globe } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { TextInputArea } from "@/components/TextInputArea";
 import { KeyboardContainer } from "@/components/KeyboardContainer";
 
@@ -7,6 +9,8 @@ export default function Home() {
   const [cursorPosition, setCursorPosition] = useState(0);
   const [selectedText, setSelectedText] = useState("");
   const [previewText, setPreviewText] = useState("");
+  const [showSystemKeyboard, setShowSystemKeyboard] = useState(false);
+  const systemInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const preventZoom = (e: TouchEvent) => {
@@ -17,7 +21,7 @@ export default function Home() {
 
     const preventDoubleTapZoom = (e: TouchEvent) => {
       const now = Date.now();
-      if ((window as unknown as { lastTouchEnd?: number }).lastTouchEnd && 
+      if ((window as unknown as { lastTouchEnd?: number }).lastTouchEnd &&
           now - ((window as unknown as { lastTouchEnd: number }).lastTouchEnd) < 300) {
         e.preventDefault();
       }
@@ -32,6 +36,46 @@ export default function Home() {
       document.removeEventListener("touchend", preventDoubleTapZoom);
     };
   }, []);
+
+  const handlePaste = async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      if (clipboardText) {
+        // Сначала очищаем поле
+        setText(clipboardText);
+        setCursorPosition(clipboardText.length);
+        setSelectedText("");
+      }
+    } catch (err) {
+      console.error("Failed to read clipboard:", err);
+    }
+  };
+
+  const handleClear = () => {
+    setText("");
+    setCursorPosition(0);
+    setSelectedText("");
+    // Сбрасываем предпросмотр
+    const event = new CustomEvent("resetPreviewText");
+    window.dispatchEvent(event);
+  };
+
+  const handleSystemKeyboard = () => {
+    if (systemInputRef.current) {
+      systemInputRef.current.focus();
+      setShowSystemKeyboard(true);
+    }
+  };
+
+  const handleSystemInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newText = e.target.value;
+    setText(newText);
+    setCursorPosition(newText.length);
+  };
+
+  const handleSystemInputBlur = () => {
+    setShowSystemKeyboard(false);
+  };
 
   return (
     <div
@@ -56,18 +100,75 @@ export default function Home() {
         />
       </div>
 
-      {/* Зафиксированная панель кнопок внизу */}
-      <div className="flex-shrink-0 border-t border-border">
-        <KeyboardContainer
-          text={text}
-          onTextChange={setText}
-          cursorPosition={cursorPosition}
-          onCursorChange={setCursorPosition}
-          selectedText={selectedText}
-          previewText={previewText}
-          onPreviewTextChange={setPreviewText}
-        />
+      {/* Панель кнопок управления */}
+      <div className="flex-shrink-0 border-t border-border bg-[#f4f6f600] px-4 py-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleClear}
+              disabled={text.length === 0}
+              data-testid="button-clear"
+              aria-label="Clear text"
+              className="text-muted-foreground hover:text-destructive disabled:opacity-50"
+            >
+              <Trash2 className="h-5 w-5" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handlePaste}
+              data-testid="button-paste"
+              aria-label="Paste from clipboard"
+            >
+              <Clipboard className="h-5 w-5" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            {text.length > 0 && (
+              <span className="text-xs text-muted-foreground" data-testid="text-character-count">
+                {text.length} символов
+              </span>
+            )}
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleSystemKeyboard}
+              data-testid="button-system-keyboard"
+              aria-label="Open system keyboard"
+            >
+              <Globe className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
       </div>
+
+      {/* Скрытый input для системной клавиатуры */}
+      <input
+        ref={systemInputRef}
+        type="text"
+        value={text}
+        onChange={handleSystemInputChange}
+        onBlur={handleSystemInputBlur}
+        className="absolute opacity-0 pointer-events-none"
+        aria-hidden="true"
+      />
+
+      {/* Зафиксированная панель клавиатуры внизу */}
+      {!showSystemKeyboard && (
+        <div className="flex-shrink-0 border-t border-border">
+          <KeyboardContainer
+            text={text}
+            onTextChange={setText}
+            cursorPosition={cursorPosition}
+            onCursorChange={setCursorPosition}
+            selectedText={selectedText}
+            previewText={previewText}
+            onPreviewTextChange={setPreviewText}
+          />
+        </div>
+      )}
     </div>
   );
 }
