@@ -167,23 +167,28 @@ Rules:
     try {
       const language = LANGUAGE_NAMES[targetLanguage] || targetLanguage || "English";
 
-      // Call OpenAI Responses API with prompt ID
-      const response = await openai.responses.create({
-        prompt: {
-          id: "pmpt_695b5864d7988190897405dee09f9d0e0e8bed38e3fbc0ed"
-        },
-        input: [
+      // Call ChatGPT API with gpt-4o-mini model and temperature 0
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0,
+        messages: [
+          {
+            role: "system",
+            content: `You are a professional translator. Translate the user's text to ${language}. 
+            
+Rules:
+- Preserve the original meaning and tone
+- Fix any grammar or spelling issues in the translation
+- Only output the translated text, nothing else.`,
+          },
           {
             role: "user",
             content: text,
           },
         ],
-        variables: {
-          language: language
-        }
       });
 
-      const translatedText = response.choices[0]?.message?.content || "";
+      const translatedText = completion.choices[0]?.message?.content || "";
 
       res.json({
         success: true,
