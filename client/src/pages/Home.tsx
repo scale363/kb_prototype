@@ -3,7 +3,7 @@ import { TextInputArea } from "@/components/TextInputArea";
 import { KeyboardContainer } from "@/components/KeyboardContainer";
 
 export default function Home() {
-  const [text, setText] = useState("Напиши босу что я не приду нафиг. ");
+  const [text, setText] = useState("привет, петя. Напиши босу что я не приду нафиг, проспал");
   const [cursorPosition, setCursorPosition] = useState(0);
   const [selectedText, setSelectedText] = useState("");
   const [previewText, setPreviewText] = useState("");
