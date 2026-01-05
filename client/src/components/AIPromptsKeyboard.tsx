@@ -83,14 +83,6 @@ const TONE_OPTIONS: ToneOption[] = [
     borderClass: "border-border",
   },
   {
-    id: "grammar-check",
-    label: "Grammar Check",
-    emoji: "✍️",
-    tooltip: "Fixes grammar, spelling, and punctuation without rewriting your message.",
-    colorClass: "bg-card dark:bg-card",
-    borderClass: "border-border",
-  },
-  {
     id: "informal",
     label: "Informal",
     emoji: "💬",
@@ -100,9 +92,17 @@ const TONE_OPTIONS: ToneOption[] = [
   },
   {
     id: "short-clear",
-    label: "Short & Clear",
+    label: "Make it shorter",
     emoji: "\u{2702}\uFE0F",
     tooltip: "Makes your message concise, easy to read, and action-oriented.",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
+  },
+  {
+    id: "make-longer",
+    label: "Make it longer",
+    emoji: "📏",
+    tooltip: "Expands your message with more details and context while keeping the same meaning.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
   },
@@ -213,7 +213,7 @@ const HELP_ME_WRITE_PLACEHOLDERS = [
   'E.g. "ask for clearer requirements"',
 ];
 
-type MenuLevel = "main" | "tone-select" | "result" | "translate-result" | "quick-replies-select" | "quick-replies-result" | "saved-text" | "rephrase-empty-preview" | "translate-empty-preview" | "quick-replies-empty-preview";
+type MenuLevel = "main" | "tone-select" | "result" | "translate-result" | "quick-replies-select" | "quick-replies-result" | "saved-text" | "rephrase-empty-preview" | "translate-empty-preview" | "quick-replies-empty-preview" | "grammar-check-result" | "grammar-check-empty-preview";
 
 interface RephraseResult {
   id: string;
@@ -243,6 +243,12 @@ interface QuickReplyResult {
   id: string;
   text: string;
   action: string;
+  timestamp: number;
+}
+
+interface GrammarCheckResult {
+  id: string;
+  text: string;
   timestamp: number;
 }
 
@@ -349,6 +355,10 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const [selectedQuickReplyResultId, setSelectedQuickReplyResultId] = useState<string | null>(null);
   const [isGeneratingQuickReply, setIsGeneratingQuickReply] = useState<boolean>(false);
 
+  const [grammarCheckResults, setGrammarCheckResults] = useState<GrammarCheckResult[]>([]);
+  const [selectedGrammarCheckResultId, setSelectedGrammarCheckResultId] = useState<string | null>(null);
+  const [isCheckingGrammar, setIsCheckingGrammar] = useState<boolean>(false);
+
   // Load saved text items from localStorage
   const [savedTextItems, setSavedTextItems] = useState<SavedTextItem[]>(() => {
     try {
@@ -434,6 +444,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       setTranslateResults([]);
       setQuickReplyResults([]);
       setSelectedQuickReplyAction(null);
+      setGrammarCheckResults([]);
     };
     window.addEventListener("resetPreviewText", handleReset);
     return () => window.removeEventListener("resetPreviewText", handleReset);
@@ -441,14 +452,14 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   // Auto-scroll to bottom when new variant is generated
   useEffect(() => {
-    if (resultsContainerRef.current && (rephraseResults.length > 0 || translateResults.length > 0 || quickReplyResults.length > 0)) {
+    if (resultsContainerRef.current && (rephraseResults.length > 0 || translateResults.length > 0 || quickReplyResults.length > 0 || grammarCheckResults.length > 0)) {
       // Use smooth scrolling to the bottom
       resultsContainerRef.current.scrollTo({
         top: resultsContainerRef.current.scrollHeight,
         behavior: 'smooth'
       });
     }
-  }, [rephraseResults.length, translateResults.length, quickReplyResults.length]);
+  }, [rephraseResults.length, translateResults.length, quickReplyResults.length, grammarCheckResults.length]);
 
   // Auto-transition from rephrase-empty-preview to generate with last tone when preview becomes non-empty
   useEffect(() => {
@@ -468,6 +479,13 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   useEffect(() => {
     if (menuLevel === "quick-replies-empty-preview" && (previewText.trim() || text.trim())) {
       handleQuickReplyActionSelect("help-me-write");
+    }
+  }, [menuLevel, previewText, text]);
+
+  // Auto-transition from grammar-check-empty-preview to grammar-check-result when preview becomes non-empty
+  useEffect(() => {
+    if (menuLevel === "grammar-check-empty-preview" && (previewText.trim() || text.trim())) {
+      handleGrammarCheck();
     }
   }, [menuLevel, previewText, text]);
 
@@ -606,9 +624,10 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   };
 
   const handleCopyResult = async (resultId: string) => {
-    const result = rephraseResults.find(r => r.id === resultId) 
+    const result = rephraseResults.find(r => r.id === resultId)
       || translateResults.find(r => r.id === resultId)
-      || quickReplyResults.find(r => r.id === resultId);
+      || quickReplyResults.find(r => r.id === resultId)
+      || grammarCheckResults.find(r => r.id === resultId);
     if (!result) return;
 
     try {
@@ -714,6 +733,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setSelectedQuickReplyAction(null);
     setQuickReplyResults([]);
     setSelectedQuickReplyResultId(null);
+    setGrammarCheckResults([]);
+    setSelectedGrammarCheckResultId(null);
   };
 
   const handleBackToTones = () => {
@@ -1061,6 +1082,135 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setQuickReplyResults([]);
   };
 
+  const handleGrammarCheck = async () => {
+    const originalText = selectedText || previewText || text;
+
+    // Show loading skeleton
+    setIsCheckingGrammar(true);
+    setMenuLevel("grammar-check-result");
+    setGrammarCheckResults([]);
+
+    try {
+      const response = await fetch("/api/ai/rephrase", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: originalText,
+          tone: "grammar-check",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.rephrased) {
+        const newResult: GrammarCheckResult = {
+          id: `grammar-check-result-${Date.now()}`,
+          text: data.rephrased,
+          timestamp: Date.now(),
+        };
+
+        setGrammarCheckResults([newResult]);
+        setSelectedGrammarCheckResultId(newResult.id);
+      } else {
+        const newResult: GrammarCheckResult = {
+          id: `grammar-check-result-${Date.now()}`,
+          text: `Error: ${data.error || "Grammar check failed"}`,
+          timestamp: Date.now(),
+        };
+        setGrammarCheckResults([newResult]);
+        setSelectedGrammarCheckResultId(newResult.id);
+      }
+    } catch (error) {
+      console.error("Grammar check error:", error);
+      const newResult: GrammarCheckResult = {
+        id: `grammar-check-result-${Date.now()}`,
+        text: "Error: Failed to connect to AI service",
+        timestamp: Date.now(),
+      };
+      setGrammarCheckResults([newResult]);
+      setSelectedGrammarCheckResultId(newResult.id);
+    } finally {
+      setIsCheckingGrammar(false);
+    }
+  };
+
+  const handleRegenerateGrammarCheck = async () => {
+    const originalText = selectedText || previewText || text;
+
+    // Show loading state
+    setIsCheckingGrammar(true);
+
+    try {
+      const response = await fetch("/api/ai/rephrase", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: originalText,
+          tone: "grammar-check",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.rephrased) {
+        const newResult: GrammarCheckResult = {
+          id: `grammar-check-result-${Date.now()}`,
+          text: data.rephrased,
+          timestamp: Date.now(),
+        };
+
+        setGrammarCheckResults([...grammarCheckResults, newResult]);
+        setSelectedGrammarCheckResultId(newResult.id);
+      } else {
+        const newResult: GrammarCheckResult = {
+          id: `grammar-check-result-${Date.now()}`,
+          text: `Error: ${data.error || "Grammar check failed"}`,
+          timestamp: Date.now(),
+        };
+        setGrammarCheckResults([...grammarCheckResults, newResult]);
+        setSelectedGrammarCheckResultId(newResult.id);
+      }
+    } catch (error) {
+      console.error("Regenerate grammar check error:", error);
+      const newResult: GrammarCheckResult = {
+        id: `grammar-check-result-${Date.now()}`,
+        text: "Error: Failed to connect to AI service",
+        timestamp: Date.now(),
+      };
+      setGrammarCheckResults([...grammarCheckResults, newResult]);
+      setSelectedGrammarCheckResultId(newResult.id);
+    } finally {
+      setIsCheckingGrammar(false);
+      setCopiedResultId(null);
+    }
+  };
+
+  const handleApplyGrammarCheckResult = (resultId: string) => {
+    const result = grammarCheckResults.find(r => r.id === resultId);
+    if (!result) return;
+
+    if (selectedText) {
+      // Replace selected text in the original text
+      const startIndex = text.indexOf(selectedText);
+      if (startIndex !== -1) {
+        const newText = text.substring(0, startIndex) + result.text + text.substring(startIndex + selectedText.length);
+        onTextChange(newText);
+      } else {
+        onTextChange(result.text);
+      }
+    } else {
+      // Replace all text
+      onTextChange(result.text);
+    }
+    // Reset to main menu
+    setMenuLevel("main");
+    setGrammarCheckResults([]);
+  };
+
   const handleSaveFromClipboard = async () => {
     try {
       const clipboardText = await navigator.clipboard.readText();
@@ -1111,8 +1261,12 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         break;
 
       case "grammar-check":
-        // Stub - functionality to be implemented later
-        console.log("Grammar check clicked - feature coming soon");
+        if (!text.trim() && !previewText.trim()) {
+          // Show empty preview state with prompt to paste text
+          setMenuLevel("grammar-check-empty-preview");
+          return;
+        }
+        handleGrammarCheck();
         break;
 
       case "quick-replies":
@@ -1205,6 +1359,25 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               <MessageSquare className="w-4 h-4 text-white" />
             </div>
             <div className="text-base font-semibold text-foreground">Help me write</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+      );
+    } else if (menuLevel === "grammar-check-empty-preview") {
+      return (
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
+              <CheckCircle2 className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-base font-semibold text-foreground">Grammar check</div>
           </div>
           <button
             type="button"
@@ -1335,17 +1508,36 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           </button>
         </div>
       );
+    } else if (menuLevel === "grammar-check-result") {
+      return (
+        <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
+              <CheckCircle2 className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-base font-semibold text-foreground">Grammar corrected</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
+            aria-label="Close and return to main menu"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+      );
     } else if (menuLevel === "result") {
       // Determine the title based on selected tone
       let resultTitle = "How should it sound?";
       if (selectedTone === "work-safe") {
         resultTitle = "Safe to send at work";
-      } else if (selectedTone === "grammar-check") {
-        resultTitle = "Grammar corrected";
       } else if (selectedTone === "informal") {
         resultTitle = "Informal version";
       } else if (selectedTone === "short-clear") {
-        resultTitle = "Shorter and clearer";
+        resultTitle = "Shorter version";
+      } else if (selectedTone === "make-longer") {
+        resultTitle = "Longer version";
       }
 
       return (
@@ -1427,25 +1619,62 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   };
 
   // Render main menu buttons
-  const renderMainMenu = () => (
-    <div className="flex flex-wrap gap-2 p-3 pt-[15px] pb-[15px]">
-      {PROMPT_BUTTONS.map((button) => (
-        <button
-          key={button.id}
-          type="button"
-          onClick={() => handlePromptClick(button.id)}
-          className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
-          data-testid={`button-prompt-${button.id}`}
-          aria-label={button.label}
-        >
-          {button.icon}
-          <span className="text-sm font-medium text-foreground whitespace-nowrap">
-            {button.label}
-          </span>
-        </button>
-      ))}
-    </div>
-  );
+  const renderMainMenu = () => {
+    // First row: rephrase, translate, grammar-check
+    const firstRowButtons = PROMPT_BUTTONS.filter(b =>
+      ['rephrase', 'translate', 'grammar-check'].includes(b.id)
+    );
+    // Second row: quick-replies, saved-text
+    const secondRowButtons = PROMPT_BUTTONS.filter(b =>
+      ['quick-replies', 'saved-text'].includes(b.id)
+    );
+
+    return (
+      <div className="flex flex-col gap-2 p-3 pt-[15px] pb-[15px]">
+        {/* First row - 3 buttons with horizontal scroll */}
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2 min-w-min">
+            {firstRowButtons.map((button) => (
+              <button
+                key={button.id}
+                type="button"
+                onClick={() => handlePromptClick(button.id)}
+                className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
+                data-testid={`button-prompt-${button.id}`}
+                aria-label={button.label}
+              >
+                {button.icon}
+                <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                  {button.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Second row - 2 buttons with horizontal scroll */}
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2 min-w-min">
+            {secondRowButtons.map((button) => (
+              <button
+                key={button.id}
+                type="button"
+                onClick={() => handlePromptClick(button.id)}
+                className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
+                data-testid={`button-prompt-${button.id}`}
+                aria-label={button.label}
+              >
+                {button.icon}
+                <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                  {button.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // Render empty preview prompt for rephrase
   const renderRephraseEmptyPreview = () => {
@@ -1546,6 +1775,40 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         {/* Large prompt message */}
         <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
           <div className="text-center text-[18px] font-semibold text-[#22282a]">We'll turn your situation into a clear, well-written message.</div>
+        </div>
+      </div>
+    );
+  };
+
+  // Render empty preview prompt for grammar check
+  const renderGrammarCheckEmptyPreview = () => {
+    const hasContent = displayPreviewText.trim();
+
+    return (
+      <div className="flex flex-col gap-4 p-1">
+        {/* Preview field - main page style */}
+        <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
+          {hasContent ? (
+            <div className="text-sm text-foreground leading-relaxed flex-1 mt-[5px] mb-[5px]">
+              {displayPreviewText}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground/60 flex-1 mt-[4px] mb-[4px]">Paste your message here</div>
+          )}
+          <button
+            type="button"
+            onClick={handlePasteFromClipboard}
+            className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
+            data-testid="button-paste-grammar-check-empty"
+            aria-label="Paste text"
+          >
+            <Clipboard className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* Large prompt message */}
+        <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
+          <div className="text-center text-[18px] font-semibold text-[#22282a]">Fix grammar, spelling, and punctuation without rewriting your message.</div>
         </div>
       </div>
     );
@@ -2014,6 +2277,107 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     );
   };
 
+  // Render grammar check result view with scrollable results
+  const renderGrammarCheckResult = () => {
+    // Show skeleton while checking grammar
+    if (isCheckingGrammar) {
+      return (
+        <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
+          <div className="py-4 px-3">
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-5/6 mb-2" />
+            <Skeleton className="h-4 w-4/6" />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
+        {grammarCheckResults.map((result, index) => {
+          const isSelected = selectedGrammarCheckResultId === result.id;
+          const isResultCopied = copiedResultId === result.id;
+          return (
+            <div key={result.id}>
+              <div
+                onClick={() => setSelectedGrammarCheckResultId(result.id)}
+                className={`
+                  relative py-4 px-3 cursor-pointer
+                  ${isSelected ? "opacity-100" : "opacity-50"}
+                  active:scale-[0.99] transition-all duration-75 touch-manipulation
+                `}
+              >
+                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
+                  {result.text}
+                </div>
+                {/* Copy button - only show when selected */}
+                {isSelected && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopyResult(result.id);
+                    }}
+                    className={`
+                      absolute top-3 right-2
+                      flex items-center justify-center h-7 w-7 rounded-md
+                      ${isResultCopied
+                        ? "bg-green-100 dark:bg-green-950/50"
+                        : "bg-background/80 hover:bg-accent/50"}
+                      active:scale-[0.95] transition-all duration-75 touch-manipulation
+                    `}
+                    data-testid={`button-copy-grammar-check-${result.id}`}
+                    aria-label="Copy"
+                    title="Copy"
+                  >
+                    {isResultCopied ? (
+                      <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                  </button>
+                )}
+              </div>
+              {/* Divider between variants */}
+              {index < grammarCheckResults.length - 1 && (
+                <div className="border-b border-border" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Render grammar check result footer with control panel
+  const renderGrammarCheckResultFooter = () => {
+    const selectedResult = grammarCheckResults.find(r => r.id === selectedGrammarCheckResultId);
+
+    return (
+      <div className="flex-shrink-0 border-t border-border bg-white p-3">
+        <div className="flex items-center gap-2 mt-1">
+          <div className="flex-1"></div>
+
+          {/* Apply button */}
+          <button
+            type="button"
+            onClick={() => selectedResult && handleApplyGrammarCheckResult(selectedResult.id)}
+            disabled={!selectedResult}
+            className={`
+              flex items-center justify-center gap-1.5 h-11 w-11 rounded-full
+              bg-[#0b9786] text-white font-medium
+              ${!selectedResult ? "opacity-40 cursor-not-allowed" : "hover:bg-[#0a8a7a] active:scale-[0.95]"}
+              transition-all duration-75 touch-manipulation flex-shrink-0
+            `}
+            data-testid="button-apply-grammar-check"
+          >
+            <Check className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   // Render saved text view
   const renderSavedText = () => (
     <div className="flex flex-col gap-3 p-1 flex-1 min-h-0 pt-[8px] pb-[8px]">
@@ -2086,11 +2450,13 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             {menuLevel === "rephrase-empty-preview" && renderRephraseEmptyPreview()}
             {menuLevel === "translate-empty-preview" && renderTranslateEmptyPreview()}
             {menuLevel === "quick-replies-empty-preview" && renderQuickRepliesEmptyPreview()}
+            {menuLevel === "grammar-check-empty-preview" && renderGrammarCheckEmptyPreview()}
             {menuLevel === "tone-select" && renderToneSelect()}
             {menuLevel === "result" && renderResult()}
             {menuLevel === "translate-result" && renderTranslateResult()}
             {menuLevel === "quick-replies-select" && renderQuickRepliesSelect()}
             {menuLevel === "quick-replies-result" && renderQuickRepliesResult()}
+            {menuLevel === "grammar-check-result" && renderGrammarCheckResult()}
             {menuLevel === "saved-text" && renderSavedText()}
           </>
         )}
@@ -2105,6 +2471,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       {menuLevel === "result" && renderResultFooter()}
       {menuLevel === "translate-result" && renderTranslateResultFooter()}
       {menuLevel === "quick-replies-result" && renderQuickRepliesResultFooter()}
+      {menuLevel === "grammar-check-result" && renderGrammarCheckResultFooter()}
 
       </div>
   );
