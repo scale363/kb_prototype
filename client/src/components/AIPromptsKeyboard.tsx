@@ -1628,7 +1628,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         {/* Preview field without border and background */}
         <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
           {hasContent ? (
-            <div className="text-sm text-foreground leading-relaxed flex-1 mt-[5px] mb-[5px]">
+            <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap flex-1 mt-[5px] mb-[5px]">
               {displayPreviewText}
             </div>
           ) : (
@@ -1713,7 +1713,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         {/* Preview field - main page style */}
         <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
           {hasContent ? (
-            <div className="text-sm text-foreground leading-relaxed flex-1 mt-[5px] mb-[5px]">
+            <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap flex-1 mt-[5px] mb-[5px]">
               {displayPreviewText}
             </div>
           ) : (
@@ -1747,7 +1747,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         {/* Preview field - main page style */}
         <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
           {hasContent ? (
-            <div className="text-sm text-foreground leading-relaxed flex-1 mt-[5px] mb-[5px]">
+            <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap flex-1 mt-[5px] mb-[5px]">
               {displayPreviewText}
             </div>
           ) : (
@@ -1783,7 +1783,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         {/* Preview field - main page style */}
         <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
           {hasContent ? (
-            <div className="text-sm text-foreground leading-relaxed flex-1 mt-[5px] mb-[5px]">
+            <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap flex-1 mt-[5px] mb-[5px]">
               {displayPreviewText}
             </div>
           ) : (
@@ -1817,7 +1817,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         {/* Preview field - main page style */}
         <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
           {hasContent ? (
-            <div className="text-sm text-foreground leading-relaxed flex-1 mt-[5px] mb-[5px]">
+            <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap flex-1 mt-[5px] mb-[5px]">
               {displayPreviewText}
             </div>
           ) : (
@@ -1851,7 +1851,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         {/* Preview field - same style as main page */}
         <div className="flex items-start justify-between gap-3 py-2 px-1 relative">
           {hasContent ? (
-            <div className="text-sm text-foreground leading-relaxed flex-1 mt-[5px] mb-[5px]">
+            <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap flex-1 mt-[5px] mb-[5px]">
               {displayPreviewText}
             </div>
           ) : (
