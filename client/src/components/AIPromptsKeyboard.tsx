@@ -200,7 +200,7 @@ const LANGUAGES = [
 const RESPONSE_TYPES = [
   { code: "chat", label: "Chat message", emoji: "💬" },
   { code: "email", label: "Email", emoji: "✉️" },
-  { code: "official", label: "Official message", emoji: "🏛️" },
+  { code: "formal_reply", label: "Official message", emoji: "🏛️" },
 ];
 
 // Rotating placeholder texts for Help me write empty state

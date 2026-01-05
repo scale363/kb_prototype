@@ -174,52 +174,34 @@ export async function registerRoutes(
     }
 
     try {
-      const languageName = LANGUAGE_NAMES[language] || "English";
+      const responseFormat = responseType || "chat";
 
-      // Build the response type instruction
-      let responseTypeInstruction = "";
-      if (responseType === "email") {
-        responseTypeInstruction = "\n- Format the message as an email with a subject line and professional greeting/closing.";
-      } else if (responseType === "official") {
-        responseTypeInstruction = "\n- Use formal, official language suitable for formal correspondence or official documents.";
-      } else {
-        // "chat" or default
-        responseTypeInstruction = "\n- Keep the format simple and direct, suitable for chat or instant messaging.";
-      }
-
-      // Call ChatGPT API with gpt-4o-mini model and temperature 0.7 for more creative responses
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        temperature: 0.0,
-        messages: [
-          {
-            role: "system",
-            content: `You are a writing assistant for work communication.
-Write the response in ${languageName}.
-
-Your task is to write a clear, concise, professional, work-safe message based on the situation described by the user.
-
-Requirements:
-- Keep the message concise and clear.
-- Write the message from the user's perspective.
-- Use a neutral, professional, and socially appropriate tone.
-- Use the respectful form of address appropriate in this language.
-- Do not escalate conflicts or introduce emotional language.
-- Do not take on commitments unless they are explicitly stated in the description.
-- Do not add unnecessary details or assumptions.
-- Do not explain your reasoning or add meta comments.
-- Output only the final message text in ${languageName}.${responseTypeInstruction}
-
-Situation:`,
-          },
+      // Call OpenAI API using stored prompt by ID with responses.create
+      const response = await (openai as any).responses.create({
+        prompt: {
+          id: "pmpt_695b94f8e06c8195b4ed1db41b6ad3f00a7cae49b5fbb417",
+          variables: {
+            response_format: responseFormat
+          }
+        },
+        input: [
           {
             role: "user",
-            content: situation,
-          },
+            content: [
+              { type: "input_text", text: situation }
+            ]
+          }
         ],
+        text: {
+          format: {
+            type: "text"
+          }
+        },
+        max_output_tokens: 2048,
+        store: true
       });
 
-      const generatedText = completion.choices[0]?.message?.content || "";
+      const generatedText = response.output_text || response.output?.[0]?.content?.[0]?.text || "";
 
       res.json({
         success: true,
