@@ -2039,11 +2039,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                   active:scale-[0.99] transition-all duration-75 touch-manipulation
                 `}
               >
-                <DiffText
-                  originalText={result.originalText}
-                  modifiedText={result.text}
-                  className="pr-8"
-                />
+                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
+                  {result.text}
+                </div>
                 {/* Copy button - only show when selected */}
                 {isSelected && (
                   <button
