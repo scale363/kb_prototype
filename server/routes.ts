@@ -171,13 +171,16 @@ Rules:
       const response = await (openai as any).responses.create({
         prompt: {
           id: "pmpt_695b5864d7988190897405dee09f9d0e0e8bed38e3fbc0ed",
-          version: "4"
+          version: "4",
+          variables: {
+            language: language
+          }
         },
         input: [
           {
             role: "user",
             content: [
-              { type: "input_text", text: `Language: ${language}\n\nText to translate:\n${text}` }
+              { type: "input_text", text: text }
             ]
           }
         ],
