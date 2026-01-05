@@ -167,36 +167,30 @@ Rules:
     try {
       const language = LANGUAGE_NAMES[targetLanguage] || targetLanguage || "English";
 
-      // Call OpenAI API using stored prompt by ID
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "You are a translator.",
-          },
+      // Call OpenAI API using stored prompt by ID with responses.create
+      const response = await (openai as any).responses.create({
+        prompt: {
+          id: "pmpt_695b5864d7988190897405dee09f9d0e0e8bed38e3fbc0ed",
+          version: "4"
+        },
+        input: [
           {
             role: "user",
             content: [
-              {
-                type: "text",
-                text: text,
-              },
-            ],
-          },
-        ],
-        // @ts-ignore - Using prompt ID as requested
-        prompt: {
-          id: "pmpt_695b5864d7988190897405dee09f9d0e0e8bed38e3fbc0ed",
-          version: "4",
-          variables: {
-            language: language,
-            input_text: text
+              { type: "input_text", text: `Language: ${language}\n\nText to translate:\n${text}` }
+            ]
           }
-        }
+        ],
+        text: {
+          format: {
+            type: "text"
+          }
+        },
+        max_output_tokens: 2048,
+        store: true
       });
 
-      const translatedText = (response as any).choices[0]?.message?.content || "";
+      const translatedText = response.output_text || response.output?.[0]?.content?.[0]?.text || "";
 
       res.json({
         success: true,
