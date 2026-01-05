@@ -177,11 +177,10 @@ Rules:
             role: "user",
             content: text,
           },
-          {
-            role: "user",
-            content: `language: ${language}`,
-          },
-        ]
+        ],
+        variables: {
+          language: language
+        }
       });
 
       const translatedText = response.choices[0]?.message?.content || "";
