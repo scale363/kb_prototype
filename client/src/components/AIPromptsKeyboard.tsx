@@ -2314,8 +2314,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       );
     }
 
-    const selectedLangLabel = LANGUAGES.find(l => l.code === translateLanguage)?.label || translateLanguage;
-
     return (
       <div className="flex flex-col">
         <Carousel
@@ -2328,11 +2326,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               return (
                 <CarouselItem key={result.id}>
                   <div className="p-3">
-                    {/* Language header */}
-                    <div className="text-xs font-medium text-muted-foreground mb-3 text-center">
-                      {selectedLangLabel}
-                    </div>
-
                     {/* Translation text with copy button */}
                     <div className="relative py-4 px-3">
                       <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
