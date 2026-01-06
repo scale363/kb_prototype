@@ -574,7 +574,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     // Cancel any ongoing rephrase request
     if (rephraseAbortControllerRef.current && !rephraseAbortControllerRef.current.signal.aborted) {
-      rephraseAbortControllerRef.current.abort();
+      rephraseAbortControllerRef.current.abort("User cancelled");
     }
 
     // Create new AbortController for this request
@@ -695,7 +695,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     // Cancel any ongoing rephrase request
     if (rephraseAbortControllerRef.current && !rephraseAbortControllerRef.current.signal.aborted) {
-      rephraseAbortControllerRef.current.abort();
+      rephraseAbortControllerRef.current.abort("User cancelled");
     }
 
     // Create new AbortController for this request
@@ -793,7 +793,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     // Cancel any ongoing translate request
     if (translateAbortControllerRef.current && !translateAbortControllerRef.current.signal.aborted) {
-      translateAbortControllerRef.current.abort();
+      translateAbortControllerRef.current.abort("User cancelled");
     }
 
     // Create new AbortController for this request
@@ -873,7 +873,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     // Cancel any ongoing translate request
     if (translateAbortControllerRef.current && !translateAbortControllerRef.current.signal.aborted) {
-      translateAbortControllerRef.current.abort();
+      translateAbortControllerRef.current.abort("User cancelled");
     }
 
     // Create new AbortController for this request
@@ -1041,7 +1041,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     // Cancel any ongoing quick reply request
     if (quickReplyAbortControllerRef.current && !quickReplyAbortControllerRef.current.signal.aborted) {
-      quickReplyAbortControllerRef.current.abort();
+      quickReplyAbortControllerRef.current.abort("User cancelled");
     }
 
     // Create new AbortController for this request
@@ -1128,7 +1128,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     // Cancel any ongoing quick reply request
     if (quickReplyAbortControllerRef.current && !quickReplyAbortControllerRef.current.signal.aborted) {
-      quickReplyAbortControllerRef.current.abort();
+      quickReplyAbortControllerRef.current.abort("User cancelled");
     }
 
     // Create new AbortController for this request
@@ -1225,7 +1225,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     // Cancel any ongoing grammar check request
     if (grammarCheckAbortControllerRef.current && !grammarCheckAbortControllerRef.current.signal.aborted) {
-      grammarCheckAbortControllerRef.current.abort();
+      grammarCheckAbortControllerRef.current.abort("User cancelled");
     }
 
     // Create new AbortController for this request
