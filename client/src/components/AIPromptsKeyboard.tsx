@@ -573,7 +573,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     const originalText = selectedText || previewText || text;
 
     // Cancel any ongoing rephrase request
-    if (rephraseAbortControllerRef.current) {
+    if (rephraseAbortControllerRef.current && !rephraseAbortControllerRef.current.signal.aborted) {
       rephraseAbortControllerRef.current.abort();
     }
 
@@ -694,7 +694,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     const originalText = selectedText || previewText || text;
 
     // Cancel any ongoing rephrase request
-    if (rephraseAbortControllerRef.current) {
+    if (rephraseAbortControllerRef.current && !rephraseAbortControllerRef.current.signal.aborted) {
       rephraseAbortControllerRef.current.abort();
     }
 
@@ -792,7 +792,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     const originalText = selectedText || previewText || text;
 
     // Cancel any ongoing translate request
-    if (translateAbortControllerRef.current) {
+    if (translateAbortControllerRef.current && !translateAbortControllerRef.current.signal.aborted) {
       translateAbortControllerRef.current.abort();
     }
 
@@ -872,7 +872,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     const originalText = selectedText || previewText || text;
 
     // Cancel any ongoing translate request
-    if (translateAbortControllerRef.current) {
+    if (translateAbortControllerRef.current && !translateAbortControllerRef.current.signal.aborted) {
       translateAbortControllerRef.current.abort();
     }
 
@@ -1040,7 +1040,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
 
     // Cancel any ongoing quick reply request
-    if (quickReplyAbortControllerRef.current) {
+    if (quickReplyAbortControllerRef.current && !quickReplyAbortControllerRef.current.signal.aborted) {
       quickReplyAbortControllerRef.current.abort();
     }
 
@@ -1127,7 +1127,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
 
     // Cancel any ongoing quick reply request
-    if (quickReplyAbortControllerRef.current) {
+    if (quickReplyAbortControllerRef.current && !quickReplyAbortControllerRef.current.signal.aborted) {
       quickReplyAbortControllerRef.current.abort();
     }
 
@@ -1224,7 +1224,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     const originalText = selectedText || previewText || text;
 
     // Cancel any ongoing grammar check request
-    if (grammarCheckAbortControllerRef.current) {
+    if (grammarCheckAbortControllerRef.current && !grammarCheckAbortControllerRef.current.signal.aborted) {
       grammarCheckAbortControllerRef.current.abort();
     }
 
