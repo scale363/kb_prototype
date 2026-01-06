@@ -174,10 +174,19 @@ export async function registerRoutes(
     }
 
     try {
+      // Select prompt ID based on response type
+      let promptId: string;
+      if (responseType === "email") {
+        promptId = "pmpt_695ce754ceb48193bbcedcc7d77dea430beca83ca0c73c92";
+      } else {
+        // Default to chat prompt
+        promptId = "pmpt_695ce77313008195b8cbdfbd4927d7c90daf7a860809e7a9";
+      }
+
       // Call OpenAI API using stored prompt by ID with responses.create
       const response = await (openai as any).responses.create({
         prompt: {
-          id: "pmpt_695b94f8e06c8195b4ed1db41b6ad3f00a7cae49b5fbb417"
+          id: promptId
         },
         input: [
           {

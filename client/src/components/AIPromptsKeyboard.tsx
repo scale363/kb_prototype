@@ -1031,14 +1031,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setSelectedQuickReplyAction(actionId);
     const originalText = selectedText || previewText || text;
 
-    // Prepend format instruction based on response type
-    let situationWithPrefix = originalText;
-    if (responseType === "chat") {
-      situationWithPrefix = "Write a message in chat format, without dividing into paragraphs and topics - " + originalText;
-    } else if (responseType === "email") {
-      situationWithPrefix = "Write a message in the format of an email - " + originalText;
-    }
-
     // Cancel any ongoing quick reply request
     if (quickReplyAbortControllerRef.current && !quickReplyAbortControllerRef.current.signal.aborted) {
       quickReplyAbortControllerRef.current.abort("User cancelled");
@@ -1060,7 +1052,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          situation: situationWithPrefix,
+          situation: originalText,
           language: quickRepliesLanguage,
           responseType: responseType
         }),
@@ -1118,14 +1110,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     const originalText = selectedText || previewText || text;
 
-    // Prepend format instruction based on response type
-    let situationWithPrefix = originalText;
-    if (responseType === "chat") {
-      situationWithPrefix = "Write a message in chat format, without dividing into paragraphs and topics - " + originalText;
-    } else if (responseType === "email") {
-      situationWithPrefix = "Write a message in the format of an email - " + originalText;
-    }
-
     // Cancel any ongoing quick reply request
     if (quickReplyAbortControllerRef.current && !quickReplyAbortControllerRef.current.signal.aborted) {
       quickReplyAbortControllerRef.current.abort("User cancelled");
@@ -1145,7 +1129,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          situation: situationWithPrefix,
+          situation: originalText,
           language: quickRepliesLanguage,
           responseType: responseType,
         }),
