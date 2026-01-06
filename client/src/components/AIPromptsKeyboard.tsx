@@ -1797,10 +1797,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             <Clipboard className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
-
         {/* Large prompt message */}
         <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-          <div className="text-center text-[18px] font-semibold text-[#22282a]">We'll turn your situation into a clear, well-written message.</div>
+          <div className="text-center font-semibold text-[#22282a] text-[16px]">We'll turn your situation into a clear, well-written message.</div>
         </div>
       </div>
     );
