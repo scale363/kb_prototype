@@ -2184,10 +2184,17 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     if (isGeneratingQuickReply) {
       return (
         <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
-          <div className="py-4 px-3">
-            <Skeleton className="h-4 w-full mb-2" />
-            <Skeleton className="h-4 w-5/6 mb-2" />
-            <Skeleton className="h-4 w-4/6" />
+          <div className="py-4 px-3 animate-pulse">
+            <div className="text-muted-foreground/60 space-y-3">
+              <p className="text-sm font-medium">Generating your message…</p>
+              <div className="text-xs space-y-1.5">
+                <p className="font-medium mb-2">People often write:</p>
+                <p>• delivery complaint — pizza cold</p>
+                <p>• question to the consulate — working hours</p>
+                <p>• project invitation — politely decline</p>
+                <p>• restaurant review — tasty and cozy</p>
+              </div>
+            </div>
           </div>
         </div>
       );
