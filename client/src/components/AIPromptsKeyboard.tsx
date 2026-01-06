@@ -386,6 +386,12 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Ref for tracking rephrase tone changes
   const prevRephraseSelectedToneRef = useRef<string>(selectedTone);
 
+  // AbortController refs for canceling ongoing requests
+  const rephraseAbortControllerRef = useRef<AbortController | null>(null);
+  const translateAbortControllerRef = useRef<AbortController | null>(null);
+  const quickReplyAbortControllerRef = useRef<AbortController | null>(null);
+  const grammarCheckAbortControllerRef = useRef<AbortController | null>(null);
+
   // State for rotating placeholder in Help me write empty state
   const [placeholderIndex, setPlaceholderIndex] = useState<number>(0);
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState<string>("");
@@ -566,6 +572,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setSelectedTone(toneId);
     const originalText = selectedText || previewText || text;
 
+    // Cancel any ongoing rephrase request
+    if (rephraseAbortControllerRef.current) {
+      rephraseAbortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    const abortController = new AbortController();
+    rephraseAbortControllerRef.current = abortController;
+
     // Show loading skeleton
     setIsRephrasing(true);
     setMenuLevel("result");
@@ -581,6 +596,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           text: originalText,
           tone: toneId,
         }),
+        signal: abortController.signal,
       });
 
       const data = await response.json();
@@ -608,7 +624,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         setRephraseResults([newResult]);
         setSelectedResultId(newResult.id);
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Ignore abort errors (request was canceled intentionally)
+      if (error.name === 'AbortError') {
+        return;
+      }
       console.error("Rephrase error:", error);
       const newResult: RephraseResult = {
         id: `result-${Date.now()}`,
@@ -620,7 +640,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       setRephraseResults([newResult]);
       setSelectedResultId(newResult.id);
     } finally {
-      setIsRephrasing(false);
+      // Only clear loading state if this request wasn't aborted
+      if (rephraseAbortControllerRef.current === abortController) {
+        setIsRephrasing(false);
+        rephraseAbortControllerRef.current = null;
+      }
       setCopiedResultId(null);
     }
   };
@@ -669,6 +693,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     const originalText = selectedText || previewText || text;
 
+    // Cancel any ongoing rephrase request
+    if (rephraseAbortControllerRef.current) {
+      rephraseAbortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    const abortController = new AbortController();
+    rephraseAbortControllerRef.current = abortController;
+
     // Show loading state
     setIsRephrasing(true);
 
@@ -682,6 +715,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           text: originalText,
           tone: selectedTone,
         }),
+        signal: abortController.signal,
       });
 
       const data = await response.json();
@@ -708,7 +742,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         setRephraseResults([...rephraseResults, newResult]);
         setSelectedResultId(newResult.id);
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Ignore abort errors (request was canceled intentionally)
+      if (error.name === 'AbortError') {
+        return;
+      }
       console.error("Reprocess error:", error);
       const newResult: RephraseResult = {
         id: `result-${Date.now()}`,
@@ -720,7 +758,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       setRephraseResults([...rephraseResults, newResult]);
       setSelectedResultId(newResult.id);
     } finally {
-      setIsRephrasing(false);
+      // Only clear loading state if this request wasn't aborted
+      if (rephraseAbortControllerRef.current === abortController) {
+        setIsRephrasing(false);
+        rephraseAbortControllerRef.current = null;
+      }
       setCopiedResultId(null);
     }
   };
@@ -749,6 +791,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const handleTranslate = async () => {
     const originalText = selectedText || previewText || text;
 
+    // Cancel any ongoing translate request
+    if (translateAbortControllerRef.current) {
+      translateAbortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    const abortController = new AbortController();
+    translateAbortControllerRef.current = abortController;
+
     // Show loading skeleton
     setIsTranslating(true);
     setMenuLevel("translate-result");
@@ -764,6 +815,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           text: originalText,
           targetLanguage: translateLanguage,
         }),
+        signal: abortController.signal,
       });
 
       const data = await response.json();
@@ -792,7 +844,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         setTranslateResults([newResult]);
         setSelectedTranslateResultId(newResult.id);
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Ignore abort errors (request was canceled intentionally)
+      if (error.name === 'AbortError') {
+        return;
+      }
       console.error("Translation error:", error);
       const newResult: TranslateResult = {
         id: `translate-result-${Date.now()}`,
@@ -804,12 +860,25 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       setTranslateResults([newResult]);
       setSelectedTranslateResultId(newResult.id);
     } finally {
-      setIsTranslating(false);
+      // Only clear loading state if this request wasn't aborted
+      if (translateAbortControllerRef.current === abortController) {
+        setIsTranslating(false);
+        translateAbortControllerRef.current = null;
+      }
     }
   };
 
   const handleRetranslate = async () => {
     const originalText = selectedText || previewText || text;
+
+    // Cancel any ongoing translate request
+    if (translateAbortControllerRef.current) {
+      translateAbortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    const abortController = new AbortController();
+    translateAbortControllerRef.current = abortController;
 
     // Show loading state
     setIsTranslating(true);
@@ -824,6 +893,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           text: originalText,
           targetLanguage: translateLanguage,
         }),
+        signal: abortController.signal,
       });
 
       const data = await response.json();
@@ -850,7 +920,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         setTranslateResults([...translateResults, newResult]);
         setSelectedTranslateResultId(newResult.id);
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Ignore abort errors (request was canceled intentionally)
+      if (error.name === 'AbortError') {
+        return;
+      }
       console.error("Retranslation error:", error);
       const newResult: TranslateResult = {
         id: `translate-result-${Date.now()}`,
@@ -862,7 +936,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       setTranslateResults([...translateResults, newResult]);
       setSelectedTranslateResultId(newResult.id);
     } finally {
-      setIsTranslating(false);
+      // Only clear loading state if this request wasn't aborted
+      if (translateAbortControllerRef.current === abortController) {
+        setIsTranslating(false);
+        translateAbortControllerRef.current = null;
+      }
       setCopiedResultId(null);
     }
   };
@@ -871,7 +949,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   useEffect(() => {
     if (menuLevel === "translate-result" &&
         translateLanguage !== prevTranslateLanguageRef.current &&
-        translateResults.length > 0) {
+        (translateResults.length > 0 || isTranslating)) {
       handleRetranslate();
       // Blur the select to remove focus
       const selectElement = document.querySelector('[data-testid="select-translate-language"]');
@@ -886,7 +964,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   useEffect(() => {
     if (menuLevel === "quick-replies-result" &&
         quickRepliesLanguage !== prevQuickRepliesLanguageRef.current &&
-        quickReplyResults.length > 0) {
+        (quickReplyResults.length > 0 || isGeneratingQuickReply)) {
       handleRegenerateQuickReply();
       // Blur the select to remove focus
       const selectElement = document.querySelector('[data-testid="select-quick-replies-language"]');
@@ -901,7 +979,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   useEffect(() => {
     if (menuLevel === "quick-replies-result" &&
         responseType !== prevResponseTypeRef.current &&
-        quickReplyResults.length > 0) {
+        (quickReplyResults.length > 0 || isGeneratingQuickReply)) {
       handleRegenerateQuickReply();
       // Blur the select to remove focus
       const selectElement = document.querySelector('[data-testid="select-response-type"]');
@@ -916,7 +994,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   useEffect(() => {
     if (menuLevel === "result" &&
         selectedTone !== prevRephraseSelectedToneRef.current &&
-        rephraseResults.length > 0) {
+        (rephraseResults.length > 0 || isRephrasing)) {
       handleReprocess();
       // Blur the select to remove focus
       const selectElement = document.querySelector('[data-testid="select-rephrase-tone"]');
@@ -961,6 +1039,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       situationWithPrefix = "Write a message in the format of an email - " + originalText;
     }
 
+    // Cancel any ongoing quick reply request
+    if (quickReplyAbortControllerRef.current) {
+      quickReplyAbortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    const abortController = new AbortController();
+    quickReplyAbortControllerRef.current = abortController;
+
     // Show loading skeleton
     setIsGeneratingQuickReply(true);
     setMenuLevel("quick-replies-result");
@@ -977,6 +1064,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           language: quickRepliesLanguage,
           responseType: responseType
         }),
+        signal: abortController.signal,
       });
 
       const data = await response.json();
@@ -1002,7 +1090,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         setQuickReplyResults([newResult]);
         setSelectedQuickReplyResultId(newResult.id);
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Ignore abort errors (request was canceled intentionally)
+      if (error.name === 'AbortError') {
+        return;
+      }
       console.error("Help write error:", error);
       const newResult: QuickReplyResult = {
         id: `quick-reply-${Date.now()}`,
@@ -1013,7 +1105,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       setQuickReplyResults([newResult]);
       setSelectedQuickReplyResultId(newResult.id);
     } finally {
-      setIsGeneratingQuickReply(false);
+      // Only clear loading state if this request wasn't aborted
+      if (quickReplyAbortControllerRef.current === abortController) {
+        setIsGeneratingQuickReply(false);
+        quickReplyAbortControllerRef.current = null;
+      }
     }
   };
 
@@ -1030,6 +1126,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       situationWithPrefix = "Write a message in the format of an email - " + originalText;
     }
 
+    // Cancel any ongoing quick reply request
+    if (quickReplyAbortControllerRef.current) {
+      quickReplyAbortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    const abortController = new AbortController();
+    quickReplyAbortControllerRef.current = abortController;
+
     // Show loading state
     setIsGeneratingQuickReply(true);
 
@@ -1044,6 +1149,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           language: quickRepliesLanguage,
           responseType: responseType,
         }),
+        signal: abortController.signal,
       });
 
       const data = await response.json();
@@ -1068,7 +1174,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         setQuickReplyResults([...quickReplyResults, newResult]);
         setSelectedQuickReplyResultId(newResult.id);
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Ignore abort errors (request was canceled intentionally)
+      if (error.name === 'AbortError') {
+        return;
+      }
       console.error("Regenerate quick reply error:", error);
       const newResult: QuickReplyResult = {
         id: `quick-reply-${Date.now()}`,
@@ -1079,7 +1189,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       setQuickReplyResults([...quickReplyResults, newResult]);
       setSelectedQuickReplyResultId(newResult.id);
     } finally {
-      setIsGeneratingQuickReply(false);
+      // Only clear loading state if this request wasn't aborted
+      if (quickReplyAbortControllerRef.current === abortController) {
+        setIsGeneratingQuickReply(false);
+        quickReplyAbortControllerRef.current = null;
+      }
       setCopiedResultId(null);
     }
   };
@@ -1109,6 +1223,15 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const handleGrammarCheck = async () => {
     const originalText = selectedText || previewText || text;
 
+    // Cancel any ongoing grammar check request
+    if (grammarCheckAbortControllerRef.current) {
+      grammarCheckAbortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    const abortController = new AbortController();
+    grammarCheckAbortControllerRef.current = abortController;
+
     // Show loading skeleton
     setIsCheckingGrammar(true);
     setMenuLevel("grammar-check-result");
@@ -1124,6 +1247,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           text: originalText,
           tone: "grammar-check",
         }),
+        signal: abortController.signal,
       });
 
       const data = await response.json();
@@ -1148,7 +1272,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         setGrammarCheckResults([newResult]);
         setSelectedGrammarCheckResultId(newResult.id);
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Ignore abort errors (request was canceled intentionally)
+      if (error.name === 'AbortError') {
+        return;
+      }
       console.error("Grammar check error:", error);
       const newResult: GrammarCheckResult = {
         id: `grammar-check-result-${Date.now()}`,
@@ -1159,7 +1287,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       setGrammarCheckResults([newResult]);
       setSelectedGrammarCheckResultId(newResult.id);
     } finally {
-      setIsCheckingGrammar(false);
+      // Only clear loading state if this request wasn't aborted
+      if (grammarCheckAbortControllerRef.current === abortController) {
+        setIsCheckingGrammar(false);
+        grammarCheckAbortControllerRef.current = null;
+      }
     }
   };
 
@@ -1507,7 +1639,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <Languages className="w-4 h-4 text-white" />
             </div>
-            <div className="text-base font-semibold text-foreground">Translated message</div>
+            {isTranslating ? (
+              <Skeleton className="h-5 w-36" />
+            ) : (
+              <div className="text-base font-semibold text-foreground">Translated message</div>
+            )}
           </div>
           <button
             type="button"
@@ -1526,7 +1662,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <MessageSquare className="w-4 h-4 text-white" />
             </div>
-            <div className="text-base font-semibold text-foreground">Suggested message</div>
+            {isGeneratingQuickReply ? (
+              <Skeleton className="h-5 w-36" />
+            ) : (
+              <div className="text-base font-semibold text-foreground">Suggested message</div>
+            )}
           </div>
           <button
             type="button"
@@ -1545,7 +1685,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <CheckCircle2 className="w-4 h-4 text-white" />
             </div>
-            <div className="text-base font-semibold text-foreground">Grammar corrected</div>
+            {isCheckingGrammar ? (
+              <Skeleton className="h-5 w-36" />
+            ) : (
+              <div className="text-base font-semibold text-foreground">Grammar corrected</div>
+            )}
           </div>
           <button
             type="button"
@@ -1576,7 +1720,11 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <RefreshCw className="w-4 h-4 text-white" />
             </div>
-            <div className="text-base font-semibold text-foreground">{resultTitle}</div>
+            {isRephrasing ? (
+              <Skeleton className="h-5 w-32" />
+            ) : (
+              <div className="text-base font-semibold text-foreground">{resultTitle}</div>
+            )}
           </div>
           <button
             type="button"
