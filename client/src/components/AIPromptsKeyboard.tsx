@@ -1388,7 +1388,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <MessageSquare className="w-4 h-4 text-white" />
             </div>
-            <div className="text-base font-semibold text-foreground">Help me write</div>
+            <div className="text-base font-semibold text-foreground">Describe the situation</div>
           </div>
           <button
             type="button"
@@ -1799,7 +1799,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
         {/* Large prompt message */}
         <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-          <div className="text-center font-semibold text-[#22282a] text-[16px]">We'll turn your situation into a clear, well-written message.</div>
+          <div className="text-center font-semibold text-[#22282a] text-[16px]">Write a few words about the context and what you want to say. No need to write the full message.</div>
         </div>
       </div>
     );
