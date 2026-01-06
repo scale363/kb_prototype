@@ -1736,7 +1736,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               <Languages className="w-4 h-4 text-white" />
             </div>
             {isTranslating ? (
-              <Skeleton className="h-5 w-36" />
+              <div className="text-base font-semibold text-foreground">Translating…</div>
             ) : (
               <div className="text-base font-semibold text-foreground">Translated message</div>
             )}
@@ -1782,7 +1782,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               <CheckCircle2 className="w-4 h-4 text-white" />
             </div>
             {isCheckingGrammar ? (
-              <Skeleton className="h-5 w-36" />
+              <div className="text-base font-semibold text-foreground">Checking grammar…</div>
             ) : (
               <div className="text-base font-semibold text-foreground">Grammar corrected</div>
             )}
@@ -1817,7 +1817,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               <RefreshCw className="w-4 h-4 text-white" />
             </div>
             {isRephrasing ? (
-              <Skeleton className="h-5 w-32" />
+              <div className="text-base font-semibold text-foreground">Rephrasing…</div>
             ) : (
               <div className="text-base font-semibold text-foreground">{resultTitle}</div>
             )}
