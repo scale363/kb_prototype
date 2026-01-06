@@ -341,6 +341,10 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const [isRephrasing, setIsRephrasing] = useState<boolean>(false);
   const [translateCarouselApi, setTranslateCarouselApi] = useState<CarouselApi>();
   const [currentTranslateIndex, setCurrentTranslateIndex] = useState(0);
+  const [rephraseCarouselApi, setRephraseCarouselApi] = useState<CarouselApi>();
+  const [currentRephraseIndex, setCurrentRephraseIndex] = useState(0);
+  const [quickReplyCarouselApi, setQuickReplyCarouselApi] = useState<CarouselApi>();
+  const [currentQuickReplyIndex, setCurrentQuickReplyIndex] = useState(0);
 
   // Load saved quick replies language from localStorage or default to "en"
   const [quickRepliesLanguage, setQuickRepliesLanguage] = useState<string>(() => {
@@ -1051,6 +1055,58 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       translateCarouselApi.scrollTo(lastIndex);
     }
   }, [translateResults.length, translateCarouselApi]);
+
+  // Sync rephrase carousel with current index and selected result
+  useEffect(() => {
+    if (!rephraseCarouselApi) return;
+
+    const onSelect = () => {
+      const selectedIndex = rephraseCarouselApi.selectedScrollSnap();
+      setCurrentRephraseIndex(selectedIndex);
+      if (rephraseResults[selectedIndex]) {
+        setSelectedResultId(rephraseResults[selectedIndex].id);
+      }
+    };
+
+    rephraseCarouselApi.on("select", onSelect);
+    return () => {
+      rephraseCarouselApi.off("select", onSelect);
+    };
+  }, [rephraseCarouselApi, rephraseResults]);
+
+  // Auto-scroll to newest rephrase variant when a new one is added
+  useEffect(() => {
+    if (rephraseCarouselApi && rephraseResults.length > 0) {
+      const lastIndex = rephraseResults.length - 1;
+      rephraseCarouselApi.scrollTo(lastIndex);
+    }
+  }, [rephraseResults.length, rephraseCarouselApi]);
+
+  // Sync quick reply carousel with current index and selected result
+  useEffect(() => {
+    if (!quickReplyCarouselApi) return;
+
+    const onSelect = () => {
+      const selectedIndex = quickReplyCarouselApi.selectedScrollSnap();
+      setCurrentQuickReplyIndex(selectedIndex);
+      if (quickReplyResults[selectedIndex]) {
+        setSelectedQuickReplyResultId(quickReplyResults[selectedIndex].id);
+      }
+    };
+
+    quickReplyCarouselApi.on("select", onSelect);
+    return () => {
+      quickReplyCarouselApi.off("select", onSelect);
+    };
+  }, [quickReplyCarouselApi, quickReplyResults]);
+
+  // Auto-scroll to newest quick reply variant when a new one is added
+  useEffect(() => {
+    if (quickReplyCarouselApi && quickReplyResults.length > 0) {
+      const lastIndex = quickReplyResults.length - 1;
+      quickReplyCarouselApi.scrollTo(lastIndex);
+    }
+  }, [quickReplyResults.length, quickReplyCarouselApi]);
 
   // Auto-generate new quick reply variant when language changes in quick-replies-result mode
   useEffect(() => {
@@ -2175,12 +2231,12 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     );
   };
 
-  // Render result view with scrollable results
+  // Render result view with carousel
   const renderResult = () => {
     // Show skeleton while rephrasing
     if (isRephrasing) {
       return (
-        <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
+        <div ref={resultsContainerRef} className="p-3 space-y-0">
           <div className="py-4 px-3">
             <Skeleton className="h-4 w-full mb-2" />
             <Skeleton className="h-4 w-5/6 mb-2" />
@@ -2191,58 +2247,73 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
 
     return (
-      <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
-        {rephraseResults.map((result, index) => {
-          const isSelected = selectedResultId === result.id;
-          const isResultCopied = copiedResultId === result.id;
-          return (
-            <div key={result.id}>
-              <div
-                onClick={() => setSelectedResultId(result.id)}
+      <div className="flex flex-col">
+        <Carousel
+          setApi={setRephraseCarouselApi}
+          className="w-full"
+        >
+          <CarouselContent>
+            {rephraseResults.map((result, index) => {
+              const isResultCopied = copiedResultId === result.id;
+              return (
+                <CarouselItem key={result.id}>
+                  <div className="p-3">
+                    {/* Rephrase text with copy button */}
+                    <div className="relative py-4 px-3">
+                      <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
+                        {result.text}
+                      </div>
+                      {/* Copy button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyResult(result.id);
+                        }}
+                        className={`
+                          absolute top-3 right-2
+                          flex items-center justify-center h-7 w-7 rounded-md
+                          ${isResultCopied
+                            ? "bg-green-100 dark:bg-green-950/50"
+                            : "bg-background/80 hover:bg-accent/50"}
+                          active:scale-[0.95] transition-all duration-75 touch-manipulation
+                        `}
+                        data-testid={`button-copy-${result.id}`}
+                        aria-label="Copy"
+                        title="Copy"
+                      >
+                        {isResultCopied ? (
+                          <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+        </Carousel>
+
+        {/* Carousel indicators */}
+        {rephraseResults.length > 1 && (
+          <div className="flex justify-center gap-1.5 py-3">
+            {rephraseResults.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => rephraseCarouselApi?.scrollTo(index)}
                 className={`
-                  relative py-4 px-3 cursor-pointer
-                  ${isSelected ? "opacity-100" : "opacity-50"}
-                  active:scale-[0.99] transition-all duration-75 touch-manipulation
+                  h-2 rounded-full transition-all duration-200
+                  ${index === currentRephraseIndex
+                    ? "w-6 bg-[#0b9786]"
+                    : "w-2 bg-muted-foreground/30"}
                 `}
-              >
-                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
-                  {result.text}
-                </div>
-                {/* Copy button - only show when selected */}
-                {isSelected && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopyResult(result.id);
-                    }}
-                    className={`
-                      absolute top-3 right-2
-                      flex items-center justify-center h-7 w-7 rounded-md
-                      ${isResultCopied
-                        ? "bg-green-100 dark:bg-green-950/50"
-                        : "bg-background/80 hover:bg-accent/50"}
-                      active:scale-[0.95] transition-all duration-75 touch-manipulation
-                    `}
-                    data-testid={`button-copy-${result.id}`}
-                    aria-label="Copy"
-                    title="Copy"
-                  >
-                    {isResultCopied ? (
-                      <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                    )}
-                  </button>
-                )}
-              </div>
-              {/* Divider between variants */}
-              {index < rephraseResults.length - 1 && (
-                <div className="border-b border-border" />
-              )}
-            </div>
-          );
-        })}
+                aria-label={`Go to variant ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     );
   };
@@ -2476,7 +2547,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     // Show skeleton while generating
     if (isGeneratingQuickReply) {
       return (
-        <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
+        <div ref={resultsContainerRef} className="p-3 space-y-0">
           <div className="py-4 px-3 animate-pulse">
             <div className="text-muted-foreground/60 space-y-3">
               <div className="text-sm space-y-1.5">
@@ -2493,58 +2564,73 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
 
     return (
-      <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
-        {quickReplyResults.map((result, index) => {
-          const isSelected = selectedQuickReplyResultId === result.id;
-          const isResultCopied = copiedResultId === result.id;
-          return (
-            <div key={result.id}>
-              <div
-                onClick={() => setSelectedQuickReplyResultId(result.id)}
+      <div className="flex flex-col">
+        <Carousel
+          setApi={setQuickReplyCarouselApi}
+          className="w-full"
+        >
+          <CarouselContent>
+            {quickReplyResults.map((result, index) => {
+              const isResultCopied = copiedResultId === result.id;
+              return (
+                <CarouselItem key={result.id}>
+                  <div className="p-3">
+                    {/* Quick reply text with copy button */}
+                    <div className="relative py-4 px-3">
+                      <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
+                        {result.text}
+                      </div>
+                      {/* Copy button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyResult(result.id);
+                        }}
+                        className={`
+                          absolute top-3 right-2
+                          flex items-center justify-center h-7 w-7 rounded-md
+                          ${isResultCopied
+                            ? "bg-green-100 dark:bg-green-950/50"
+                            : "bg-background/80 hover:bg-accent/50"}
+                          active:scale-[0.95] transition-all duration-75 touch-manipulation
+                        `}
+                        data-testid={`button-copy-quick-reply-${result.id}`}
+                        aria-label="Copy"
+                        title="Copy"
+                      >
+                        {isResultCopied ? (
+                          <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+        </Carousel>
+
+        {/* Carousel indicators */}
+        {quickReplyResults.length > 1 && (
+          <div className="flex justify-center gap-1.5 py-3">
+            {quickReplyResults.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => quickReplyCarouselApi?.scrollTo(index)}
                 className={`
-                  relative py-4 px-3 cursor-pointer
-                  ${isSelected ? "opacity-100" : "opacity-50"}
-                  active:scale-[0.99] transition-all duration-75 touch-manipulation
+                  h-2 rounded-full transition-all duration-200
+                  ${index === currentQuickReplyIndex
+                    ? "w-6 bg-[#0b9786]"
+                    : "w-2 bg-muted-foreground/30"}
                 `}
-              >
-                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
-                  {result.text}
-                </div>
-                {/* Copy button - only show when selected */}
-                {isSelected && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopyResult(result.id);
-                    }}
-                    className={`
-                      absolute top-3 right-2
-                      flex items-center justify-center h-7 w-7 rounded-md
-                      ${isResultCopied
-                        ? "bg-green-100 dark:bg-green-950/50"
-                        : "bg-background/80 hover:bg-accent/50"}
-                      active:scale-[0.95] transition-all duration-75 touch-manipulation
-                    `}
-                    data-testid={`button-copy-quick-reply-${result.id}`}
-                    aria-label="Copy"
-                    title="Copy"
-                  >
-                    {isResultCopied ? (
-                      <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                    )}
-                  </button>
-                )}
-              </div>
-              {/* Divider between variants */}
-              {index < quickReplyResults.length - 1 && (
-                <div className="border-b border-border" />
-              )}
-            </div>
-          );
-        })}
+                aria-label={`Go to variant ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     );
   };
