@@ -626,7 +626,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       }
     } catch (error: any) {
       // Ignore abort errors (request was canceled intentionally)
-      if (error.name === 'AbortError' || error.message === 'User cancelled') {
+      if (error.name === 'AbortError' || error.message === 'User cancelled' || error === 'User cancelled') {
         return;
       }
       console.error("Rephrase error:", error);
@@ -744,7 +744,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       }
     } catch (error: any) {
       // Ignore abort errors (request was canceled intentionally)
-      if (error.name === 'AbortError' || error.message === 'User cancelled') {
+      if (error.name === 'AbortError' || error.message === 'User cancelled' || error === 'User cancelled') {
         return;
       }
       console.error("Reprocess error:", error);
@@ -846,7 +846,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       }
     } catch (error: any) {
       // Ignore abort errors (request was canceled intentionally)
-      if (error.name === 'AbortError' || error.message === 'User cancelled') {
+      if (error.name === 'AbortError' || error.message === 'User cancelled' || error === 'User cancelled') {
         return;
       }
       console.error("Translation error:", error);
@@ -922,7 +922,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       }
     } catch (error: any) {
       // Ignore abort errors (request was canceled intentionally)
-      if (error.name === 'AbortError' || error.message === 'User cancelled') {
+      if (error.name === 'AbortError' || error.message === 'User cancelled' || error === 'User cancelled') {
         return;
       }
       console.error("Retranslation error:", error);
@@ -1092,7 +1092,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       }
     } catch (error: any) {
       // Ignore abort errors (request was canceled intentionally)
-      if (error.name === 'AbortError' || error.message === 'User cancelled') {
+      if (error.name === 'AbortError' || error.message === 'User cancelled' || error === 'User cancelled') {
         return;
       }
       console.error("Help write error:", error);
@@ -1176,7 +1176,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       }
     } catch (error: any) {
       // Ignore abort errors (request was canceled intentionally)
-      if (error.name === 'AbortError' || error.message === 'User cancelled') {
+      if (error.name === 'AbortError' || error.message === 'User cancelled' || error === 'User cancelled') {
         return;
       }
       console.error("Regenerate quick reply error:", error);
@@ -1274,7 +1274,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       }
     } catch (error: any) {
       // Ignore abort errors (request was canceled intentionally)
-      if (error.name === 'AbortError' || error.message === 'User cancelled') {
+      if (error.name === 'AbortError' || error.message === 'User cancelled' || error === 'User cancelled') {
         return;
       }
       console.error("Grammar check error:", error);
