@@ -572,6 +572,21 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setSelectedTone(toneId);
     const originalText = selectedText || previewText || text;
 
+    // Check message length
+    if (originalText.length > 1000) {
+      setMenuLevel("result");
+      const newResult: RephraseResult = {
+        id: `result-${Date.now()}`,
+        text: "Message is too long. Maximum 1000 characters allowed.",
+        tone: toneId,
+        language: "",
+        timestamp: Date.now(),
+      };
+      setRephraseResults([newResult]);
+      setSelectedResultId(newResult.id);
+      return;
+    }
+
     // Cancel any ongoing rephrase request
     if (rephraseAbortControllerRef.current && !rephraseAbortControllerRef.current.signal.aborted) {
       rephraseAbortControllerRef.current.abort("User cancelled");
@@ -693,6 +708,20 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
     const originalText = selectedText || previewText || text;
 
+    // Check message length
+    if (originalText.length > 1000) {
+      const newResult: RephraseResult = {
+        id: `result-${Date.now()}`,
+        text: "Message is too long. Maximum 1000 characters allowed.",
+        tone: selectedTone,
+        language: "",
+        timestamp: Date.now(),
+      };
+      setRephraseResults([...rephraseResults, newResult]);
+      setSelectedResultId(newResult.id);
+      return;
+    }
+
     // Cancel any ongoing rephrase request
     if (rephraseAbortControllerRef.current && !rephraseAbortControllerRef.current.signal.aborted) {
       rephraseAbortControllerRef.current.abort("User cancelled");
@@ -791,6 +820,21 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const handleTranslate = async () => {
     const originalText = selectedText || previewText || text;
 
+    // Check message length
+    if (originalText.length > 1000) {
+      setMenuLevel("translate-result");
+      const newResult: TranslateResult = {
+        id: `translate-result-${Date.now()}`,
+        text: "Message is too long. Maximum 1000 characters allowed.",
+        originalText: originalText,
+        language: translateLanguage,
+        timestamp: Date.now(),
+      };
+      setTranslateResults([newResult]);
+      setSelectedTranslateResultId(newResult.id);
+      return;
+    }
+
     // Cancel any ongoing translate request
     if (translateAbortControllerRef.current && !translateAbortControllerRef.current.signal.aborted) {
       translateAbortControllerRef.current.abort("User cancelled");
@@ -870,6 +914,20 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   const handleRetranslate = async () => {
     const originalText = selectedText || previewText || text;
+
+    // Check message length
+    if (originalText.length > 1000) {
+      const newResult: TranslateResult = {
+        id: `translate-result-${Date.now()}`,
+        text: "Message is too long. Maximum 1000 characters allowed.",
+        originalText: originalText,
+        language: translateLanguage,
+        timestamp: Date.now(),
+      };
+      setTranslateResults([...translateResults, newResult]);
+      setSelectedTranslateResultId(newResult.id);
+      return;
+    }
 
     // Cancel any ongoing translate request
     if (translateAbortControllerRef.current && !translateAbortControllerRef.current.signal.aborted) {
@@ -1031,6 +1089,20 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setSelectedQuickReplyAction(actionId);
     const originalText = selectedText || previewText || text;
 
+    // Check message length
+    if (originalText.length > 1000) {
+      setMenuLevel("quick-replies-result");
+      const newResult: QuickReplyResult = {
+        id: `quick-reply-${Date.now()}`,
+        text: "Message is too long. Maximum 1000 characters allowed.",
+        action: actionId,
+        timestamp: Date.now(),
+      };
+      setQuickReplyResults([newResult]);
+      setSelectedQuickReplyResultId(newResult.id);
+      return;
+    }
+
     // Cancel any ongoing quick reply request
     if (quickReplyAbortControllerRef.current && !quickReplyAbortControllerRef.current.signal.aborted) {
       quickReplyAbortControllerRef.current.abort("User cancelled");
@@ -1109,6 +1181,19 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     if (!selectedQuickReplyAction) return;
 
     const originalText = selectedText || previewText || text;
+
+    // Check message length
+    if (originalText.length > 1000) {
+      const newResult: QuickReplyResult = {
+        id: `quick-reply-${Date.now()}`,
+        text: "Message is too long. Maximum 1000 characters allowed.",
+        action: selectedQuickReplyAction,
+        timestamp: Date.now(),
+      };
+      setQuickReplyResults([...quickReplyResults, newResult]);
+      setSelectedQuickReplyResultId(newResult.id);
+      return;
+    }
 
     // Cancel any ongoing quick reply request
     if (quickReplyAbortControllerRef.current && !quickReplyAbortControllerRef.current.signal.aborted) {
@@ -1207,6 +1292,20 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const handleGrammarCheck = async () => {
     const originalText = selectedText || previewText || text;
 
+    // Check message length
+    if (originalText.length > 1000) {
+      setMenuLevel("grammar-check-result");
+      const newResult: GrammarCheckResult = {
+        id: `grammar-check-result-${Date.now()}`,
+        text: "Message is too long. Maximum 1000 characters allowed.",
+        originalText: originalText,
+        timestamp: Date.now(),
+      };
+      setGrammarCheckResults([newResult]);
+      setSelectedGrammarCheckResultId(newResult.id);
+      return;
+    }
+
     // Cancel any ongoing grammar check request
     if (grammarCheckAbortControllerRef.current && !grammarCheckAbortControllerRef.current.signal.aborted) {
       grammarCheckAbortControllerRef.current.abort("User cancelled");
@@ -1281,6 +1380,19 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   const handleRegenerateGrammarCheck = async () => {
     const originalText = selectedText || previewText || text;
+
+    // Check message length
+    if (originalText.length > 1000) {
+      const newResult: GrammarCheckResult = {
+        id: `grammar-check-result-${Date.now()}`,
+        text: "Message is too long. Maximum 1000 characters allowed.",
+        originalText: originalText,
+        timestamp: Date.now(),
+      };
+      setGrammarCheckResults([...grammarCheckResults, newResult]);
+      setSelectedGrammarCheckResultId(newResult.id);
+      return;
+    }
 
     // Show loading state
     setIsCheckingGrammar(true);
@@ -1647,7 +1759,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
               <MessageSquare className="w-4 h-4 text-white" />
             </div>
             {isGeneratingQuickReply ? (
-              <Skeleton className="h-5 w-36" />
+              <div className="text-base font-semibold text-foreground">Generating your message…</div>
             ) : (
               <div className="text-base font-semibold text-foreground">Suggested message</div>
             )}
@@ -2032,7 +2144,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   // Render result view with scrollable results
   const renderResult = () => {
     // Show skeleton while rephrasing
-    if (isRephrasing && rephraseResults.length === 0) {
+    if (isRephrasing) {
       return (
         <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
           <div className="py-4 px-3">
@@ -2318,8 +2430,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
           <div className="py-4 px-3 animate-pulse">
             <div className="text-muted-foreground/60 space-y-3">
-              <p className="text-sm font-medium">Generating your message…</p>
-              <div className="text-xs space-y-1.5">
+              <div className="text-sm space-y-1.5">
                 <p className="font-medium mb-2">People often write:</p>
                 <p>• delivery complaint — pizza cold</p>
                 <p>• question to the consulate — working hours</p>
