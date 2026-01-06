@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clipboard, Trash2, Keyboard } from "lucide-react";
+import { Clipboard, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TextInputArea } from "@/components/TextInputArea";
 import { KeyboardContainer } from "@/components/KeyboardContainer";
@@ -9,7 +9,6 @@ export default function Home() {
   const [cursorPosition, setCursorPosition] = useState(0);
   const [selectedText, setSelectedText] = useState("");
   const [previewText, setPreviewText] = useState("");
-  const [blockSystemKeyboard, setBlockSystemKeyboard] = useState(true);
 
   useEffect(() => {
     const preventZoom = (e: TouchEvent) => {
@@ -59,10 +58,6 @@ export default function Home() {
     window.dispatchEvent(event);
   };
 
-  const toggleSystemKeyboard = () => {
-    setBlockSystemKeyboard(!blockSystemKeyboard);
-  };
-
   return (
     <div
       className="flex flex-col h-screen bg-background overflow-hidden"
@@ -99,16 +94,6 @@ export default function Home() {
             >
               <Clipboard className="h-5 w-5" />
             </Button>
-            <Button
-              size="icon"
-              variant={blockSystemKeyboard ? "ghost" : "default"}
-              onClick={toggleSystemKeyboard}
-              data-testid="button-toggle-keyboard"
-              aria-label={blockSystemKeyboard ? "Enable system keyboard" : "Disable system keyboard"}
-              title={blockSystemKeyboard ? "Включить системную клавиатуру" : "Выключить системную клавиатуру"}
-            >
-              <Keyboard className="h-5 w-5" />
-            </Button>
           </div>
           {text.length > 0 && (
             <span className="text-xs text-muted-foreground" data-testid="text-character-count">
@@ -126,7 +111,7 @@ export default function Home() {
           cursorPosition={cursorPosition}
           onCursorChange={setCursorPosition}
           onSelectionChange={setSelectedText}
-          readOnly={blockSystemKeyboard}
+          readOnly={false}
         />
       </div>
 
