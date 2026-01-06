@@ -1329,7 +1329,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <div className="text-base font-semibold text-foreground">What you want to say?</div>
+            <div className="text-base font-semibold text-foreground">Your message</div>
           </div>
           {onSwitchKeyboard && (
             <button
@@ -1526,7 +1526,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <MessageSquare className="w-4 h-4 text-white" />
             </div>
-            <div className="text-base font-semibold text-foreground">Message for your situation</div>
+            <div className="text-base font-semibold text-foreground">Suggested message</div>
           </div>
           <button
             type="button"
@@ -1561,13 +1561,13 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       // Determine the title based on selected tone
       let resultTitle = "How should it sound?";
       if (selectedTone === "work-safe") {
-        resultTitle = "Safe to send at work";
+        resultTitle = "Improved message";
       } else if (selectedTone === "informal") {
-        resultTitle = "Informal version";
+        resultTitle = "Improved message";
       } else if (selectedTone === "short-clear") {
-        resultTitle = "Shorter version";
+        resultTitle = "Improved message";
       } else if (selectedTone === "make-longer") {
-        resultTitle = "Longer version";
+        resultTitle = "Improved message";
       }
 
       return (
@@ -1729,10 +1729,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             <Clipboard className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
-
         {/* Large prompt message */}
         <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-          <div className="text-center text-[18px] font-semibold text-[#22282a]">Make your message sound natural, polite, and professional.</div>
+          <div className="text-center font-semibold text-[#22282a] text-[16px]">Make your message sound natural, polite, and professional.</div>
         </div>
       </div>
     );
