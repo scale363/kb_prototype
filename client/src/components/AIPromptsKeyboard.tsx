@@ -14,6 +14,12 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DiffText } from "@/components/DiffText";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 
 // Умная функция для усечения текста, которая не режет слова и показывает начало и конец
 function truncateText(text: string, maxLength: number = 100): string {
@@ -333,6 +339,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const [selectedTranslateResultId, setSelectedTranslateResultId] = useState<string | null>(null);
   const [isTranslating, setIsTranslating] = useState<boolean>(false);
   const [isRephrasing, setIsRephrasing] = useState<boolean>(false);
+  const [translateCarouselApi, setTranslateCarouselApi] = useState<CarouselApi>();
+  const [currentTranslateIndex, setCurrentTranslateIndex] = useState(0);
 
   // Load saved quick replies language from localStorage or default to "en"
   const [quickRepliesLanguage, setQuickRepliesLanguage] = useState<string>(() => {
@@ -1017,6 +1025,32 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     }
     prevTranslateLanguageRef.current = translateLanguage;
   }, [translateLanguage]);
+
+  // Sync carousel with current index and selected result
+  useEffect(() => {
+    if (!translateCarouselApi) return;
+
+    const onSelect = () => {
+      const selectedIndex = translateCarouselApi.selectedScrollSnap();
+      setCurrentTranslateIndex(selectedIndex);
+      if (translateResults[selectedIndex]) {
+        setSelectedTranslateResultId(translateResults[selectedIndex].id);
+      }
+    };
+
+    translateCarouselApi.on("select", onSelect);
+    return () => {
+      translateCarouselApi.off("select", onSelect);
+    };
+  }, [translateCarouselApi, translateResults]);
+
+  // Auto-scroll to newest translation variant when a new one is added
+  useEffect(() => {
+    if (translateCarouselApi && translateResults.length > 0) {
+      const lastIndex = translateResults.length - 1;
+      translateCarouselApi.scrollTo(lastIndex);
+    }
+  }, [translateResults.length, translateCarouselApi]);
 
   // Auto-generate new quick reply variant when language changes in quick-replies-result mode
   useEffect(() => {
@@ -2265,12 +2299,12 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     );
   };
 
-  // Render translate result view with scrollable results
+  // Render translate result view with carousel
   const renderTranslateResult = () => {
     // Show skeleton while translating
     if (isTranslating) {
       return (
-        <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
+        <div ref={resultsContainerRef} className="p-3 space-y-0">
           <div className="py-4 px-3">
             <Skeleton className="h-4 w-full mb-2" />
             <Skeleton className="h-4 w-5/6 mb-2" />
@@ -2280,59 +2314,81 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       );
     }
 
+    const selectedLangLabel = LANGUAGES.find(l => l.code === translateLanguage)?.label || translateLanguage;
+
     return (
-      <div ref={resultsContainerRef} className="p-3 space-y-0 overflow-y-auto">
-        {translateResults.map((result, index) => {
-          const isSelected = selectedTranslateResultId === result.id;
-          const isResultCopied = copiedResultId === result.id;
-          return (
-            <div key={result.id}>
-              <div
-                onClick={() => setSelectedTranslateResultId(result.id)}
+      <div className="flex flex-col">
+        <Carousel
+          setApi={setTranslateCarouselApi}
+          className="w-full"
+        >
+          <CarouselContent>
+            {translateResults.map((result, index) => {
+              const isResultCopied = copiedResultId === result.id;
+              return (
+                <CarouselItem key={result.id}>
+                  <div className="p-3">
+                    {/* Language header */}
+                    <div className="text-xs font-medium text-muted-foreground mb-3 text-center">
+                      {selectedLangLabel}
+                    </div>
+
+                    {/* Translation text with copy button */}
+                    <div className="relative py-4 px-3">
+                      <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
+                        {result.text}
+                      </div>
+                      {/* Copy button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyResult(result.id);
+                        }}
+                        className={`
+                          absolute top-3 right-2
+                          flex items-center justify-center h-7 w-7 rounded-md
+                          ${isResultCopied
+                            ? "bg-green-100 dark:bg-green-950/50"
+                            : "bg-background/80 hover:bg-accent/50"}
+                          active:scale-[0.95] transition-all duration-75 touch-manipulation
+                        `}
+                        data-testid={`button-copy-translate-${result.id}`}
+                        aria-label="Copy"
+                        title="Copy"
+                      >
+                        {isResultCopied ? (
+                          <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+        </Carousel>
+
+        {/* Dot indicators */}
+        {translateResults.length > 1 && (
+          <div className="flex justify-center gap-2 py-3">
+            {translateResults.map((result, index) => (
+              <button
+                key={result.id}
+                onClick={() => translateCarouselApi?.scrollTo(index)}
                 className={`
-                  relative py-4 px-3 cursor-pointer
-                  ${isSelected ? "opacity-100" : "opacity-50"}
-                  active:scale-[0.99] transition-all duration-75 touch-manipulation
+                  h-2 rounded-full transition-all duration-200
+                  ${index === currentTranslateIndex
+                    ? "w-6 bg-[#0b9786]"
+                    : "w-2 bg-border hover:bg-border/80"}
                 `}
-              >
-                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
-                  {result.text}
-                </div>
-                {/* Copy button - only show when selected */}
-                {isSelected && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopyResult(result.id);
-                    }}
-                    className={`
-                      absolute top-3 right-2
-                      flex items-center justify-center h-7 w-7 rounded-md
-                      ${isResultCopied
-                        ? "bg-green-100 dark:bg-green-950/50"
-                        : "bg-background/80 hover:bg-accent/50"}
-                      active:scale-[0.95] transition-all duration-75 touch-manipulation
-                    `}
-                    data-testid={`button-copy-translate-${result.id}`}
-                    aria-label="Copy"
-                    title="Copy"
-                  >
-                    {isResultCopied ? (
-                      <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                    )}
-                  </button>
-                )}
-              </div>
-              {/* Divider between variants */}
-              {index < translateResults.length - 1 && (
-                <div className="border-b border-border" />
-              )}
-            </div>
-          );
-        })}
+                aria-label={`Go to variant ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     );
   };
