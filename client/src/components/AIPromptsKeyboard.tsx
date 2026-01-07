@@ -2148,48 +2148,28 @@ E.g.
     );
   };
 
-  // Render quick reply action buttons for Help me write
+  // Render response type buttons for Help me write (Chat message and Email)
   const renderQuickReplyButtons = () => {
-    // Split into 2 rows of 4 buttons each
-    const firstRow = QUICK_REPLY_ACTIONS.slice(0, 4);
-    const secondRow = QUICK_REPLY_ACTIONS.slice(4, 8);
-
     return (
       <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
         <div className="flex flex-col gap-2 min-w-min">
-          {/* First row - 4 buttons */}
+          {/* Single row - 2 buttons (Chat message and Email) */}
           <div className="flex gap-2">
-            {firstRow.map((action) => (
+            {RESPONSE_TYPES.map((type) => (
               <button
-                key={action.id}
+                key={type.code}
                 type="button"
-                onClick={() => handleQuickReplyActionSelect(action.id)}
+                onClick={() => {
+                  setResponseType(type.code);
+                  handleQuickReplyActionSelect("help-me-write");
+                }}
                 className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
-                data-testid={`button-quick-reply-${action.id}`}
-                aria-label={action.label}
+                data-testid={`button-response-type-${type.code}`}
+                aria-label={type.label}
               >
-                <span className="text-lg">{action.emoji}</span>
+                <span className="text-lg">{type.emoji}</span>
                 <span className="text-sm font-medium text-foreground whitespace-nowrap">
-                  {action.label}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Second row - 4 buttons */}
-          <div className="flex gap-2">
-            {secondRow.map((action) => (
-              <button
-                key={action.id}
-                type="button"
-                onClick={() => handleQuickReplyActionSelect(action.id)}
-                className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
-                data-testid={`button-quick-reply-${action.id}`}
-                aria-label={action.label}
-              >
-                <span className="text-lg">{action.emoji}</span>
-                <span className="text-sm font-medium text-foreground whitespace-nowrap">
-                  {action.label}
+                  {type.label}
                 </span>
               </button>
             ))}
