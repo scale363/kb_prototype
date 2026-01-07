@@ -1704,7 +1704,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       const tooltip = `Describe the situation and what you want to say.
 
 E.g.
-"email to embassy — ask visa O-1 requirements"
+"email to embassy — ask visa requirements"
 "project invitation, politely decline"
 "delivery complaint: pizza cold"`;
 
@@ -2196,9 +2196,10 @@ E.g.
             <Clipboard className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
+
         {/* Large prompt message */}
         <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-          <div className="text-center font-semibold text-[#22282a] text-[16px]">Paste your message to fix grammar, spelling, and punctuation. The wording and tone will stay the same.</div>
+          <div className="text-center text-[18px] font-semibold text-[#22282a]">Paste your message to fix grammar, spelling, and punctuation. The wording and tone will stay the same.</div>
         </div>
       </div>
     );
