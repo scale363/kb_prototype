@@ -76,19 +76,17 @@ export async function registerRoutes(
         text: {
           format: {
             type: "json_schema",
-            json_schema: {
-              name: "rewrite_response",
-              strict: true,
-              schema: {
-                type: "object",
-                properties: {
-                  rewritten_text: {
-                    type: "string"
-                  }
-                },
-                required: ["rewritten_text"],
-                additionalProperties: false
-              }
+            name: "rewrite_response",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                rewritten_text: {
+                  type: "string"
+                }
+              },
+              required: ["rewritten_text"],
+              additionalProperties: false
             }
           }
         },
@@ -170,19 +168,17 @@ export async function registerRoutes(
         text: {
           format: {
             type: "json_schema",
-            json_schema: {
-              name: "translate_response",
-              strict: true,
-              schema: {
-                type: "object",
-                properties: {
-                  rewritten_text: {
-                    type: "string"
-                  }
-                },
-                required: ["rewritten_text"],
-                additionalProperties: false
-              }
+            name: "translate_response",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                rewritten_text: {
+                  type: "string"
+                }
+              },
+              required: ["rewritten_text"],
+              additionalProperties: false
             }
           }
         },
