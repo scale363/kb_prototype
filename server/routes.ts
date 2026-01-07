@@ -66,20 +66,34 @@ export async function registerRoutes(
           {
             role: "user",
             content: [
-              { type: "input_text", text: text }
+              { type: "input_json", json: { text: text } }
             ]
           }
         ],
         text: {
           format: {
-            type: "text"
+            type: "json_schema",
+            json_schema: {
+              name: "rewrite_response",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  rewritten_text: {
+                    type: "string"
+                  }
+                },
+                required: ["rewritten_text"],
+                additionalProperties: false
+              }
+            }
           }
         },
         max_output_tokens: 2048,
         store: true
       });
 
-      const rephrasedText = response.output_text || response.output?.[0]?.content?.[0]?.text || "";
+      const rephrasedText = response.output_text || response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
 
       res.json({
         success: true,
@@ -127,20 +141,34 @@ export async function registerRoutes(
           {
             role: "user",
             content: [
-              { type: "input_text", text: text }
+              { type: "input_json", json: { text: text } }
             ]
           }
         ],
         text: {
           format: {
-            type: "text"
+            type: "json_schema",
+            json_schema: {
+              name: "translate_response",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  rewritten_text: {
+                    type: "string"
+                  }
+                },
+                required: ["rewritten_text"],
+                additionalProperties: false
+              }
+            }
           }
         },
         max_output_tokens: 2048,
         store: true
       });
 
-      const translatedText = response.output_text || response.output?.[0]?.content?.[0]?.text || "";
+      const translatedText = response.output_text || response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
 
       res.json({
         success: true,
