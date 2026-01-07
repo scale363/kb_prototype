@@ -58,6 +58,9 @@ export async function registerRoutes(
       }
 
       // Use stored prompt by ID with responses.create (no variables needed)
+      const inputText = JSON.stringify({ text: text });
+      console.log("Rephrase input:", inputText);
+
       const response = await (openai as any).responses.create({
         prompt: {
           id: promptId
@@ -66,7 +69,7 @@ export async function registerRoutes(
           {
             role: "user",
             content: [
-              { type: "input_text", text: JSON.stringify({ text: text }) }
+              { type: "input_text", text: inputText }
             ]
           }
         ],
@@ -93,13 +96,22 @@ export async function registerRoutes(
         store: true
       });
 
+      // Extract rewritten_text from response (it's a JSON string)
+      const rewrittenTextJson = response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
+      console.log("Rephrase raw response:", rewrittenTextJson);
+
       let rephrasedText = "";
-      try {
-        const rawResponse = response.output_text || response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
-        const parsedResponse = JSON.parse(rawResponse);
-        rephrasedText = parsedResponse.text || "";
-      } catch (e) {
-        rephrasedText = response.output_text || response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
+      if (rewrittenTextJson) {
+        try {
+          const parsed = JSON.parse(rewrittenTextJson);
+          rephrasedText = parsed.text || "";
+          console.log("Rephrase parsed text:", rephrasedText);
+        } catch (e) {
+          console.error("Failed to parse rewritten_text:", e);
+          rephrasedText = rewrittenTextJson;
+        }
+      } else {
+        rephrasedText = response.output_text || "";
       }
 
       res.json({
@@ -137,6 +149,9 @@ export async function registerRoutes(
       const language = LANGUAGE_NAMES[targetLanguage] || targetLanguage || "English";
 
       // Call OpenAI API using stored prompt by ID with responses.create
+      const inputText = JSON.stringify({ text: text });
+      console.log("Translate input:", inputText);
+
       const response = await (openai as any).responses.create({
         prompt: {
           id: "pmpt_695b5864d7988190897405dee09f9d0e0e8bed38e3fbc0ed",
@@ -148,7 +163,7 @@ export async function registerRoutes(
           {
             role: "user",
             content: [
-              { type: "input_text", text: JSON.stringify({ text: text }) }
+              { type: "input_text", text: inputText }
             ]
           }
         ],
@@ -175,13 +190,22 @@ export async function registerRoutes(
         store: true
       });
 
+      // Extract rewritten_text from response (it's a JSON string)
+      const rewrittenTextJson = response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
+      console.log("Translate raw response:", rewrittenTextJson);
+
       let translatedText = "";
-      try {
-        const rawResponse = response.output_text || response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
-        const parsedResponse = JSON.parse(rawResponse);
-        translatedText = parsedResponse.text || "";
-      } catch (e) {
-        translatedText = response.output_text || response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
+      if (rewrittenTextJson) {
+        try {
+          const parsed = JSON.parse(rewrittenTextJson);
+          translatedText = parsed.text || "";
+          console.log("Translate parsed text:", translatedText);
+        } catch (e) {
+          console.error("Failed to parse rewritten_text:", e);
+          translatedText = rewrittenTextJson;
+        }
+      } else {
+        translatedText = response.output_text || "";
       }
 
       res.json({
