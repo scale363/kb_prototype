@@ -63,13 +63,6 @@ export default function Home() {
       className="flex flex-col h-screen bg-background overflow-hidden"
       style={{ touchAction: "manipulation" }}
     >
-      {/* Зафиксированный заголовок с разделительной линией */}
-      <header className="flex-shrink-0 flex items-center justify-center p-3 border-b border-border bg-[#f4f6f600]">
-        <h1 className="text-lg font-semibold text-foreground" data-testid="text-app-title">
-          AI Keyboard
-        </h1>
-      </header>
-
       {/* Панель кнопок управления над полем ввода */}
       <div className="flex-shrink-0 border-b border-border bg-[#f4f6f600] px-4 py-2">
         <div className="flex items-center justify-between gap-2">
