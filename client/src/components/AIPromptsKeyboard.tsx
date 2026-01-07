@@ -2097,7 +2097,7 @@ E.g.
         </div>
         {/* Large prompt message */}
         <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-          <div className="text-center font-semibold text-[#22282a] text-[16px]">Make your message sound natural, polite, and professional.</div>
+          <div className="text-center font-semibold text-[#22282a] text-[16px]">Paste the message you want to rephrase. We’ll help adjust the tone and wording.</div>
         </div>
       </div>
     );
@@ -2116,7 +2116,7 @@ E.g.
               {displayPreviewText}
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground/60 flex-1 mt-[4px] mb-[4px]">Paste the message you received</div>
+            <div className="text-sm text-muted-foreground/60 flex-1 mt-[4px] mb-[4px]">Paste the message to translate</div>
           )}
           <button
             type="button"
@@ -2131,7 +2131,7 @@ E.g.
         {/* Large prompt message */}
         <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
           <div className="text-center font-semibold text-[#22282a] text-[16px]">
-            Understand the message clearly in your language.
+            Paste any message you want to translate. The meaning and tone will stay the same.
           </div>
         </div>
       </div>
@@ -2196,10 +2196,9 @@ E.g.
             <Clipboard className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
-
         {/* Large prompt message */}
         <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-          <div className="text-center text-[18px] font-semibold text-[#22282a]">Fix grammar, spelling, and punctuation without rewriting your message.</div>
+          <div className="text-center font-semibold text-[#22282a] text-[16px]">Paste your message to fix grammar, spelling, and punctuation. The wording and tone will stay the same.</div>
         </div>
       </div>
     );
