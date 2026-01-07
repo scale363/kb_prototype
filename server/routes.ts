@@ -94,22 +94,16 @@ export async function registerRoutes(
         store: true
       });
 
-      // Extract rewritten_text from response (it's a JSON string)
-      const rewrittenTextJson = response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
-      console.log("Rephrase raw response:", rewrittenTextJson);
+      // Extract rewritten_text from response
+      const outputText = response.output_text || "";
+      console.log("Rephrase raw response:", outputText);
 
       let rephrasedText = "";
-      if (rewrittenTextJson) {
-        try {
-          const parsed = JSON.parse(rewrittenTextJson);
-          rephrasedText = parsed.text || "";
-          console.log("Rephrase parsed text:", rephrasedText);
-        } catch (e) {
-          console.error("Failed to parse rewritten_text:", e);
-          rephrasedText = rewrittenTextJson;
-        }
-      } else {
-        rephrasedText = response.output_text || "";
+      try {
+        const parsed = JSON.parse(outputText);
+        rephrasedText = parsed.rewritten_text || outputText;
+      } catch (e) {
+        rephrasedText = outputText;
       }
 
       res.json({
@@ -186,22 +180,16 @@ export async function registerRoutes(
         store: true
       });
 
-      // Extract rewritten_text from response (it's a JSON string)
-      const rewrittenTextJson = response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
-      console.log("Translate raw response:", rewrittenTextJson);
+      // Extract rewritten_text from response
+      const outputText = response.output_text || "";
+      console.log("Translate raw response:", outputText);
 
       let translatedText = "";
-      if (rewrittenTextJson) {
-        try {
-          const parsed = JSON.parse(rewrittenTextJson);
-          translatedText = parsed.text || "";
-          console.log("Translate parsed text:", translatedText);
-        } catch (e) {
-          console.error("Failed to parse rewritten_text:", e);
-          translatedText = rewrittenTextJson;
-        }
-      } else {
-        translatedText = response.output_text || "";
+      try {
+        const parsed = JSON.parse(outputText);
+        translatedText = parsed.rewritten_text || outputText;
+      } catch (e) {
+        translatedText = outputText;
       }
 
       res.json({
