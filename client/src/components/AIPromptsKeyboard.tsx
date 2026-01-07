@@ -195,11 +195,11 @@ const QUICK_REPLY_SUBTEXTS: Record<string, string> = {
 };
 
 const LANGUAGES = [
-  { code: "en", label: "English" },
-  { code: "ru", label: "Russian" },
-  { code: "es", label: "Spanish" },
-  { code: "de", label: "German" },
-  { code: "zh", label: "Chinese" },
+  { code: "en", label: "English", emoji: "🇬🇧" },
+  { code: "ru", label: "Russian", emoji: "🇷🇺" },
+  { code: "es", label: "Spanish", emoji: "🇪🇸" },
+  { code: "de", label: "German", emoji: "🇩🇪" },
+  { code: "zh", label: "Chinese", emoji: "🇨🇳" },
 ];
 
 // Response types for Help me write feature
@@ -312,6 +312,9 @@ const PROMPT_BUTTONS: PromptButton[] = [
 
 export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTextChange, onTextChange, onSwitchKeyboard }: AIPromptsKeyboardProps) {
   const [menuLevel, setMenuLevel] = useState<MenuLevel>("main");
+
+  // State for tracking button group mode: 'main' for default buttons, or 'rephrase'/'translate'/'quick-replies' for option buttons
+  const [buttonGroupMode, setButtonGroupMode] = useState<'main' | 'rephrase' | 'translate' | 'quick-replies'>('main');
 
   // Load saved rephrase tone from localStorage or default to "work-safe"
   const [selectedTone, setSelectedTone] = useState<string>(() => {
@@ -460,6 +463,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       onPreviewTextChange("");
       // Reset menu state when preview is reset
       setMenuLevel("main");
+      setButtonGroupMode('main'); // Reset button group mode
       // Don't reset selectedTone - keep it for next rephrase
       setRephraseResults([]);
       setTranslateResults([]);
@@ -583,6 +587,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   const handleToneSelect = async (toneId: string) => {
     setSelectedTone(toneId);
+    setButtonGroupMode('main'); // Reset button group mode when starting generation
     const originalText = selectedText || previewText || text;
 
     // Check message length
@@ -811,6 +816,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   const handleBackToMain = () => {
     setMenuLevel("main");
+    setButtonGroupMode('main'); // Reset button group mode when returning to main menu
     // Don't reset selectedTone - keep it for next rephrase
     setRephraseResults([]);
     setSelectedResultId(null);
@@ -830,7 +836,9 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     setSelectedResultId(null);
   };
 
-  const handleTranslate = async () => {
+  const handleTranslate = async (langCode?: string) => {
+    const targetLanguage = langCode || translateLanguage;
+    setButtonGroupMode('main'); // Reset button group mode when starting translation
     const originalText = selectedText || previewText || text;
 
     // Check message length
@@ -840,7 +848,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         id: `translate-result-${Date.now()}`,
         text: "Message is too long. Maximum 1000 characters allowed.",
         originalText: originalText,
-        language: translateLanguage,
+        language: targetLanguage,
         timestamp: Date.now(),
       };
       setTranslateResults([newResult]);
@@ -870,7 +878,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         },
         body: JSON.stringify({
           text: originalText,
-          targetLanguage: translateLanguage,
+          targetLanguage: targetLanguage,
         }),
         signal: abortController.signal,
       });
@@ -882,7 +890,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           id: `translate-result-${Date.now()}`,
           text: data.translated,
           originalText: originalText,
-          language: translateLanguage,
+          language: targetLanguage,
           timestamp: Date.now(),
         };
 
@@ -890,12 +898,12 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         setSelectedTranslateResultId(newResult.id);
       } else {
         // Fallback to placeholder if API fails
-        const langName = LANGUAGES.find(l => l.code === translateLanguage)?.label || translateLanguage;
+        const langName = LANGUAGES.find(l => l.code === targetLanguage)?.label || targetLanguage;
         const newResult: TranslateResult = {
           id: `translate-result-${Date.now()}`,
           text: `Error: ${data.error || "Translation failed"}`,
           originalText: originalText,
-          language: translateLanguage,
+          language: targetLanguage,
           timestamp: Date.now(),
         };
         setTranslateResults([newResult]);
@@ -911,7 +919,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         id: `translate-result-${Date.now()}`,
         text: "Error: Failed to connect to translation service",
         originalText: originalText,
-        language: translateLanguage,
+        language: targetLanguage,
         timestamp: Date.now(),
       };
       setTranslateResults([newResult]);
@@ -1178,6 +1186,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   const handleQuickReplyActionSelect = async (actionId: string) => {
     setSelectedQuickReplyAction(actionId);
+    setButtonGroupMode('main'); // Reset button group mode when starting generation
     const originalText = selectedText || previewText || text;
 
     // Check message length
@@ -1596,8 +1605,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           setMenuLevel("rephrase-empty-preview");
           return;
         }
-        // Directly generate with last selected tone (skip tone selection)
-        handleToneSelect(selectedTone);
+        // Show tone selection buttons instead of directly generating
+        setButtonGroupMode('rephrase');
         break;
 
       case "translate":
@@ -1606,7 +1615,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           setMenuLevel("translate-empty-preview");
           return;
         }
-        handleTranslate();
+        // Show language selection buttons instead of directly translating
+        setButtonGroupMode('translate');
         break;
 
       case "grammar-check":
@@ -1624,8 +1634,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
           setMenuLevel("quick-replies-empty-preview");
           return;
         }
-        // Directly trigger "help-me-write" action
-        handleQuickReplyActionSelect("help-me-write");
+        // Show quick reply action buttons instead of directly triggering help-me-write
+        setButtonGroupMode('quick-replies');
         break;
 
       case "saved-text":
@@ -1640,6 +1650,17 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     let onClose = handleBackToMain;
 
     if (menuLevel === "main") {
+      // Handler for X button in main menu
+      const handleMainMenuClose = () => {
+        // If we're showing option buttons, go back to main button group
+        if (buttonGroupMode !== 'main') {
+          setButtonGroupMode('main');
+        } else if (onSwitchKeyboard) {
+          // Otherwise close the keyboard
+          onSwitchKeyboard();
+        }
+      };
+
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px] -mt-1">
           <div className="flex items-center gap-2">
@@ -1650,10 +1671,10 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
             </div>
             <div className="text-base font-semibold text-foreground">Your message</div>
           </div>
-          {onSwitchKeyboard && (
+          {(onSwitchKeyboard || buttonGroupMode !== 'main') && (
             <button
               type="button"
-              onClick={onSwitchKeyboard}
+              onClick={handleMainMenuClose}
               className="p-1.5 rounded-md hover:bg-accent active:scale-95 transition-all duration-75 touch-manipulation"
               aria-label="Close and return to main menu"
             >
@@ -2019,15 +2040,164 @@ E.g.
     );
   };
 
-  // Render main menu buttons
-  const renderMainMenu = () => {
-    // First row: rephrase, translate, grammar-check
-    const firstRowButtons = PROMPT_BUTTONS.filter(b =>
-      ['rephrase', 'translate', 'grammar-check'].includes(b.id)
+  // Render tone option buttons for Rephrase
+  const renderToneButtons = () => {
+    // Split into 2 rows of 2 buttons each
+    const firstRow = TONE_OPTIONS.slice(0, 2);
+    const secondRow = TONE_OPTIONS.slice(2, 4);
+
+    return (
+      <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
+        <div className="flex flex-col gap-2 min-w-min">
+          {/* First row - 2 buttons */}
+          <div className="flex gap-2">
+            {firstRow.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => handleToneSelect(option.id)}
+                className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
+                data-testid={`button-tone-${option.id}`}
+                aria-label={option.label}
+              >
+                <span className="text-lg">{option.emoji}</span>
+                <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                  {option.label}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Second row - 2 buttons */}
+          <div className="flex gap-2">
+            {secondRow.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => handleToneSelect(option.id)}
+                className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
+                data-testid={`button-tone-${option.id}`}
+                aria-label={option.label}
+              >
+                <span className="text-lg">{option.emoji}</span>
+                <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                  {option.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
     );
-    // Second row: quick-replies, saved-text
+  };
+
+  // Render language option buttons for Translate
+  const renderLanguageButtons = () => {
+    // Split into 2 rows: first row 3 languages, second row 2 languages
+    const firstRow = LANGUAGES.slice(0, 3);
+    const secondRow = LANGUAGES.slice(3, 5);
+
+    return (
+      <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
+        <div className="flex flex-col gap-2 min-w-min">
+          {/* First row - 3 buttons */}
+          <div className="flex gap-2">
+            {firstRow.map((lang) => (
+              <button
+                key={lang.code}
+                type="button"
+                onClick={() => {
+                  setTranslateLanguage(lang.code);
+                  handleTranslate(lang.code);
+                }}
+                className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
+                data-testid={`button-lang-${lang.code}`}
+                aria-label={lang.label}
+              >
+                <span className="text-lg">{lang.emoji}</span>
+                <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                  {lang.label}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Second row - 2 buttons */}
+          <div className="flex gap-2">
+            {secondRow.map((lang) => (
+              <button
+                key={lang.code}
+                type="button"
+                onClick={() => {
+                  setTranslateLanguage(lang.code);
+                  handleTranslate(lang.code);
+                }}
+                className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
+                data-testid={`button-lang-${lang.code}`}
+                aria-label={lang.label}
+              >
+                <span className="text-lg">{lang.emoji}</span>
+                <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                  {lang.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Render response type buttons for Help me write (Chat message and Email)
+  const renderQuickReplyButtons = () => {
+    return (
+      <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
+        <div className="flex flex-col gap-2 min-w-min">
+          {/* Single row - 2 buttons (Chat message and Email) */}
+          <div className="flex gap-2">
+            {RESPONSE_TYPES.map((type) => (
+              <button
+                key={type.code}
+                type="button"
+                onClick={() => {
+                  setResponseType(type.code);
+                  handleQuickReplyActionSelect("help-me-write");
+                }}
+                className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
+                data-testid={`button-response-type-${type.code}`}
+                aria-label={type.label}
+              >
+                <span className="text-lg">{type.emoji}</span>
+                <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                  {type.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Render main menu buttons (or option buttons based on buttonGroupMode)
+  const renderMainMenu = () => {
+    // Show option buttons if in special mode
+    if (buttonGroupMode === 'rephrase') {
+      return renderToneButtons();
+    } else if (buttonGroupMode === 'translate') {
+      return renderLanguageButtons();
+    } else if (buttonGroupMode === 'quick-replies') {
+      return renderQuickReplyButtons();
+    }
+
+    // Otherwise show main menu buttons
+    // First row: rephrase, translate, saved-text
+    const firstRowButtons = PROMPT_BUTTONS.filter(b =>
+      ['rephrase', 'translate', 'saved-text'].includes(b.id)
+    );
+    // Second row: quick-replies, grammar-check
     const secondRowButtons = PROMPT_BUTTONS.filter(b =>
-      ['quick-replies', 'saved-text'].includes(b.id)
+      ['quick-replies', 'grammar-check'].includes(b.id)
     );
 
     return (
