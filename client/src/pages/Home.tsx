@@ -95,9 +95,8 @@ export default function Home() {
           )}
         </div>
       </div>
-
       {/* Скролящаяся область текста */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto bg-[#fafafa]">
         <TextInputArea
           value={text}
           onChange={setText}
@@ -107,7 +106,6 @@ export default function Home() {
           readOnly={false}
         />
       </div>
-
       {/* Зафиксированная панель клавиатуры внизу */}
       <div className="flex-shrink-0 border-t border-border">
         <KeyboardContainer
