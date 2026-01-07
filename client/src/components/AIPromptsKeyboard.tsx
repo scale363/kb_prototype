@@ -1848,9 +1848,16 @@ E.g.
         </div>
       );
     } else if (menuLevel === "quick-replies-result" && selectedQuickReplyAction) {
+      const tooltip = `For best results, briefly describe the situation and your intention.
+
+E.g.
+"email to embassy — ask visa requirements"
+"project invitation — politely decline"
+"delivery complaint — pizza cold"`;
+
       return (
         <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1">
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <MessageSquare className="w-4 h-4 text-white" />
             </div>
@@ -1858,6 +1865,30 @@ E.g.
               <div className="text-base font-semibold text-foreground">Generating your message…</div>
             ) : (
               <div className="text-base font-semibold text-foreground">Suggested message</div>
+            )}
+            {tooltip && !isGeneratingQuickReply && (
+              <Tooltip
+                delayDuration={0}
+                open={openTooltipId === "quick-replies-result-info"}
+                onOpenChange={(open) => setOpenTooltipId(open ? "quick-replies-result-info" : null)}
+              >
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenTooltipId(openTooltipId === "quick-replies-result-info" ? null : "quick-replies-result-info");
+                    }}
+                    aria-label="Info about Suggested message"
+                  >
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[250px] z-50">
+                  <p className="text-xs whitespace-pre-line">{tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
           <button
