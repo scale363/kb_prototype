@@ -2153,7 +2153,7 @@ E.g.
     return (
       <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
         <div className="flex flex-col gap-2 min-w-min">
-          {/* Single row - 2 buttons (Chat message and Email) */}
+          {/* First row - 2 buttons (Chat message and Email) */}
           <div className="flex gap-2">
             {RESPONSE_TYPES.map((type) => (
               <button
@@ -2174,6 +2174,9 @@ E.g.
               </button>
             ))}
           </div>
+
+          {/* Second row - empty to maintain consistent height with other button groups */}
+          <div className="flex gap-2 h-11"></div>
         </div>
       </div>
     );
