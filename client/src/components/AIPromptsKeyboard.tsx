@@ -1704,7 +1704,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       const tooltip = `Describe the situation and what you want to say.
 
 E.g.
-"email to embassy — visa O-1 requirements"
+"email to embassy — ask visa O-1 requirements"
 "project invitation, politely decline"
 "delivery complaint: pizza cold"`;
 
