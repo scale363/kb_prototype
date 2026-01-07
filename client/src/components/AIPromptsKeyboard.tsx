@@ -1700,13 +1700,44 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         </div>
       );
     } else if (menuLevel === "quick-replies-empty-preview") {
+      const tooltip = `Describe the situation and what you want to say.
+
+E.g.
+"email to embassy — visa O-1 requirements"
+"project invitation, politely decline"
+"delivery complaint: pizza cold"`;
+
       return (
         <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1">
             <div className="w-7 h-7 rounded-full bg-[#0b9786] flex items-center justify-center">
               <MessageSquare className="w-4 h-4 text-white" />
             </div>
             <div className="text-base font-semibold text-foreground">Describe the situation</div>
+            {tooltip && (
+              <Tooltip
+                delayDuration={0}
+                open={openTooltipId === "quick-replies-empty-preview-info"}
+                onOpenChange={(open) => setOpenTooltipId(open ? "quick-replies-empty-preview-info" : null)}
+              >
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-75 touch-manipulation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenTooltipId(openTooltipId === "quick-replies-empty-preview-info" ? null : "quick-replies-empty-preview-info");
+                    }}
+                    aria-label="Info about Help me write"
+                  >
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[250px] z-50">
+                  <p className="text-xs whitespace-pre-line">{tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
           <button
             type="button"
@@ -2548,16 +2579,10 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     if (isGeneratingQuickReply) {
       return (
         <div ref={resultsContainerRef} className="p-3 space-y-0">
-          <div className="py-4 px-3 animate-pulse">
-            <div className="text-muted-foreground/60 space-y-3">
-              <div className="text-sm space-y-1.5">
-                <p className="font-medium mb-2">People often write:</p>
-                <p>• delivery complaint — pizza cold</p>
-                <p>• question to the consulate — working hours</p>
-                <p>• project invitation — politely decline</p>
-                <p>• restaurant review — tasty and cozy</p>
-              </div>
-            </div>
+          <div className="py-4 px-3">
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-5/6 mb-2" />
+            <Skeleton className="h-4 w-4/6" />
           </div>
         </div>
       );
