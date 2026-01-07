@@ -66,7 +66,7 @@ export async function registerRoutes(
           {
             role: "user",
             content: [
-              { type: "input_json", json: { text: text } }
+              { type: "input_text", text: JSON.stringify({ text: text }) }
             ]
           }
         ],
@@ -93,7 +93,14 @@ export async function registerRoutes(
         store: true
       });
 
-      const rephrasedText = response.output_text || response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
+      let rephrasedText = "";
+      try {
+        const rawResponse = response.output_text || response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
+        const parsedResponse = JSON.parse(rawResponse);
+        rephrasedText = parsedResponse.text || "";
+      } catch (e) {
+        rephrasedText = response.output_text || response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
+      }
 
       res.json({
         success: true,
@@ -141,7 +148,7 @@ export async function registerRoutes(
           {
             role: "user",
             content: [
-              { type: "input_json", json: { text: text } }
+              { type: "input_text", text: JSON.stringify({ text: text }) }
             ]
           }
         ],
@@ -168,7 +175,14 @@ export async function registerRoutes(
         store: true
       });
 
-      const translatedText = response.output_text || response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
+      let translatedText = "";
+      try {
+        const rawResponse = response.output_text || response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
+        const parsedResponse = JSON.parse(rawResponse);
+        translatedText = parsedResponse.text || "";
+      } catch (e) {
+        translatedText = response.output_text || response.output?.[0]?.content?.[0]?.json?.rewritten_text || "";
+      }
 
       res.json({
         success: true,
