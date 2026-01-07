@@ -64,7 +64,7 @@ export default function Home() {
       style={{ touchAction: "manipulation" }}
     >
       {/* Панель кнопок управления над полем ввода */}
-      <div className="flex-shrink-0 border-b border-border bg-[#f4f6f600] px-4 py-2">
+      <div className="flex-shrink-0 border-b border-border px-4 py-2 bg-[#fafafa]">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Button
