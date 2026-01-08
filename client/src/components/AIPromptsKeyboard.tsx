@@ -1800,9 +1800,8 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       const tooltip = `For best results, briefly describe the situation and your intention.
 
 E.g.
-"email to embassy — ask visa requirements"
 "project invitation — politely decline"
-"delivery complaint — pizza cold"`;
+"delivery complaint — pizza was cold"`;
 
       return (
         <div className="px-1 py-2 flex items-center justify-between min-h-[44px] -mt-1">
@@ -1889,9 +1888,8 @@ E.g.
       const tooltip = `For best results, briefly describe the situation and your intention.
 
 E.g.
-"email to embassy — ask visa requirements"
 "project invitation — politely decline"
-"delivery complaint — pizza cold"`;
+"delivery complaint — pizza was cold"`;
 
       return (
         <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
