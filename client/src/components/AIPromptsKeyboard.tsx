@@ -3079,11 +3079,6 @@ E.g.
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto min-h-0">
         {renderPreviewField()}
-        {menuLevel === "main" && (
-          <div className="pb-3">
-            {/* Preview field area - will scroll if needed */}
-          </div>
-        )}
         {menuLevel !== "main" && (
           <>
             {menuLevel === "rephrase-empty-preview" && renderRephraseEmptyPreview()}
