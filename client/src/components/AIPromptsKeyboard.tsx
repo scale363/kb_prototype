@@ -3111,7 +3111,6 @@ E.g.
       {menuLevel === "translate-result" && renderTranslateResultFooter()}
       {menuLevel === "quick-replies-result" && renderQuickRepliesResultFooter()}
       {menuLevel === "grammar-check-result" && renderGrammarCheckResultFooter()}
-
-      </div>
+    </div>
   );
 }
