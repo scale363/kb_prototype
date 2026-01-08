@@ -101,7 +101,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "short-clear",
     label: "Shorter",
-    emoji: "↓",
+    emoji: "◯",
     tooltip: "Makes your message concise, easy to read, and action-oriented.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -109,7 +109,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "make-longer",
     label: "Longer",
-    emoji: "↑",
+    emoji: "◯",
     tooltip: "Expands your message with more details and context while keeping the same meaning.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -117,7 +117,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "more-polite",
     label: "More Polite",
-    emoji: "↑",
+    emoji: "◯",
     tooltip: "Makes your message sound more polite and courteous.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -125,7 +125,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "more-direct",
     label: "More Direct",
-    emoji: "↑",
+    emoji: "◯",
     tooltip: "Makes your message more direct and straightforward.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -2066,7 +2066,7 @@ E.g.
 
     return (
       <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
-        <div className="flex flex-col gap-2 min-w-min ml-[-12px] mr-[-12px]">
+        <div className="flex flex-col gap-2 min-w-min ml-[-10px] mr-[-10px]">
           {/* First row - 2 buttons */}
           <div className="flex gap-2">
             {firstRow.map((option) => (
