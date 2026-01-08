@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { Globe, Mic } from "lucide-react";
-import { RussianKeyboard } from "./RussianKeyboard";
 import { AIPromptsKeyboard } from "./AIPromptsKeyboard";
 
 type KeyboardMode = "russian" | "prompts";
@@ -26,27 +25,6 @@ export function KeyboardContainer({
 }: KeyboardContainerProps) {
   const [mode, setMode] = useState<KeyboardMode>("russian");
 
-  const handleKeyPress = useCallback((key: string) => {
-    const before = text.slice(0, cursorPosition);
-    const after = text.slice(cursorPosition);
-    const newText = before + key + after;
-    onTextChange(newText);
-    onCursorChange(cursorPosition + 1);
-  }, [text, cursorPosition, onTextChange, onCursorChange]);
-
-  const handleBackspace = useCallback(() => {
-    if (cursorPosition > 0) {
-      const before = text.slice(0, cursorPosition - 1);
-      const after = text.slice(cursorPosition);
-      onTextChange(before + after);
-      onCursorChange(cursorPosition - 1);
-    }
-  }, [text, cursorPosition, onTextChange, onCursorChange]);
-
-  const handleEnter = useCallback(() => {
-    handleKeyPress("\n");
-  }, [handleKeyPress]);
-
   const handleAITextChange = useCallback((newText: string) => {
     onTextChange(newText);
     onCursorChange(newText.length);
@@ -65,16 +43,9 @@ export function KeyboardContainer({
 
   return (
     <div className="flex flex-col bg-[#f4f6f6] rounded-t-[1.333rem] shadow-lg">
-      {/* Белая скругленная область для клавиатуры */}
-      <div className="p-3 pt-4 bg-white rounded-[1.333rem] m-2 mb-0">
-        {mode === "russian" ? (
-          <RussianKeyboard
-            onKeyPress={handleKeyPress}
-            onBackspace={handleBackspace}
-            onEnter={handleEnter}
-            onSwitchKeyboard={handleSwitchKeyboard}
-          />
-        ) : (
+      {/* Белая скругленная область для клавиатуры (только для режима prompts) */}
+      {mode === "prompts" && (
+        <div className="p-3 pt-4 bg-white rounded-[1.333rem] m-2 mb-0">
           <AIPromptsKeyboard
             text={text}
             selectedText={selectedText}
@@ -83,8 +54,8 @@ export function KeyboardContainer({
             onTextChange={handleAITextChange}
             onSwitchKeyboard={handleSwitchKeyboard}
           />
-        )}
-      </div>
+        </div>
+      )}
       {/* Серая панель с иконками глобуса и микрофона */}
       <div className="flex items-center justify-between px-3 pb-3 pt-4 bg-[#f4f6f6]">
         <button
