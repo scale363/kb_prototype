@@ -83,7 +83,7 @@ interface ToneOption {
 const TONE_OPTIONS: ToneOption[] = [
   {
     id: "work-safe",
-    label: "Work-Safe",
+    label: "Professional tone",
     emoji: "\u{1F6E1}",
     tooltip: "Checks grammar and rewrites your message to sound natural, polite, and culturally appropriate at work.",
     colorClass: "bg-card dark:bg-card",
@@ -91,7 +91,7 @@ const TONE_OPTIONS: ToneOption[] = [
   },
   {
     id: "informal",
-    label: "Informal",
+    label: "Informal tone",
     emoji: "💬",
     tooltip: "Makes your message sound informal and natural — not work-style.",
     colorClass: "bg-card dark:bg-card",
@@ -99,7 +99,7 @@ const TONE_OPTIONS: ToneOption[] = [
   },
   {
     id: "short-clear",
-    label: "Make it shorter",
+    label: "Shorter",
     emoji: "\u{2702}\uFE0F",
     tooltip: "Makes your message concise, easy to read, and action-oriented.",
     colorClass: "bg-card dark:bg-card",
@@ -107,9 +107,25 @@ const TONE_OPTIONS: ToneOption[] = [
   },
   {
     id: "make-longer",
-    label: "Make it longer",
+    label: "Longer",
     emoji: "📏",
     tooltip: "Expands your message with more details and context while keeping the same meaning.",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
+  },
+  {
+    id: "more-polite",
+    label: "More Polite",
+    emoji: "🤝",
+    tooltip: "Makes your message sound more polite and courteous.",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
+  },
+  {
+    id: "more-direct",
+    label: "More Direct",
+    emoji: "🎯",
+    tooltip: "Makes your message more direct and straightforward.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
   },
@@ -2042,9 +2058,10 @@ E.g.
 
   // Render tone option buttons for Rephrase
   const renderToneButtons = () => {
-    // Split into 2 rows of 2 buttons each
+    // First row: 2 tone buttons (Professional, Informal)
+    // Second row: 4 length/style buttons (Shorter, Longer, More Polite, More Direct)
     const firstRow = TONE_OPTIONS.slice(0, 2);
-    const secondRow = TONE_OPTIONS.slice(2, 4);
+    const secondRow = TONE_OPTIONS.slice(2, 6);
 
     return (
       <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
@@ -2068,7 +2085,7 @@ E.g.
             ))}
           </div>
 
-          {/* Second row - 2 buttons */}
+          {/* Second row - 4 buttons */}
           <div className="flex gap-2">
             {secondRow.map((option) => (
               <button

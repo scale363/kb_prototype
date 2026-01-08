@@ -48,6 +48,8 @@ export async function registerRoutes(
         "informal": "pmpt_695b95e36d048190a564c246275c5b790a1baee717009f46",
         "short-clear": "pmpt_695b9bc5c4ac8195bd1513b27c0495f002ca415d305af730",
         "make-longer": "pmpt_695b9d70d8dc81969a3ed440c090c8230ce18ebed8f0e9d2",
+        "more-polite": "pmpt_695f8ff975188196914d614a7a852a4b07c33c4c16ae05bf",
+        "more-direct": "pmpt_695f910affd481968187c16004d45ee1030478bc84fb6f78",
         "grammar-check": "pmpt_695bac961c6c819392bb186d2c63aeec0906203b8afe340b",
       };
 
