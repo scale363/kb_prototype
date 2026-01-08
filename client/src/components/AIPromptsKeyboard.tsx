@@ -2058,10 +2058,10 @@ E.g.
 
   // Render tone option buttons for Rephrase
   const renderToneButtons = () => {
-    // Split into 3 rows of 2 buttons each
+    // First row: 2 tone buttons (Professional, Informal)
+    // Second row: 4 length/style buttons (Shorter, Longer, More Polite, More Direct)
     const firstRow = TONE_OPTIONS.slice(0, 2);
-    const secondRow = TONE_OPTIONS.slice(2, 4);
-    const thirdRow = TONE_OPTIONS.slice(4, 6);
+    const secondRow = TONE_OPTIONS.slice(2, 6);
 
     return (
       <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
@@ -2085,28 +2085,9 @@ E.g.
             ))}
           </div>
 
-          {/* Second row - 2 buttons */}
+          {/* Second row - 4 buttons */}
           <div className="flex gap-2">
             {secondRow.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => handleToneSelect(option.id)}
-                className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
-                data-testid={`button-tone-${option.id}`}
-                aria-label={option.label}
-              >
-                <span className="text-lg">{option.emoji}</span>
-                <span className="text-sm font-medium text-foreground whitespace-nowrap">
-                  {option.label}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Third row - 2 buttons */}
-          <div className="flex gap-2">
-            {thirdRow.map((option) => (
               <button
                 key={option.id}
                 type="button"
