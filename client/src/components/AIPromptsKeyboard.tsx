@@ -2117,7 +2117,7 @@ E.g.
 
     return (
       <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
-        <div className="flex flex-col gap-2 min-w-min">
+        <div className="flex flex-col gap-2 min-w-min ml-[-10px] mr-[-10px]">
           {/* First row - 3 buttons */}
           <div className="flex gap-2">
             {firstRow.map((lang) => (
