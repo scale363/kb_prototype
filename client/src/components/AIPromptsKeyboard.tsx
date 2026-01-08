@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DiffText } from "@/components/DiffText";
 import {
@@ -100,7 +101,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "short-clear",
     label: "Shorter",
-    emoji: "",
+    emoji: "↓",
     tooltip: "Makes your message concise, easy to read, and action-oriented.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -108,7 +109,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "make-longer",
     label: "Longer",
-    emoji: "",
+    emoji: "↑",
     tooltip: "Expands your message with more details and context while keeping the same meaning.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -116,7 +117,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "more-polite",
     label: "More Polite",
-    emoji: "",
+    emoji: "↑",
     tooltip: "Makes your message sound more polite and courteous.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -124,7 +125,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "more-direct",
     label: "More Direct",
-    emoji: "",
+    emoji: "↑",
     tooltip: "Makes your message more direct and straightforward.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -2567,10 +2568,15 @@ E.g.
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {TONE_OPTIONS.map((tone) => (
-                <SelectItem key={tone.id} value={tone.id} data-testid={`option-rephrase-tone-${tone.id}`}>
-                  {tone.emoji} {tone.label}
-                </SelectItem>
+              {TONE_OPTIONS.map((tone, index) => (
+                <>
+                  <SelectItem key={tone.id} value={tone.id} data-testid={`option-rephrase-tone-${tone.id}`}>
+                    {tone.emoji} {tone.label}
+                  </SelectItem>
+                  {(index === 1 || index === 3) && (
+                    <Separator key={`separator-${index}`} className="my-1" />
+                  )}
+                </>
               ))}
             </SelectContent>
           </Select>
