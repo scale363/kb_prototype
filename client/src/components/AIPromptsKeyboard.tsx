@@ -2022,6 +2022,9 @@ E.g.
 
     const hasContent = displayPreviewText.trim();
 
+    // Hide preview field if empty
+    if (!hasContent) return null;
+
     const handleCopyPreviewText = async () => {
       try {
         await navigator.clipboard.writeText(displayPreviewText);
@@ -2034,21 +2037,17 @@ E.g.
       <div className="px-1">
         {/* Preview field without border and background */}
         <div className="flex items-start justify-between gap-3 py-2 px-1 relative pl-[18px] pr-[18px] pt-[12px] pb-[12px]">
-          {hasContent ? (
-            <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap flex-1 mt-[5px] mb-[5px]">
-              {displayPreviewText}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground/60 flex-1 mt-[4px] mb-[4px]">Paste a message or situation here</div>
-          )}
+          <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap flex-1 mt-[5px] mb-[5px]">
+            {displayPreviewText}
+          </div>
           <button
             type="button"
-            onClick={handlePasteFromClipboard}
+            onClick={handleCopyPreviewText}
             className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
-            data-testid="button-paste-preview"
-            aria-label="Paste text"
+            data-testid="button-copy-preview"
+            aria-label="Copy text"
           >
-            <Clipboard className="h-4 w-4 text-muted-foreground" />
+            <Copy className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
       </div>
@@ -2209,56 +2208,53 @@ E.g.
       return renderQuickReplyButtons();
     }
 
-    // Otherwise show main menu buttons
-    // First row: rephrase, translate, saved-text
+    const hasContent = displayPreviewText.trim();
+
+    // Empty state: show only "Paste your message" button
+    if (!hasContent) {
+      return (
+        <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={handlePasteFromClipboard}
+              className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
+              data-testid="button-paste-message"
+              aria-label="Paste your message"
+            >
+              <Clipboard className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                Paste your message
+              </span>
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // Otherwise show main menu buttons (only rephrase and translate)
     const firstRowButtons = PROMPT_BUTTONS.filter(b =>
-      ['rephrase', 'translate', 'saved-text'].includes(b.id)
-    );
-    // Second row: quick-replies, grammar-check
-    const secondRowButtons = PROMPT_BUTTONS.filter(b =>
-      ['quick-replies', 'grammar-check'].includes(b.id)
+      ['rephrase', 'translate'].includes(b.id)
     );
 
     return (
       <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
-        <div className="flex flex-col gap-2 min-w-min ml-[-10px] mr-[-10px]">
-          {/* First row - 3 buttons */}
-          <div className="flex gap-2">
-            {firstRowButtons.map((button) => (
-              <button
-                key={button.id}
-                type="button"
-                onClick={() => handlePromptClick(button.id)}
-                className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
-                data-testid={`button-prompt-${button.id}`}
-                aria-label={button.label}
-              >
-                {button.icon}
-                <span className="text-sm font-medium text-foreground whitespace-nowrap">
-                  {button.label}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Second row - 2 buttons */}
-          <div className="flex gap-2">
-            {secondRowButtons.map((button) => (
-              <button
-                key={button.id}
-                type="button"
-                onClick={() => handlePromptClick(button.id)}
-                className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
-                data-testid={`button-prompt-${button.id}`}
-                aria-label={button.label}
-              >
-                {button.icon}
-                <span className="text-sm font-medium text-foreground whitespace-nowrap">
-                  {button.label}
-                </span>
-              </button>
-            ))}
-          </div>
+        <div className="flex justify-center gap-2">
+          {firstRowButtons.map((button) => (
+            <button
+              key={button.id}
+              type="button"
+              onClick={() => handlePromptClick(button.id)}
+              className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
+              data-testid={`button-prompt-${button.id}`}
+              aria-label={button.label}
+            >
+              {button.icon}
+              <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                {button.label}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
     );
@@ -2267,6 +2263,18 @@ E.g.
   // Render empty preview prompt for rephrase
   const renderRephraseEmptyPreview = () => {
     const hasContent = displayPreviewText.trim();
+
+    const handleCopyOrPaste = async () => {
+      if (hasContent) {
+        try {
+          await navigator.clipboard.writeText(displayPreviewText);
+        } catch {
+          // Ignore copy errors silently
+        }
+      } else {
+        await handlePasteFromClipboard();
+      }
+    };
 
     return (
       <div className="flex flex-col gap-4 p-1">
@@ -2281,17 +2289,21 @@ E.g.
           )}
           <button
             type="button"
-            onClick={handlePasteFromClipboard}
+            onClick={handleCopyOrPaste}
             className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
-            data-testid="button-paste-rephrase-empty"
-            aria-label="Paste text"
+            data-testid={hasContent ? "button-copy-rephrase-empty" : "button-paste-rephrase-empty"}
+            aria-label={hasContent ? "Copy text" : "Paste text"}
           >
-            <Clipboard className="h-4 w-4 text-muted-foreground" />
+            {hasContent ? (
+              <Copy className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <Clipboard className="h-4 w-4 text-muted-foreground" />
+            )}
           </button>
         </div>
         {/* Large prompt message */}
         <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-          <div className="text-center font-semibold text-[#22282a] text-[16px]">Paste the message you want to rephrase. We’ll help adjust the tone and wording.</div>
+          <div className="text-center font-semibold text-[#22282a] text-[16px]">Paste the message you want to rephrase. We'll help adjust the tone and wording.</div>
         </div>
       </div>
     );
@@ -2300,6 +2312,18 @@ E.g.
   // Render empty preview prompt for translate
   const renderTranslateEmptyPreview = () => {
     const hasContent = displayPreviewText.trim();
+
+    const handleCopyOrPaste = async () => {
+      if (hasContent) {
+        try {
+          await navigator.clipboard.writeText(displayPreviewText);
+        } catch {
+          // Ignore copy errors silently
+        }
+      } else {
+        await handlePasteFromClipboard();
+      }
+    };
 
     return (
       <div className="flex flex-col gap-4 p-1">
@@ -2314,12 +2338,16 @@ E.g.
           )}
           <button
             type="button"
-            onClick={handlePasteFromClipboard}
+            onClick={handleCopyOrPaste}
             className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
-            data-testid="button-paste-translate-empty"
-            aria-label="Paste text"
+            data-testid={hasContent ? "button-copy-translate-empty" : "button-paste-translate-empty"}
+            aria-label={hasContent ? "Copy text" : "Paste text"}
           >
-            <Clipboard className="h-4 w-4 text-muted-foreground" />
+            {hasContent ? (
+              <Copy className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <Clipboard className="h-4 w-4 text-muted-foreground" />
+            )}
           </button>
         </div>
         {/* Large prompt message */}
@@ -2336,6 +2364,18 @@ E.g.
   const renderQuickRepliesEmptyPreview = () => {
     const hasContent = displayPreviewText.trim();
 
+    const handleCopyOrPaste = async () => {
+      if (hasContent) {
+        try {
+          await navigator.clipboard.writeText(displayPreviewText);
+        } catch {
+          // Ignore copy errors silently
+        }
+      } else {
+        await handlePasteFromClipboard();
+      }
+    };
+
     return (
       <div className="flex flex-col gap-4 p-1">
         {/* Preview field - main page style */}
@@ -2349,12 +2389,16 @@ E.g.
           )}
           <button
             type="button"
-            onClick={handlePasteFromClipboard}
+            onClick={handleCopyOrPaste}
             className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
-            data-testid="button-paste-quick-replies-empty"
-            aria-label="Paste text"
+            data-testid={hasContent ? "button-copy-quick-replies-empty" : "button-paste-quick-replies-empty"}
+            aria-label={hasContent ? "Copy text" : "Paste text"}
           >
-            <Clipboard className="h-4 w-4 text-muted-foreground" />
+            {hasContent ? (
+              <Copy className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <Clipboard className="h-4 w-4 text-muted-foreground" />
+            )}
           </button>
         </div>
         {/* Large prompt message */}
@@ -2369,6 +2413,18 @@ E.g.
   const renderGrammarCheckEmptyPreview = () => {
     const hasContent = displayPreviewText.trim();
 
+    const handleCopyOrPaste = async () => {
+      if (hasContent) {
+        try {
+          await navigator.clipboard.writeText(displayPreviewText);
+        } catch {
+          // Ignore copy errors silently
+        }
+      } else {
+        await handlePasteFromClipboard();
+      }
+    };
+
     return (
       <div className="flex flex-col gap-4 p-1">
         {/* Preview field - main page style */}
@@ -2382,12 +2438,16 @@ E.g.
           )}
           <button
             type="button"
-            onClick={handlePasteFromClipboard}
+            onClick={handleCopyOrPaste}
             className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
-            data-testid="button-paste-grammar-check-empty"
-            aria-label="Paste text"
+            data-testid={hasContent ? "button-copy-grammar-check-empty" : "button-paste-grammar-check-empty"}
+            aria-label={hasContent ? "Copy text" : "Paste text"}
           >
-            <Clipboard className="h-4 w-4 text-muted-foreground" />
+            {hasContent ? (
+              <Copy className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <Clipboard className="h-4 w-4 text-muted-foreground" />
+            )}
           </button>
         </div>
         {/* Large prompt message */}
@@ -2402,6 +2462,18 @@ E.g.
   const renderToneSelect = () => {
     const hasContent = displayPreviewText.trim();
 
+    const handleCopyOrPaste = async () => {
+      if (hasContent) {
+        try {
+          await navigator.clipboard.writeText(displayPreviewText);
+        } catch {
+          // Ignore copy errors silently
+        }
+      } else {
+        await handlePasteFromClipboard();
+      }
+    };
+
     return (
       <div className="flex flex-col gap-3 p-1">
         {/* Preview field - same style as main page */}
@@ -2415,12 +2487,16 @@ E.g.
           )}
           <button
             type="button"
-            onClick={handlePasteFromClipboard}
+            onClick={handleCopyOrPaste}
             className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
-            data-testid="button-paste-rephrase"
-            aria-label="Paste text"
+            data-testid={hasContent ? "button-copy-rephrase" : "button-paste-rephrase"}
+            aria-label={hasContent ? "Copy text" : "Paste text"}
           >
-            <Clipboard className="h-4 w-4 text-muted-foreground" />
+            {hasContent ? (
+              <Copy className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <Clipboard className="h-4 w-4 text-muted-foreground" />
+            )}
           </button>
         </div>
 
