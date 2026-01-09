@@ -109,7 +109,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "short-clear",
     label: "Shorter",
-    emoji: "",
+    emoji: "📏",
     tooltip: "Makes your message concise, easy to read, and action-oriented.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -117,7 +117,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "make-longer",
     label: "Longer",
-    emoji: "",
+    emoji: "📝",
     tooltip: "Expands your message with more details and context while keeping the same meaning.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -125,7 +125,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "more-polite",
     label: "More Polite",
-    emoji: "",
+    emoji: "🙏",
     tooltip: "Makes your message sound more polite and courteous.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -133,7 +133,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "more-direct",
     label: "More Direct",
-    emoji: "",
+    emoji: "🎯",
     tooltip: "Makes your message more direct and straightforward.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",

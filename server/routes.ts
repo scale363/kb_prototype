@@ -54,7 +54,9 @@ export async function registerRoutes(
         "grammar-check": "pmpt_695bac961c6c819392bb186d2c63aeec0906203b8afe340b",
       };
 
-      const promptId = promptIds[tone];
+      // Handle rephrase-tone which is what client sends when rephrasing from rephrase menu
+      const effectiveTone = tone === "rephrase-tone" ? "work-safe" : tone;
+      const promptId = promptIds[effectiveTone];
 
       if (!promptId) {
         return res.status(400).json({ error: "Invalid tone specified" });
