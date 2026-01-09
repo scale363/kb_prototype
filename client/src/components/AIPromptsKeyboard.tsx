@@ -84,7 +84,7 @@ interface ToneOption {
 const TONE_OPTIONS: ToneOption[] = [
   {
     id: "work-safe",
-    label: "Professional tone",
+    label: "Professional",
     emoji: "\u{1F6E1}",
     tooltip: "Checks grammar and rewrites your message to sound natural, polite, and culturally appropriate at work.",
     colorClass: "bg-card dark:bg-card",
@@ -92,7 +92,7 @@ const TONE_OPTIONS: ToneOption[] = [
   },
   {
     id: "informal",
-    label: "Informal tone",
+    label: "Informal",
     emoji: "💬",
     tooltip: "Makes your message sound informal and natural — not work-style.",
     colorClass: "bg-card dark:bg-card",
@@ -100,7 +100,7 @@ const TONE_OPTIONS: ToneOption[] = [
   },
   {
     id: "pmpt_695ce754ceb48193bbcedcc7d77dea430beca83ca0c73c92",
-    label: "Email tone",
+    label: "Email",
     emoji: "✉️",
     tooltip: "Formats your message in a professional email style.",
     colorClass: "bg-card dark:bg-card",
@@ -109,7 +109,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "short-clear",
     label: "Shorter",
-    emoji: "⚙️",
+    emoji: "",
     tooltip: "Makes your message concise, easy to read, and action-oriented.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -117,7 +117,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "make-longer",
     label: "Longer",
-    emoji: "⚙️",
+    emoji: "",
     tooltip: "Expands your message with more details and context while keeping the same meaning.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -125,7 +125,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "more-polite",
     label: "More Polite",
-    emoji: "⚙️",
+    emoji: "",
     tooltip: "Makes your message sound more polite and courteous.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -133,7 +133,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "more-direct",
     label: "More Direct",
-    emoji: "⚙️",
+    emoji: "",
     tooltip: "Makes your message more direct and straightforward.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -2044,7 +2044,7 @@ E.g.
     return (
       <div className="px-1">
         {/* Preview field without border and background */}
-        <div className="flex items-start justify-between gap-3 py-2 px-1 relative pl-[18px] pr-[18px] pt-[12px] pb-[12px]">
+        <div className="flex items-start justify-between gap-3 py-2 px-1 relative pl-[18px] pr-[18px] pt-[14px] pb-[14px]">
           <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap flex-1 mt-[5px] mb-[5px]">
             {displayPreviewText}
           </div>
