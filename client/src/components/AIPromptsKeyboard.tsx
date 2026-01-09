@@ -2637,7 +2637,7 @@ E.g.
           {/* Cancel button */}
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => setMenuLevel("tone-select")}
             className="flex items-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation"
             aria-label="Cancel"
           >
@@ -2764,7 +2764,7 @@ E.g.
           {/* Cancel button */}
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => setMenuLevel("translate-empty-preview")}
             className="flex items-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation"
             aria-label="Cancel"
           >
