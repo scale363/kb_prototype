@@ -2566,7 +2566,7 @@ E.g.
               const isResultCopied = copiedResultId === result.id;
               return (
                 <CarouselItem key={result.id}>
-                  <div className="p-3">
+                  <div className="p-3 pl-[0px] pr-[0px] pt-[0px] pb-[0px]">
                     {/* Rephrase text with copy button */}
                     <div className="relative py-4 px-3">
                       <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
@@ -2604,7 +2604,6 @@ E.g.
             })}
           </CarouselContent>
         </Carousel>
-
         {/* Carousel indicators */}
         {rephraseResults.length > 1 && (
           <div className="flex justify-center gap-1.5 py-3">
