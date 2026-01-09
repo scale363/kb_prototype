@@ -99,9 +99,17 @@ const TONE_OPTIONS: ToneOption[] = [
     borderClass: "border-border",
   },
   {
+    id: "pmpt_695ce754ceb48193bbcedcc7d77dea430beca83ca0c73c92",
+    label: "Email tone",
+    emoji: "✉️",
+    tooltip: "Formats your message in a professional email style.",
+    colorClass: "bg-card dark:bg-card",
+    borderClass: "border-border",
+  },
+  {
     id: "short-clear",
     label: "Shorter",
-    emoji: "◯",
+    emoji: "⚙️",
     tooltip: "Makes your message concise, easy to read, and action-oriented.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -109,7 +117,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "make-longer",
     label: "Longer",
-    emoji: "◯",
+    emoji: "⚙️",
     tooltip: "Expands your message with more details and context while keeping the same meaning.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -117,7 +125,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "more-polite",
     label: "More Polite",
-    emoji: "◯",
+    emoji: "⚙️",
     tooltip: "Makes your message sound more polite and courteous.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -125,7 +133,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "more-direct",
     label: "More Direct",
-    emoji: "◯",
+    emoji: "⚙️",
     tooltip: "Makes your message more direct and straightforward.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -2056,15 +2064,15 @@ E.g.
 
   // Render tone option buttons for Rephrase
   const renderToneButtons = () => {
-    // First row: 2 tone buttons (Professional, Informal)
+    // First row: 3 tone buttons (Professional, Informal, Email tone)
     // Second row: 4 length/style buttons (Shorter, Longer, More Polite, More Direct)
-    const firstRow = TONE_OPTIONS.slice(0, 2);
-    const secondRow = TONE_OPTIONS.slice(2, 6);
+    const firstRow = TONE_OPTIONS.slice(0, 3);
+    const secondRow = TONE_OPTIONS.slice(3, 7);
 
     return (
       <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
         <div className="flex flex-col gap-2 min-w-min ml-[-10px] mr-[-10px]">
-          {/* First row - 2 buttons */}
+          {/* First row - 3 buttons */}
           <div className="flex gap-2">
             {firstRow.map((option) => (
               <button
@@ -2622,37 +2630,20 @@ E.g.
   // Render result footer with control panel
   const renderResultFooter = () => {
     const selectedResult = rephraseResults.find(r => r.id === selectedResultId);
-    const selectedToneOption = TONE_OPTIONS.find(t => t.id === selectedTone);
-    const selectedToneLabel = selectedToneOption?.label || selectedTone;
-    const selectedToneEmoji = selectedToneOption?.emoji || "📝";
 
     return (
       <div className="flex-shrink-0 border-t border-border bg-white p-3">
         <div className="flex items-center gap-2 mt-1">
-          {/* Tone selector (compact) */}
-          <Select value={selectedTone} onValueChange={setSelectedTone}>
-            <SelectTrigger
-              className="w-auto h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
-              data-testid="select-rephrase-tone"
-            >
-              <span className="text-lg flex-shrink-0">{selectedToneEmoji}</span>
-              <SelectValue placeholder="Tone">
-                {selectedToneLabel}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {TONE_OPTIONS.map((tone, index) => (
-                <>
-                  <SelectItem key={tone.id} value={tone.id} data-testid={`option-rephrase-tone-${tone.id}`}>
-                    {tone.emoji} {tone.label}
-                  </SelectItem>
-                  {(index === 1 || index === 3) && (
-                    <Separator key={`separator-${index}`} className="my-1" />
-                  )}
-                </>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Cancel button */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex items-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation"
+            aria-label="Cancel"
+          >
+            <ArrowLeft className="h-5 w-5 text-foreground" />
+            <span className="text-sm font-medium text-foreground">Back</span>
+          </button>
 
           <div className="flex-1"></div>
 
@@ -2662,14 +2653,14 @@ E.g.
             onClick={() => selectedResult && handleApplyResult(selectedResult.id)}
             disabled={!selectedResult}
             className={`
-              flex items-center justify-center gap-1.5 h-11 w-11 rounded-full
+              flex items-center justify-center gap-2 h-11 px-6 py-2 rounded-full
               bg-[#0b9786] text-white font-medium
               ${!selectedResult ? "opacity-40 cursor-not-allowed" : "hover:bg-[#0a8a7a] active:scale-[0.95]"}
               transition-all duration-75 touch-manipulation flex-shrink-0
             `}
             data-testid="button-apply"
           >
-            <Check className="h-5 w-5" />
+            <span className="text-sm font-medium">Apply</span>
           </button>
         </div>
       </div>
@@ -2766,30 +2757,20 @@ E.g.
   // Render translate result footer with control panel
   const renderTranslateResultFooter = () => {
     const selectedResult = translateResults.find(r => r.id === selectedTranslateResultId);
-    const selectedLangLabel = LANGUAGES.find(l => l.code === translateLanguage)?.label || translateLanguage;
 
     return (
       <div className="flex-shrink-0 border-t border-border bg-white p-3">
         <div className="flex items-center gap-2 mt-1">
-          {/* Language selector - compact */}
-          <Select value={translateLanguage} onValueChange={setTranslateLanguage}>
-            <SelectTrigger
-              className="w-auto h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
-              data-testid="select-translate-language"
-            >
-              <Languages className="h-5 w-5 text-purple-500 flex-shrink-0" />
-              <SelectValue placeholder="Язык">
-                {selectedLangLabel}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {LANGUAGES.map((lang) => (
-                <SelectItem key={lang.code} value={lang.code} data-testid={`option-translate-lang-${lang.code}`}>
-                  {lang.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Cancel button */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex items-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation"
+            aria-label="Cancel"
+          >
+            <ArrowLeft className="h-5 w-5 text-foreground" />
+            <span className="text-sm font-medium text-foreground">Back</span>
+          </button>
 
           <div className="flex-1"></div>
 
@@ -2799,14 +2780,14 @@ E.g.
             onClick={() => selectedResult && handleApplyTranslateResult(selectedResult.id)}
             disabled={!selectedResult}
             className={`
-              flex items-center justify-center gap-1.5 h-11 w-11 rounded-full
+              flex items-center justify-center gap-2 h-11 px-6 py-2 rounded-full
               bg-[#0b9786] text-white font-medium
               ${!selectedResult ? "opacity-40 cursor-not-allowed" : "hover:bg-[#0a8a7a] active:scale-[0.95]"}
               transition-all duration-75 touch-manipulation flex-shrink-0
             `}
             data-testid="button-apply-translate"
           >
-            <Check className="h-5 w-5" />
+            <span className="text-sm font-medium">Apply</span>
           </button>
         </div>
       </div>
