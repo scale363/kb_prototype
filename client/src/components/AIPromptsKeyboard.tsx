@@ -2044,7 +2044,7 @@ E.g.
     return (
       <div className="px-1">
         {/* Preview field without border and background */}
-        <div className="flex items-start justify-between gap-3 py-2 px-1 relative pt-[12px] pb-[12px] pl-[0px] pr-[0px]">
+        <div className="flex items-start justify-between gap-3 py-2 px-1 relative pl-[18px] pr-[18px] pt-[12px] pb-[12px]">
           <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap flex-1 mt-[5px] mb-[5px]">
             {displayPreviewText}
           </div>
@@ -2566,7 +2566,7 @@ E.g.
               const isResultCopied = copiedResultId === result.id;
               return (
                 <CarouselItem key={result.id}>
-                  <div className="p-3 pl-[0px] pr-[0px] pt-[0px] pb-[0px]">
+                  <div className="p-3">
                     {/* Rephrase text with copy button */}
                     <div className="relative py-4 px-3">
                       <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
@@ -2604,6 +2604,7 @@ E.g.
             })}
           </CarouselContent>
         </Carousel>
+
         {/* Carousel indicators */}
         {rephraseResults.length > 1 && (
           <div className="flex justify-center gap-1.5 py-3">
@@ -2692,7 +2693,7 @@ E.g.
               const isResultCopied = copiedResultId === result.id;
               return (
                 <CarouselItem key={result.id}>
-                  <div className="p-3 pl-[0px] pr-[0px] pt-[0px] pb-[0px]">
+                  <div className="p-3">
                     {/* Translation text with copy button */}
                     <div className="relative py-4 px-3">
                       <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
@@ -2730,6 +2731,7 @@ E.g.
             })}
           </CarouselContent>
         </Carousel>
+
         {/* Dot indicators */}
         {translateResults.length > 1 && (
           <div className="flex justify-center gap-2 py-3">
