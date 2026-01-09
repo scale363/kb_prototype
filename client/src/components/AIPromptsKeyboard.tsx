@@ -99,7 +99,7 @@ const TONE_OPTIONS: ToneOption[] = [
     borderClass: "border-border",
   },
   {
-    id: "pmpt_695ce754ceb48193bbcedcc7d77dea430beca83ca0c73c92",
+    id: "email",
     label: "Email",
     emoji: "✉️",
     tooltip: "Formats your message in a professional email style.",
@@ -1969,17 +1969,9 @@ E.g.
         </div>
       );
     } else if (menuLevel === "result") {
-      // Determine the title based on selected tone
-      let resultTitle = "How should it sound?";
-      if (selectedTone === "work-safe") {
-        resultTitle = "Improved message";
-      } else if (selectedTone === "informal") {
-        resultTitle = "Improved message";
-      } else if (selectedTone === "short-clear") {
-        resultTitle = "Improved message";
-      } else if (selectedTone === "make-longer") {
-        resultTitle = "Improved message";
-      }
+      // Determine the title based on selected tone - use the tone's label
+      const selectedToneOption = TONE_OPTIONS.find(option => option.id === selectedTone);
+      const resultTitle = selectedToneOption ? selectedToneOption.label : "How should it sound?";
 
       return (
         <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
@@ -2637,7 +2629,7 @@ E.g.
           {/* Cancel button */}
           <button
             type="button"
-            onClick={onSwitchKeyboard}
+            onClick={handleBackToMain}
             className="flex items-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation"
             aria-label="Cancel"
           >
@@ -2764,7 +2756,7 @@ E.g.
           {/* Cancel button */}
           <button
             type="button"
-            onClick={onSwitchKeyboard}
+            onClick={handleBackToMain}
             className="flex items-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation"
             aria-label="Cancel"
           >

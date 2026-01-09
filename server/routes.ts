@@ -46,6 +46,7 @@ export async function registerRoutes(
       const promptIds: Record<string, string> = {
         "work-safe": "pmpt_695b58295a2481949ca23193cc8f27220091e37db7b63e30",
         "informal": "pmpt_695b95e36d048190a564c246275c5b790a1baee717009f46",
+        "email": "pmpt_695ce754ceb48193bbcedcc7d77dea430beca83ca0c73c92",
         "short-clear": "pmpt_695b9bc5c4ac8195bd1513b27c0495f002ca415d305af730",
         "make-longer": "pmpt_695b9d70d8dc81969a3ed440c090c8230ce18ebed8f0e9d2",
         "more-polite": "pmpt_695f8ff975188196914d614a7a852a4b07c33c4c16ae05bf",
