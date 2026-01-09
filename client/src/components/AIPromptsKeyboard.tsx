@@ -2044,7 +2044,7 @@ E.g.
     return (
       <div className="px-1">
         {/* Preview field without border and background */}
-        <div className="flex items-start justify-between gap-3 py-2 px-1 relative pl-[18px] pr-[18px] pt-[12px] pb-[12px]">
+        <div className="flex items-start justify-between gap-3 py-2 px-1 relative pt-[12px] pb-[12px] pl-[0px] pr-[0px]">
           <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap flex-1 mt-[5px] mb-[5px]">
             {displayPreviewText}
           </div>
