@@ -352,6 +352,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   const [rephraseResults, setRephraseResults] = useState<RephraseResult[]>([]);
   const [copiedResultId, setCopiedResultId] = useState<string | null>(null);
+  const [copiedPreview, setCopiedPreview] = useState<boolean>(false);
   const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
   const [openTooltipId, setOpenTooltipId] = useState<string | null>(null);
 
@@ -2028,6 +2029,8 @@ E.g.
     const handleCopyPreviewText = async () => {
       try {
         await navigator.clipboard.writeText(displayPreviewText);
+        setCopiedPreview(true);
+        setTimeout(() => setCopiedPreview(false), 2000);
       } catch {
         // Ignore copy errors silently
       }
@@ -2043,11 +2046,21 @@ E.g.
           <button
             type="button"
             onClick={handleCopyPreviewText}
-            className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
+            className={`
+              p-2 rounded-md flex-shrink-0
+              ${copiedPreview
+                ? "bg-green-100 dark:bg-green-950/50"
+                : "bg-background/80 hover:bg-accent/50"}
+              active:scale-95 transition-all duration-75 touch-manipulation
+            `}
             data-testid="button-copy-preview"
             aria-label="Copy text"
           >
-            <Copy className="h-4 w-4 text-muted-foreground" />
+            {copiedPreview ? (
+              <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+            ) : (
+              <Copy className="h-4 w-4 text-muted-foreground" />
+            )}
           </button>
         </div>
       </div>
