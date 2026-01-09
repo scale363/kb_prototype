@@ -10,6 +10,7 @@ export default function Home() {
   const [selectedText, setSelectedText] = useState("");
   const [previewText, setPreviewText] = useState("");
 
+  // Prevent pinch-to-zoom and double-tap zoom on mobile devices
   useEffect(() => {
     const preventZoom = (e: TouchEvent) => {
       if (e.touches.length > 1) {
