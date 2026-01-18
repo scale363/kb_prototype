@@ -91,36 +91,30 @@ export function DiffText({ originalText, modifiedText, className = '' }: DiffTex
           return <span key={index}>{group.unchanged}</span>;
         }
 
-        // Change group - show added text with underline, optionally show removed text
+        // Change group - toggle between showing new (added) or original (removed) text
         const isShowingRemoved = showingRemoved.has(index);
 
         return (
           <span key={index}>
-            {isShowingRemoved && group.removed && (
+            {isShowingRemoved && group.removed ? (
+              // Show original text (clickable to return to new version)
               <span
-                className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 line-through rounded px-0.5 opacity-60"
-                title="Removed text (click green text to hide)"
+                onClick={() => handleClickChange(index)}
+                className="cursor-pointer"
+                title="Click to show corrected version"
               >
                 {group.removed}
               </span>
-            )}
-            {group.added && (
+            ) : group.added ? (
+              // Show new text with green underline (clickable to show original if removed exists)
               <span
                 onClick={() => group.removed && handleClickChange(index)}
                 className={`bg-[#0b9786]/10 dark:bg-[#0b9786]/20 text-[#0b9786] dark:text-[#0b9786] border-b-2 border-[#0b9786] rounded-sm px-0.5 ${group.removed ? 'cursor-pointer' : ''}`}
-                title={group.removed ? "Click to show/hide removed text" : "Added text"}
+                title={group.removed ? "Click to show original text" : "Added text"}
               >
                 {group.added}
               </span>
-            )}
-            {!group.added && group.removed && (
-              <span
-                className="opacity-0"
-                title="Text was removed"
-              >
-
-              </span>
-            )}
+            ) : null}
           </span>
         );
       })}
