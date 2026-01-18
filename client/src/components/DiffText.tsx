@@ -10,6 +10,8 @@ interface DiffTextProps {
   originalText: string;
   modifiedText: string;
   className?: string;
+  showingRemoved?: Set<number>;
+  onToggleChange?: (index: number) => void;
 }
 
 // Group consecutive diff parts into change groups
@@ -65,23 +67,67 @@ function groupDiffParts(parts: DiffPart[]): ChangeGroup[] {
   return groups;
 }
 
-export function DiffText({ originalText, modifiedText, className = '' }: DiffTextProps) {
+/**
+ * Compute the final text with toggled changes applied
+ * @param originalText - The original text
+ * @param modifiedText - The modified text
+ * @param showingRemoved - Set of indices where original text should be shown
+ * @returns The final text with toggled changes
+ */
+export function computeFinalText(
+  originalText: string,
+  modifiedText: string,
+  showingRemoved: Set<number>
+): string {
+  const diffParts = computeTextDiff(originalText, modifiedText);
+  const changeGroups = groupDiffParts(diffParts);
+
+  let result = '';
+  changeGroups.forEach((group, index) => {
+    if (group.type === 'unchanged') {
+      result += group.unchanged;
+    } else {
+      // If showing removed for this group, use original, otherwise use modified
+      if (showingRemoved.has(index) && group.removed) {
+        result += group.removed;
+      } else if (group.added) {
+        result += group.added;
+      }
+    }
+  });
+
+  return result;
+}
+
+export function DiffText({
+  originalText,
+  modifiedText,
+  className = '',
+  showingRemoved: externalShowingRemoved,
+  onToggleChange,
+}: DiffTextProps) {
   const diffParts = computeTextDiff(originalText, modifiedText);
   const changeGroups = groupDiffParts(diffParts);
 
   // Track which change groups are showing their removed text
-  const [showingRemoved, setShowingRemoved] = useState<Set<number>>(new Set());
+  // Use external state if provided, otherwise internal state
+  const [internalShowingRemoved, setInternalShowingRemoved] = useState<Set<number>>(new Set());
+  const showingRemoved = externalShowingRemoved ?? internalShowingRemoved;
 
   const handleClickChange = (index: number) => {
-    setShowingRemoved(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);
-      } else {
-        newSet.add(index);
-      }
-      return newSet;
-    });
+    if (onToggleChange) {
+      onToggleChange(index);
+    } else {
+      setInternalShowingRemoved(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(index)) {
+          newSet.delete(index);
+        } else {
+          newSet.add(index);
+        }
+        return newSet;
+      });
+    }
   };
 
   return (
@@ -109,7 +155,7 @@ export function DiffText({ originalText, modifiedText, className = '' }: DiffTex
               // Show new text with green underline (clickable to show original if removed exists)
               <span
                 onClick={() => group.removed && handleClickChange(index)}
-                className={`bg-[#0b9786]/10 dark:bg-[#0b9786]/20 border-b-2 border-[#0b9786] rounded-sm px-0.5 ${group.removed ? 'cursor-pointer' : ''}`}
+                className={`bg-[#0b9786]/5 dark:bg-[#0b9786]/10 border-b-2 border-[#0b9786] rounded-sm px-0.5 ${group.removed ? 'cursor-pointer' : ''}`}
                 title={group.removed ? "Click to show original text" : "Added text"}
               >
                 {group.added}
