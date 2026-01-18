@@ -242,6 +242,7 @@ type MenuLevel = "main" | "tone-select" | "result" | "translate-result" | "quick
 interface RephraseResult {
   id: string;
   text: string;
+  originalText: string;
   tone: string;
   language: string;
   timestamp: number;
@@ -613,6 +614,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       const newResult: RephraseResult = {
         id: `result-${Date.now()}`,
         text: "Message is too long. Maximum 1000 characters allowed.",
+        originalText: originalText,
         tone: toneId,
         language: "",
         timestamp: Date.now(),
@@ -655,6 +657,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         const newResult: RephraseResult = {
           id: `result-${Date.now()}`,
           text: data.rephrased,
+          originalText: originalText,
           tone: toneId,
           language: "",
           timestamp: Date.now(),
@@ -667,6 +670,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         const newResult: RephraseResult = {
           id: `result-${Date.now()}`,
           text: `Error: ${data.error || "Rephrasing failed"}`,
+          originalText: originalText,
           tone: toneId,
           language: "",
           timestamp: Date.now(),
@@ -683,6 +687,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       const newResult: RephraseResult = {
         id: `result-${Date.now()}`,
         text: "Error: Failed to connect to AI service",
+        originalText: originalText,
         tone: toneId,
         language: "",
         timestamp: Date.now(),
@@ -748,6 +753,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       const newResult: RephraseResult = {
         id: `result-${Date.now()}`,
         text: "Message is too long. Maximum 1000 characters allowed.",
+        originalText: originalText,
         tone: selectedTone,
         language: "",
         timestamp: Date.now(),
@@ -788,6 +794,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         const newResult: RephraseResult = {
           id: `result-${Date.now()}`,
           text: data.rephrased,
+          originalText: originalText,
           tone: selectedTone,
           language: "",
           timestamp: Date.now(),
@@ -799,6 +806,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
         const newResult: RephraseResult = {
           id: `result-${Date.now()}`,
           text: `Error: ${data.error || "Rephrasing failed"}`,
+          originalText: originalText,
           tone: selectedTone,
           language: "",
           timestamp: Date.now(),
@@ -815,6 +823,7 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
       const newResult: RephraseResult = {
         id: `result-${Date.now()}`,
         text: "Error: Failed to connect to AI service",
+        originalText: originalText,
         tone: selectedTone,
         language: "",
         timestamp: Date.now(),
@@ -2485,9 +2494,11 @@ E.g.
                   <div className="p-3">
                     {/* Rephrase text with copy button */}
                     <div className="relative py-4 px-3">
-                      <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-8">
-                        {result.text}
-                      </div>
+                      <DiffText
+                        originalText={result.originalText}
+                        modifiedText={result.text}
+                        className="pr-8"
+                      />
                       {/* Copy button */}
                       <button
                         type="button"

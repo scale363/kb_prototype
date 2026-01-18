@@ -100,7 +100,7 @@ export function DiffText({ originalText, modifiedText, className = '' }: DiffTex
               // Show original text (clickable to return to new version)
               <span
                 onClick={() => handleClickChange(index)}
-                className="cursor-pointer"
+                className="cursor-pointer border-b-2 border-muted-foreground/40"
                 title="Click to show corrected version"
               >
                 {group.removed}
@@ -109,7 +109,7 @@ export function DiffText({ originalText, modifiedText, className = '' }: DiffTex
               // Show new text with green underline (clickable to show original if removed exists)
               <span
                 onClick={() => group.removed && handleClickChange(index)}
-                className={`bg-[#0b9786]/10 dark:bg-[#0b9786]/20 text-[#0b9786] dark:text-[#0b9786] border-b-2 border-[#0b9786] rounded-sm px-0.5 ${group.removed ? 'cursor-pointer' : ''}`}
+                className={`bg-[#0b9786]/10 dark:bg-[#0b9786]/20 border-b-2 border-[#0b9786] rounded-sm px-0.5 ${group.removed ? 'cursor-pointer' : ''}`}
                 title={group.removed ? "Click to show original text" : "Added text"}
               >
                 {group.added}
