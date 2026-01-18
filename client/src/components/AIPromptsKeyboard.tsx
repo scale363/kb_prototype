@@ -84,7 +84,7 @@ interface ToneOption {
 const TONE_OPTIONS: ToneOption[] = [
   {
     id: "work-safe",
-    label: "Professional",
+    label: "Professional tone",
     emoji: "\u{1F6E1}",
     tooltip: "Checks grammar and rewrites your message to sound natural, polite, and culturally appropriate at work.",
     colorClass: "bg-card dark:bg-card",
@@ -92,24 +92,16 @@ const TONE_OPTIONS: ToneOption[] = [
   },
   {
     id: "informal",
-    label: "Informal",
+    label: "Informal tone",
     emoji: "💬",
     tooltip: "Makes your message sound informal and natural — not work-style.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
   },
   {
-    id: "email",
-    label: "Email",
-    emoji: "✉️",
-    tooltip: "Formats your message in a professional email style.",
-    colorClass: "bg-card dark:bg-card",
-    borderClass: "border-border",
-  },
-  {
     id: "short-clear",
     label: "Shorter",
-    emoji: "📏",
+    emoji: "◯",
     tooltip: "Makes your message concise, easy to read, and action-oriented.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -117,7 +109,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "make-longer",
     label: "Longer",
-    emoji: "📝",
+    emoji: "◯",
     tooltip: "Expands your message with more details and context while keeping the same meaning.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -125,7 +117,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "more-polite",
     label: "More Polite",
-    emoji: "🙏",
+    emoji: "◯",
     tooltip: "Makes your message sound more polite and courteous.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -133,7 +125,7 @@ const TONE_OPTIONS: ToneOption[] = [
   {
     id: "more-direct",
     label: "More Direct",
-    emoji: "🎯",
+    emoji: "◯",
     tooltip: "Makes your message more direct and straightforward.",
     colorClass: "bg-card dark:bg-card",
     borderClass: "border-border",
@@ -352,7 +344,6 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
 
   const [rephraseResults, setRephraseResults] = useState<RephraseResult[]>([]);
   const [copiedResultId, setCopiedResultId] = useState<string | null>(null);
-  const [copiedPreview, setCopiedPreview] = useState<boolean>(false);
   const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
   const [openTooltipId, setOpenTooltipId] = useState<string | null>(null);
 
@@ -1970,9 +1961,17 @@ E.g.
         </div>
       );
     } else if (menuLevel === "result") {
-      // Determine the title based on selected tone - use the tone's label
-      const selectedToneOption = TONE_OPTIONS.find(option => option.id === selectedTone);
-      const resultTitle = selectedToneOption ? selectedToneOption.label : "How should it sound?";
+      // Determine the title based on selected tone
+      let resultTitle = "How should it sound?";
+      if (selectedTone === "work-safe") {
+        resultTitle = "Improved message";
+      } else if (selectedTone === "informal") {
+        resultTitle = "Improved message";
+      } else if (selectedTone === "short-clear") {
+        resultTitle = "Improved message";
+      } else if (selectedTone === "make-longer") {
+        resultTitle = "Improved message";
+      }
 
       return (
         <div className="px-1 py-3 flex items-center justify-between min-h-[44px] -mt-1">
@@ -2023,14 +2022,9 @@ E.g.
 
     const hasContent = displayPreviewText.trim();
 
-    // Hide preview field if empty
-    if (!hasContent) return null;
-
     const handleCopyPreviewText = async () => {
       try {
         await navigator.clipboard.writeText(displayPreviewText);
-        setCopiedPreview(true);
-        setTimeout(() => setCopiedPreview(false), 2000);
       } catch {
         // Ignore copy errors silently
       }
@@ -2039,28 +2033,22 @@ E.g.
     return (
       <div className="px-1">
         {/* Preview field without border and background */}
-        <div className="flex items-start justify-between gap-3 py-2 px-1 relative pl-[18px] pr-[18px] pt-[14px] pb-[14px]">
-          <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap flex-1 mt-[5px] mb-[5px]">
-            {displayPreviewText}
-          </div>
+        <div className="flex items-start justify-between gap-3 py-2 px-1 relative pl-[18px] pr-[18px] pt-[12px] pb-[12px]">
+          {hasContent ? (
+            <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap flex-1 mt-[5px] mb-[5px]">
+              {displayPreviewText}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground/60 flex-1 mt-[4px] mb-[4px]">Paste a message or situation here</div>
+          )}
           <button
             type="button"
-            onClick={handleCopyPreviewText}
-            className={`
-              p-2 rounded-md flex-shrink-0
-              ${copiedPreview
-                ? "bg-green-100 dark:bg-green-950/50"
-                : "bg-background/80 hover:bg-accent/50"}
-              active:scale-95 transition-all duration-75 touch-manipulation
-            `}
-            data-testid="button-copy-preview"
-            aria-label="Copy text"
+            onClick={handlePasteFromClipboard}
+            className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
+            data-testid="button-paste-preview"
+            aria-label="Paste text"
           >
-            {copiedPreview ? (
-              <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-            ) : (
-              <Copy className="h-4 w-4 text-muted-foreground" />
-            )}
+            <Clipboard className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
       </div>
@@ -2069,15 +2057,15 @@ E.g.
 
   // Render tone option buttons for Rephrase
   const renderToneButtons = () => {
-    // First row: 3 tone buttons (Professional, Informal, Email tone)
+    // First row: 2 tone buttons (Professional, Informal)
     // Second row: 4 length/style buttons (Shorter, Longer, More Polite, More Direct)
-    const firstRow = TONE_OPTIONS.slice(0, 3);
-    const secondRow = TONE_OPTIONS.slice(3, 7);
+    const firstRow = TONE_OPTIONS.slice(0, 2);
+    const secondRow = TONE_OPTIONS.slice(2, 6);
 
     return (
       <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
         <div className="flex flex-col gap-2 min-w-min ml-[-10px] mr-[-10px]">
-          {/* First row - 3 buttons */}
+          {/* First row - 2 buttons */}
           <div className="flex gap-2">
             {firstRow.map((option) => (
               <button
@@ -2221,53 +2209,56 @@ E.g.
       return renderQuickReplyButtons();
     }
 
-    const hasContent = displayPreviewText.trim();
-
-    // Empty state: show only "Paste your message" button
-    if (!hasContent) {
-      return (
-        <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
-          <div className="flex justify-center">
-            <button
-              type="button"
-              onClick={handlePasteFromClipboard}
-              className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none"
-              data-testid="button-paste-message"
-              aria-label="Paste your message"
-            >
-              <Clipboard className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium text-foreground whitespace-nowrap">
-                Paste your message
-              </span>
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    // Otherwise show main menu buttons (only rephrase and translate)
+    // Otherwise show main menu buttons
+    // First row: rephrase, translate, saved-text
     const firstRowButtons = PROMPT_BUTTONS.filter(b =>
-      ['rephrase', 'translate'].includes(b.id)
+      ['rephrase', 'translate', 'saved-text'].includes(b.id)
+    );
+    // Second row: quick-replies, grammar-check
+    const secondRowButtons = PROMPT_BUTTONS.filter(b =>
+      ['quick-replies', 'grammar-check'].includes(b.id)
     );
 
     return (
       <div className="overflow-x-auto scrollbar-hide p-3 pt-[15px] pb-[15px]">
-        <div className="flex justify-center gap-2">
-          {firstRowButtons.map((button) => (
-            <button
-              key={button.id}
-              type="button"
-              onClick={() => handlePromptClick(button.id)}
-              className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
-              data-testid={`button-prompt-${button.id}`}
-              aria-label={button.label}
-            >
-              {button.icon}
-              <span className="text-sm font-medium text-foreground whitespace-nowrap">
-                {button.label}
-              </span>
-            </button>
-          ))}
+        <div className="flex flex-col gap-2 min-w-min ml-[-10px] mr-[-10px]">
+          {/* First row - 3 buttons */}
+          <div className="flex gap-2">
+            {firstRowButtons.map((button) => (
+              <button
+                key={button.id}
+                type="button"
+                onClick={() => handlePromptClick(button.id)}
+                className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
+                data-testid={`button-prompt-${button.id}`}
+                aria-label={button.label}
+              >
+                {button.icon}
+                <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                  {button.label}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Second row - 2 buttons */}
+          <div className="flex gap-2">
+            {secondRowButtons.map((button) => (
+              <button
+                key={button.id}
+                type="button"
+                onClick={() => handlePromptClick(button.id)}
+                className="flex flex-row items-center justify-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation select-none flex-shrink-0"
+                data-testid={`button-prompt-${button.id}`}
+                aria-label={button.label}
+              >
+                {button.icon}
+                <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                  {button.label}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -2276,18 +2267,6 @@ E.g.
   // Render empty preview prompt for rephrase
   const renderRephraseEmptyPreview = () => {
     const hasContent = displayPreviewText.trim();
-
-    const handleCopyOrPaste = async () => {
-      if (hasContent) {
-        try {
-          await navigator.clipboard.writeText(displayPreviewText);
-        } catch {
-          // Ignore copy errors silently
-        }
-      } else {
-        await handlePasteFromClipboard();
-      }
-    };
 
     return (
       <div className="flex flex-col gap-4 p-1">
@@ -2302,21 +2281,17 @@ E.g.
           )}
           <button
             type="button"
-            onClick={handleCopyOrPaste}
+            onClick={handlePasteFromClipboard}
             className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
-            data-testid={hasContent ? "button-copy-rephrase-empty" : "button-paste-rephrase-empty"}
-            aria-label={hasContent ? "Copy text" : "Paste text"}
+            data-testid="button-paste-rephrase-empty"
+            aria-label="Paste text"
           >
-            {hasContent ? (
-              <Copy className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <Clipboard className="h-4 w-4 text-muted-foreground" />
-            )}
+            <Clipboard className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
         {/* Large prompt message */}
         <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-          <div className="text-center font-semibold text-[#22282a] text-[16px]">Paste the message you want to rephrase. We'll help adjust the tone and wording.</div>
+          <div className="text-center font-semibold text-[#22282a] text-[16px]">Paste the message you want to rephrase. We’ll help adjust the tone and wording.</div>
         </div>
       </div>
     );
@@ -2325,18 +2300,6 @@ E.g.
   // Render empty preview prompt for translate
   const renderTranslateEmptyPreview = () => {
     const hasContent = displayPreviewText.trim();
-
-    const handleCopyOrPaste = async () => {
-      if (hasContent) {
-        try {
-          await navigator.clipboard.writeText(displayPreviewText);
-        } catch {
-          // Ignore copy errors silently
-        }
-      } else {
-        await handlePasteFromClipboard();
-      }
-    };
 
     return (
       <div className="flex flex-col gap-4 p-1">
@@ -2351,16 +2314,12 @@ E.g.
           )}
           <button
             type="button"
-            onClick={handleCopyOrPaste}
+            onClick={handlePasteFromClipboard}
             className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
-            data-testid={hasContent ? "button-copy-translate-empty" : "button-paste-translate-empty"}
-            aria-label={hasContent ? "Copy text" : "Paste text"}
+            data-testid="button-paste-translate-empty"
+            aria-label="Paste text"
           >
-            {hasContent ? (
-              <Copy className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <Clipboard className="h-4 w-4 text-muted-foreground" />
-            )}
+            <Clipboard className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
         {/* Large prompt message */}
@@ -2377,18 +2336,6 @@ E.g.
   const renderQuickRepliesEmptyPreview = () => {
     const hasContent = displayPreviewText.trim();
 
-    const handleCopyOrPaste = async () => {
-      if (hasContent) {
-        try {
-          await navigator.clipboard.writeText(displayPreviewText);
-        } catch {
-          // Ignore copy errors silently
-        }
-      } else {
-        await handlePasteFromClipboard();
-      }
-    };
-
     return (
       <div className="flex flex-col gap-4 p-1">
         {/* Preview field - main page style */}
@@ -2402,16 +2349,12 @@ E.g.
           )}
           <button
             type="button"
-            onClick={handleCopyOrPaste}
+            onClick={handlePasteFromClipboard}
             className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
-            data-testid={hasContent ? "button-copy-quick-replies-empty" : "button-paste-quick-replies-empty"}
-            aria-label={hasContent ? "Copy text" : "Paste text"}
+            data-testid="button-paste-quick-replies-empty"
+            aria-label="Paste text"
           >
-            {hasContent ? (
-              <Copy className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <Clipboard className="h-4 w-4 text-muted-foreground" />
-            )}
+            <Clipboard className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
         {/* Large prompt message */}
@@ -2426,18 +2369,6 @@ E.g.
   const renderGrammarCheckEmptyPreview = () => {
     const hasContent = displayPreviewText.trim();
 
-    const handleCopyOrPaste = async () => {
-      if (hasContent) {
-        try {
-          await navigator.clipboard.writeText(displayPreviewText);
-        } catch {
-          // Ignore copy errors silently
-        }
-      } else {
-        await handlePasteFromClipboard();
-      }
-    };
-
     return (
       <div className="flex flex-col gap-4 p-1">
         {/* Preview field - main page style */}
@@ -2451,16 +2382,12 @@ E.g.
           )}
           <button
             type="button"
-            onClick={handleCopyOrPaste}
+            onClick={handlePasteFromClipboard}
             className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
-            data-testid={hasContent ? "button-copy-grammar-check-empty" : "button-paste-grammar-check-empty"}
-            aria-label={hasContent ? "Copy text" : "Paste text"}
+            data-testid="button-paste-grammar-check-empty"
+            aria-label="Paste text"
           >
-            {hasContent ? (
-              <Copy className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <Clipboard className="h-4 w-4 text-muted-foreground" />
-            )}
+            <Clipboard className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
         {/* Large prompt message */}
@@ -2475,18 +2402,6 @@ E.g.
   const renderToneSelect = () => {
     const hasContent = displayPreviewText.trim();
 
-    const handleCopyOrPaste = async () => {
-      if (hasContent) {
-        try {
-          await navigator.clipboard.writeText(displayPreviewText);
-        } catch {
-          // Ignore copy errors silently
-        }
-      } else {
-        await handlePasteFromClipboard();
-      }
-    };
-
     return (
       <div className="flex flex-col gap-3 p-1">
         {/* Preview field - same style as main page */}
@@ -2500,16 +2415,12 @@ E.g.
           )}
           <button
             type="button"
-            onClick={handleCopyOrPaste}
+            onClick={handlePasteFromClipboard}
             className="p-2 rounded-md hover:bg-accent/50 active:scale-95 transition-all duration-75 touch-manipulation flex-shrink-0"
-            data-testid={hasContent ? "button-copy-rephrase" : "button-paste-rephrase"}
-            aria-label={hasContent ? "Copy text" : "Paste text"}
+            data-testid="button-paste-rephrase"
+            aria-label="Paste text"
           >
-            {hasContent ? (
-              <Copy className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <Clipboard className="h-4 w-4 text-muted-foreground" />
-            )}
+            <Clipboard className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
 
@@ -2635,20 +2546,37 @@ E.g.
   // Render result footer with control panel
   const renderResultFooter = () => {
     const selectedResult = rephraseResults.find(r => r.id === selectedResultId);
+    const selectedToneOption = TONE_OPTIONS.find(t => t.id === selectedTone);
+    const selectedToneLabel = selectedToneOption?.label || selectedTone;
+    const selectedToneEmoji = selectedToneOption?.emoji || "📝";
 
     return (
       <div className="flex-shrink-0 border-t border-border bg-white p-3">
         <div className="flex items-center gap-2 mt-1">
-          {/* Cancel button */}
-          <button
-            type="button"
-            onClick={handleBackToMain}
-            className="flex items-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation"
-            aria-label="Cancel"
-          >
-            <ArrowLeft className="h-5 w-5 text-foreground" />
-            <span className="text-sm font-medium text-foreground">Back</span>
-          </button>
+          {/* Tone selector (compact) */}
+          <Select value={selectedTone} onValueChange={setSelectedTone}>
+            <SelectTrigger
+              className="w-auto h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
+              data-testid="select-rephrase-tone"
+            >
+              <span className="text-lg flex-shrink-0">{selectedToneEmoji}</span>
+              <SelectValue placeholder="Tone">
+                {selectedToneLabel}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {TONE_OPTIONS.map((tone, index) => (
+                <>
+                  <SelectItem key={tone.id} value={tone.id} data-testid={`option-rephrase-tone-${tone.id}`}>
+                    {tone.emoji} {tone.label}
+                  </SelectItem>
+                  {(index === 1 || index === 3) && (
+                    <Separator key={`separator-${index}`} className="my-1" />
+                  )}
+                </>
+              ))}
+            </SelectContent>
+          </Select>
 
           <div className="flex-1"></div>
 
@@ -2658,14 +2586,14 @@ E.g.
             onClick={() => selectedResult && handleApplyResult(selectedResult.id)}
             disabled={!selectedResult}
             className={`
-              flex items-center justify-center gap-2 h-11 px-6 py-2 rounded-full
+              flex items-center justify-center gap-1.5 h-11 w-11 rounded-full
               bg-[#0b9786] text-white font-medium
               ${!selectedResult ? "opacity-40 cursor-not-allowed" : "hover:bg-[#0a8a7a] active:scale-[0.95]"}
               transition-all duration-75 touch-manipulation flex-shrink-0
             `}
             data-testid="button-apply"
           >
-            <span className="text-sm font-medium">Apply</span>
+            <Check className="h-5 w-5" />
           </button>
         </div>
       </div>
@@ -2762,20 +2690,30 @@ E.g.
   // Render translate result footer with control panel
   const renderTranslateResultFooter = () => {
     const selectedResult = translateResults.find(r => r.id === selectedTranslateResultId);
+    const selectedLangLabel = LANGUAGES.find(l => l.code === translateLanguage)?.label || translateLanguage;
 
     return (
       <div className="flex-shrink-0 border-t border-border bg-white p-3">
         <div className="flex items-center gap-2 mt-1">
-          {/* Cancel button */}
-          <button
-            type="button"
-            onClick={handleBackToMain}
-            className="flex items-center gap-2 h-11 px-4 py-2 rounded-full border-2 bg-card dark:bg-card border-border hover-elevate active-elevate-2 active:scale-[0.98] transition-transform duration-75 touch-manipulation"
-            aria-label="Cancel"
-          >
-            <ArrowLeft className="h-5 w-5 text-foreground" />
-            <span className="text-sm font-medium text-foreground">Back</span>
-          </button>
+          {/* Language selector - compact */}
+          <Select value={translateLanguage} onValueChange={setTranslateLanguage}>
+            <SelectTrigger
+              className="w-auto h-11 rounded-full border-2 border-border text-sm px-4 gap-2"
+              data-testid="select-translate-language"
+            >
+              <Languages className="h-5 w-5 text-purple-500 flex-shrink-0" />
+              <SelectValue placeholder="Язык">
+                {selectedLangLabel}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {LANGUAGES.map((lang) => (
+                <SelectItem key={lang.code} value={lang.code} data-testid={`option-translate-lang-${lang.code}`}>
+                  {lang.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <div className="flex-1"></div>
 
@@ -2785,14 +2723,14 @@ E.g.
             onClick={() => selectedResult && handleApplyTranslateResult(selectedResult.id)}
             disabled={!selectedResult}
             className={`
-              flex items-center justify-center gap-2 h-11 px-6 py-2 rounded-full
+              flex items-center justify-center gap-1.5 h-11 w-11 rounded-full
               bg-[#0b9786] text-white font-medium
               ${!selectedResult ? "opacity-40 cursor-not-allowed" : "hover:bg-[#0a8a7a] active:scale-[0.95]"}
               transition-all duration-75 touch-manipulation flex-shrink-0
             `}
             data-testid="button-apply-translate"
           >
-            <span className="text-sm font-medium">Apply</span>
+            <Check className="h-5 w-5" />
           </button>
         </div>
       </div>
