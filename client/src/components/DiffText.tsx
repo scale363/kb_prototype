@@ -23,6 +23,8 @@ interface ChangeGroup {
 }
 
 function groupDiffParts(parts: DiffPart[]): ChangeGroup[] {
+  if (parts.length === 0) return [];
+
   const groups: ChangeGroup[] = [];
   let i = 0;
 
@@ -38,20 +40,55 @@ function groupDiffParts(parts: DiffPart[]): ChangeGroup[] {
       });
       i++;
     } else {
-      // Collect consecutive removed and added parts
+      // Collect consecutive removed and added parts, including short unchanged parts between them
       let removed = '';
       let added = '';
+      let tempUnchanged: string[] = [];
 
-      // Collect all removed parts
-      while (i < parts.length && parts[i].type === 'removed') {
-        removed += parts[i].text;
-        i++;
-      }
+      while (i < parts.length) {
+        if (parts[i].type === 'removed') {
+          // Flush temporary unchanged parts into the change
+          if (tempUnchanged.length > 0) {
+            removed += tempUnchanged.join('');
+            added += tempUnchanged.join('');
+            tempUnchanged = [];
+          }
+          removed += parts[i].text;
+          i++;
+        } else if (parts[i].type === 'added') {
+          // Flush temporary unchanged parts into the change
+          if (tempUnchanged.length > 0) {
+            removed += tempUnchanged.join('');
+            added += tempUnchanged.join('');
+            tempUnchanged = [];
+          }
+          added += parts[i].text;
+          i++;
+        } else if (parts[i].type === 'unchanged') {
+          // Look ahead to see if there are more changes coming
+          const unchangedText = parts[i].text;
+          const isShortUnchanged = unchangedText.length <= 3 || /^\s+$/.test(unchangedText);
 
-      // Collect all added parts
-      while (i < parts.length && parts[i].type === 'added') {
-        added += parts[i].text;
-        i++;
+          // Check if there are more changes ahead
+          let hasMoreChanges = false;
+          for (let j = i + 1; j < parts.length && j < i + 3; j++) {
+            if (parts[j].type === 'removed' || parts[j].type === 'added') {
+              hasMoreChanges = true;
+              break;
+            }
+          }
+
+          if (isShortUnchanged && hasMoreChanges) {
+            // Include this short unchanged part in the change group
+            tempUnchanged.push(unchangedText);
+            i++;
+          } else {
+            // This is a significant unchanged part or no more changes ahead, end the change group
+            break;
+          }
+        } else {
+          break;
+        }
       }
 
       if (removed || added) {
@@ -146,7 +183,7 @@ export function DiffText({
               // Show original text (clickable to return to new version)
               <span
                 onClick={() => handleClickChange(index)}
-                className="cursor-pointer border-b-2 border-muted-foreground/40"
+                className="cursor-pointer border-b border-muted-foreground/40"
                 title="Click to show corrected version"
               >
                 {group.removed}
@@ -155,7 +192,7 @@ export function DiffText({
               // Show new text with green underline (clickable to show original if removed exists)
               <span
                 onClick={() => group.removed && handleClickChange(index)}
-                className={`bg-[#0b9786]/5 dark:bg-[#0b9786]/10 border-b-2 border-[#0b9786] rounded-sm px-0.5 ${group.removed ? 'cursor-pointer' : ''}`}
+                className={`bg-[#0b9786]/5 dark:bg-[#0b9786]/10 border-b border-[#0b9786] rounded-sm px-0.5 ${group.removed ? 'cursor-pointer' : ''}`}
                 title={group.removed ? "Click to show original text" : "Added text"}
               >
                 {group.added}
