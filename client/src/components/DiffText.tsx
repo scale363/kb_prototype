@@ -124,9 +124,10 @@ export function computeFinalText(
     if (group.type === 'unchanged') {
       result += group.unchanged;
     } else {
-      // If showing removed for this group, use original, otherwise use modified
-      if (showingRemoved.has(index) && group.removed) {
-        result += group.removed;
+      // If showing removed for this group
+      if (showingRemoved.has(index)) {
+        // Use original if exists, otherwise use space (for added-only text)
+        result += group.removed || ' ';
       } else if (group.added) {
         result += group.added;
       }
@@ -179,28 +180,24 @@ export function DiffText({
 
         return (
           <span key={index}>
-            {isShowingRemoved && group.removed ? (
-              // Show original text (clickable to return to new version)
+            {isShowingRemoved ? (
+              // Show original text or space (clickable to return to new version)
               <span
                 onClick={() => handleClickChange(index)}
                 className="cursor-pointer border-b border-muted-foreground/40"
                 title="Click to show corrected version"
               >
-                {group.removed}
+                {group.removed || ' '}
               </span>
             ) : group.added ? (
-              // Show new text - with underline if there's original to show, without otherwise
-              group.removed ? (
-                <span
-                  onClick={() => handleClickChange(index)}
-                  className="cursor-pointer bg-[#0b9786]/5 dark:bg-[#0b9786]/10 border-b border-[#0b9786] rounded-sm px-0.5"
-                  title="Click to show original text"
-                >
-                  {group.added}
-                </span>
-              ) : (
-                <span>{group.added}</span>
-              )
+              // Show new text with green underline (always clickable)
+              <span
+                onClick={() => handleClickChange(index)}
+                className="cursor-pointer bg-[#0b9786]/5 dark:bg-[#0b9786]/10 border-b border-[#0b9786] rounded-sm px-0.5"
+                title={group.removed ? "Click to show original text" : "Click to hide"}
+              >
+                {group.added}
+              </span>
             ) : null}
           </span>
         );
