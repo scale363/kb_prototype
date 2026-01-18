@@ -189,14 +189,18 @@ export function DiffText({
                 {group.removed}
               </span>
             ) : group.added ? (
-              // Show new text with green underline (clickable to show original if removed exists)
-              <span
-                onClick={() => group.removed && handleClickChange(index)}
-                className={`bg-[#0b9786]/5 dark:bg-[#0b9786]/10 border-b border-[#0b9786] rounded-sm px-0.5 ${group.removed ? 'cursor-pointer' : ''}`}
-                title={group.removed ? "Click to show original text" : "Added text"}
-              >
-                {group.added}
-              </span>
+              // Show new text - with underline if there's original to show, without otherwise
+              group.removed ? (
+                <span
+                  onClick={() => handleClickChange(index)}
+                  className="cursor-pointer bg-[#0b9786]/5 dark:bg-[#0b9786]/10 border-b border-[#0b9786] rounded-sm px-0.5"
+                  title="Click to show original text"
+                >
+                  {group.added}
+                </span>
+              ) : (
+                <span>{group.added}</span>
+              )
             ) : null}
           </span>
         );
