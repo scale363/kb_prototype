@@ -92,37 +92,39 @@ export function computeTextDiff(original: string, modified: string): DiffPart[] 
 }
 
 /**
- * Tokenize text into words, whitespace, and punctuation separately
- * This allows more granular diff - e.g., if only a comma is added,
- * we don't highlight the entire preceding word
+ * Tokenize text into words and whitespace
+ * Punctuation is kept as part of the preceding word
  */
 function tokenize(text: string): string[] {
   const tokens: string[] = [];
   let current = '';
-  let currentType: 'word' | 'whitespace' | 'punctuation' | null = null;
+  let isWhitespace = false;
 
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
-    let charType: 'word' | 'whitespace' | 'punctuation';
+    const charIsWhitespace = /\s/.test(char);
 
-    if (/\s/.test(char)) {
-      charType = 'whitespace';
-    } else if (/[\w\u0400-\u04FF]/.test(char)) {
-      // Word characters: alphanumeric + Cyrillic characters
-      charType = 'word';
-    } else {
-      // Punctuation and other characters
-      charType = 'punctuation';
-    }
-
-    // If type changes or it's punctuation (each punctuation is separate token)
-    if (current.length > 0 && (charType !== currentType || charType === 'punctuation')) {
-      tokens.push(current);
-      current = char;
-      currentType = charType;
-    } else {
+    if (charIsWhitespace) {
+      // If we have accumulated content, push it first
+      if (current.length > 0) {
+        tokens.push(current);
+        current = '';
+      }
+      // Start or continue whitespace token
       current += char;
-      currentType = charType;
+      isWhitespace = true;
+    } else {
+      // Non-whitespace character
+      if (isWhitespace && current.length > 0) {
+        // We were collecting whitespace, push it and start new token
+        tokens.push(current);
+        current = char;
+        isWhitespace = false;
+      } else {
+        // Continue current token (word + punctuation)
+        current += char;
+        isWhitespace = false;
+      }
     }
   }
 
