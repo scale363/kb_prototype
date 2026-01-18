@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DiffText } from "@/components/DiffText";
+import { DiffText, computeFinalText } from "@/components/DiffText";
 import {
   Carousel,
   CarouselContent,
@@ -395,6 +395,10 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
   const [selectedGrammarCheckResultId, setSelectedGrammarCheckResultId] = useState<string | null>(null);
   const [isCheckingGrammar, setIsCheckingGrammar] = useState<boolean>(false);
 
+  // State for tracking toggled changes in diff view (resultId -> Set of toggled indices)
+  const [rephraseShowingRemoved, setRephraseShowingRemoved] = useState<Map<string, Set<number>>>(new Map());
+  const [grammarCheckShowingRemoved, setGrammarCheckShowingRemoved] = useState<Map<string, Set<number>>>(new Map());
+
   // Load saved text items from localStorage
   const [savedTextItems, setSavedTextItems] = useState<SavedTextItem[]>(() => {
     try {
@@ -724,23 +728,28 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     const result = rephraseResults.find(r => r.id === resultId);
     if (!result) return;
 
+    // Get final text with toggled changes applied
+    const showingRemoved = rephraseShowingRemoved.get(resultId) || new Set<number>();
+    const finalText = computeFinalText(result.originalText, result.text, showingRemoved);
+
     if (selectedText) {
       // Replace selected text in the original text
       const startIndex = text.indexOf(selectedText);
       if (startIndex !== -1) {
-        const newText = text.substring(0, startIndex) + result.text + text.substring(startIndex + selectedText.length);
+        const newText = text.substring(0, startIndex) + finalText + text.substring(startIndex + selectedText.length);
         onTextChange(newText);
       } else {
-        onTextChange(result.text);
+        onTextChange(finalText);
       }
     } else {
       // Replace all text
-      onTextChange(result.text);
+      onTextChange(finalText);
     }
     // Reset to main menu
     setMenuLevel("main");
     // Don't reset selectedTone - keep it for next rephrase
     setRephraseResults([]);
+    setRephraseShowingRemoved(new Map());
   };
 
   const handleReprocess = async () => {
@@ -1577,22 +1586,27 @@ export function AIPromptsKeyboard({ text, selectedText, previewText, onPreviewTe
     const result = grammarCheckResults.find(r => r.id === resultId);
     if (!result) return;
 
+    // Get final text with toggled changes applied
+    const showingRemoved = grammarCheckShowingRemoved.get(resultId) || new Set<number>();
+    const finalText = computeFinalText(result.originalText, result.text, showingRemoved);
+
     if (selectedText) {
       // Replace selected text in the original text
       const startIndex = text.indexOf(selectedText);
       if (startIndex !== -1) {
-        const newText = text.substring(0, startIndex) + result.text + text.substring(startIndex + selectedText.length);
+        const newText = text.substring(0, startIndex) + finalText + text.substring(startIndex + selectedText.length);
         onTextChange(newText);
       } else {
-        onTextChange(result.text);
+        onTextChange(finalText);
       }
     } else {
       // Replace all text
-      onTextChange(result.text);
+      onTextChange(finalText);
     }
     // Reset to main menu
     setMenuLevel("main");
     setGrammarCheckResults([]);
+    setGrammarCheckShowingRemoved(new Map());
   };
 
   const handleSaveFromClipboard = async () => {
@@ -2498,6 +2512,19 @@ E.g.
                         originalText={result.originalText}
                         modifiedText={result.text}
                         className="pr-8"
+                        showingRemoved={rephraseShowingRemoved.get(result.id)}
+                        onToggleChange={(index) => {
+                          const newMap = new Map(rephraseShowingRemoved);
+                          const currentSet = newMap.get(result.id) || new Set<number>();
+                          const newSet = new Set(currentSet);
+                          if (newSet.has(index)) {
+                            newSet.delete(index);
+                          } else {
+                            newSet.add(index);
+                          }
+                          newMap.set(result.id, newSet);
+                          setRephraseShowingRemoved(newMap);
+                        }}
                       />
                       {/* Copy button */}
                       <button
@@ -2956,6 +2983,19 @@ E.g.
                   originalText={result.originalText}
                   modifiedText={result.text}
                   className="pr-8"
+                  showingRemoved={grammarCheckShowingRemoved.get(result.id)}
+                  onToggleChange={(index) => {
+                    const newMap = new Map(grammarCheckShowingRemoved);
+                    const currentSet = newMap.get(result.id) || new Set<number>();
+                    const newSet = new Set(currentSet);
+                    if (newSet.has(index)) {
+                      newSet.delete(index);
+                    } else {
+                      newSet.add(index);
+                    }
+                    newMap.set(result.id, newSet);
+                    setGrammarCheckShowingRemoved(newMap);
+                  }}
                 />
                 {/* Copy button - only show when selected */}
                 {isSelected && (
